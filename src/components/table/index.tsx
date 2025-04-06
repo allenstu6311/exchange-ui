@@ -10,22 +10,25 @@ import {
   TableContainer,
 } from "@chakra-ui/react";
 import { CTableProps } from "@/types";
-import { tableAnatomy } from '@chakra-ui/anatomy'
-import { createMultiStyleConfigHelpers } from '@chakra-ui/react'
+import { tableAnatomy } from "@chakra-ui/anatomy";
+import { createMultiStyleConfigHelpers } from "@chakra-ui/react";
 
 const { definePartsStyle, defineMultiStyleConfig } =
-  createMultiStyleConfigHelpers(tableAnatomy.keys)
+  createMultiStyleConfigHelpers(tableAnatomy.keys);
 
-  const baseStyle = definePartsStyle({
-    table:{
-      tableLayout: 'fixed'
-    },
-  })
+const baseStyle = definePartsStyle({
+  table: {
+    tableLayout: "fixed",
+  },
+});
 
-  export const tableTheme = defineMultiStyleConfig({ baseStyle })
+export const tableTheme = defineMultiStyleConfig({ baseStyle });
 
-
-function CTable({ loading = false, rowData = [], columnData = [] }: CTableProps) {
+function CTable({
+  loading = false,
+  rowData = [],
+  columnData = [],
+}: CTableProps) {
   return (
     <TableContainer>
       <Table variant="simple" size="sm">
@@ -41,11 +44,22 @@ function CTable({ loading = false, rowData = [], columnData = [] }: CTableProps)
             return (
               <Tr key={itemIndex}>
                 {columnData.map((column, columnIndex) => {
-                  const format = column?.format
-                  if(format){
-                    return <Td key={columnIndex}>{format(item[column.key])}</Td>;
-                  }
-                  return <Td key={columnIndex}>{item[column.key]}</Td>;
+                  // 欄位值
+                  const rawValue = item[column.key];
+                  // 是否需要format
+                  const content = column.format
+                    ? column.format(rawValue)
+                    : rawValue;
+                  // 動態樣式
+                  const style = column.getStyle
+                    ? column.getStyle(rawValue)
+                    : undefined;
+
+                  return (
+                    <Td key={columnIndex} style={style}>
+                      {content}
+                    </Td>
+                  );
                 })}
               </Tr>
             );

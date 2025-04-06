@@ -6,9 +6,6 @@ import { formatNumToFixed } from "@/utils";
 import worker from "@/workers";
 
 export default function Market() {
-    // console.log('Market');
-    
-
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
   const tableHeader = [
     {
@@ -19,37 +16,63 @@ export default function Market() {
     {
       label: "最新價",
       key: "askPrice",
-      format:(val:string)=>formatNumToFixed(val)
+      format: (val: string) => formatNumToFixed(val),
     },
     {
       label: "24h漲跌",
       key: "priceChangePercent",
-      format:(val:string)=>formatNumToFixed(val)
+      format: (val: string) => {
+        const isRise = Number(val) > 0;
+        const formatVal = formatNumToFixed(val);
+        return isRise ? `+${formatVal}%` : `${formatVal}%`;
+      },
+      getStyle: (val: string) => ({
+        color: Number(val) > 0 ? "green" : "red",
+      }),
     },
   ];
 
+  const handleTickerData = (
+    newData: Ticker24hrStat[],
+    oldData: Ticker24hrStat[]
+  ): Ticker24hrStat[] => {
+    return oldData.map((oldItem) => {
+      const newItem = newData.find((item) => item.symbol === oldItem.symbol);
+
+      if (newItem) {
+        return {
+          ...oldItem,
+          ...newItem,
+        };
+      }
+      return oldItem;
+    });
+  };
+
   useEffect(() => {
-    const getTickerBy24hr = async () => {
+    const getTickerBy24hrIn = async () => {
       const res = await $http.get("/ticker/24hr");
       const { status, data } = res;
 
-      if (status === 200) {        
+      if (status === 200) {
         setMarketData(data);
+
+        worker.postMessage({
+          type: "ticker",
+          url: "wss://stream.binance.com:9443/ws/!ticker@arr",
+        });
       }
     };
 
-    worker.postMessage({
-        type:'ticker',
-        url:'wss://stream.binance.com:9443/ws/!ticker@arr'
-    })
-
-    worker.onmessage = (response)=>{
-        const { type, data } = response;
-        setMarketData(data.data);
-    }
-
-    // getTickerBy24hr();
+    getTickerBy24hrIn();
   }, []);
+
+  worker.onmessage = (response) => {
+    const { type, data } = response.data;
+    if (type === "ticker" && marketData.length) {
+      setMarketData(handleTickerData(data, marketData));
+    }
+  };
 
   return (
     <div className="">
