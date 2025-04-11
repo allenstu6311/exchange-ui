@@ -1,9 +1,9 @@
-import $http from "@/api";
 import { Ticker24hrStat } from "@/types";
 import { useEffect, useState } from "react";
 import CTable from "@/components/table";
 import { formatNumToFixed } from "@/utils";
 import worker from "@/workers";
+import { getTickerBy24hr } from "@/api/service/exchange";
 
 export default function Market() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
@@ -51,17 +51,15 @@ export default function Market() {
 
   useEffect(() => {
     const getTickerBy24hrIn = async () => {
-      const res = await $http.get("/ticker/24hr");
-      const { status, data } = res;
+      const res = await getTickerBy24hr();
+      console.log("res", res);
 
-      if (status === 200) {
-        setMarketData(data);
+      setMarketData(res.data);
 
-        worker.postMessage({
-          type: "ticker",
-          url: "wss://stream.binance.com:9443/ws/!ticker@arr",
-        });
-      }
+      worker.postMessage({
+        type: "ticker",
+        url: "wss://stream.binance.com:9443/ws/!ticker@arr",
+      });
     };
 
     getTickerBy24hrIn();
