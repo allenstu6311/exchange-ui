@@ -34,17 +34,25 @@ self.onmessage = (e) => {
   const ws = new WebSocket(url);
   sockets[url] = ws;
 
-  ws.onopen = () => {
+  sockets[url].onopen = () => {
     // console.log('ws已連線');
   };
 
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    const tickerData = transformTickerData(data);
+  sockets[url].onmessage = (event) => {
+    let data = JSON.parse(event.data);
+    // console.log("type", type);
+    // console.log("data", data);
+
+    if (type === "ticker") {
+      data = transformTickerData(data);
+    }
+
+    if (type === "depth") {
+    }
 
     postMessage({
       type,
-      data: tickerData,
+      data,
       url,
     });
   };

@@ -1,5 +1,5 @@
 import { Ticker24hrStat } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CTable from "@/components/table";
 import { formatNumToFixed } from "@/utils";
 import worker from "@/workers";
@@ -7,6 +7,8 @@ import { getTickerBy24hr } from "@/api/service/exchange";
 
 export default function Market() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
+  const marketDataRef = useRef<any[]>([]);
+
   const tableHeader = [
     {
       label: "交易對",
@@ -52,8 +54,6 @@ export default function Market() {
   useEffect(() => {
     const getTickerBy24hrIn = async () => {
       const res = await getTickerBy24hr();
-      // console.log("res", res);
-
       setMarketData(res.data);
 
       worker.postMessage({
@@ -62,15 +62,21 @@ export default function Market() {
       });
     };
 
-    getTickerBy24hrIn();
-  }, []);
-
-  worker.onmessage = (response) => {
-    const { type, data } = response.data;
-    if (type === "ticker" && marketData.length) {
-      setMarketData(handleTickerData(data, marketData));
+    function handleWsTicker(response: MessageEvent) {
+      const { type, data } = response.data;
+      if (type === "ticker" && marketDataRef.current.length) {
+        setMarketData(handleTickerData(data, marketDataRef.current));
+      }
     }
-  };
+
+    getTickerBy24hrIn();
+    worker.addEventListener("message", handleWsTicker);
+
+    return () => worker.removeEventListener("message", handleWsTicker);
+  }, []);
+  useEffect(() => {
+    marketDataRef.current = marketData;
+  }, [marketData]);
 
   return (
     <div className="">

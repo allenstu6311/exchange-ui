@@ -25,11 +25,13 @@ const baseStyle = definePartsStyle({
 
 export const tableTheme = defineMultiStyleConfig({ baseStyle });
 
+// const handleAttribute = (value: string) => {}
+
 function CTable({
   loading = false,
   rowData = [],
   columnData = [],
-  rowStyle = {}
+  rowStyle = {},
 }: CTableProps) {
   return (
     <TableContainer>
@@ -47,21 +49,31 @@ function CTable({
               <Tr key={itemIndex} style={rowStyle}>
                 {columnData.map((column, columnIndex) => {
                   // 欄位值
-                  const rawValue = item[column.key];
+                  const rawValue = item[column.key]?.toString();
                   // 是否需要format
                   const content = column.format
-                    ? column.format(rawValue)
+                    ? column.format(rawValue, item)
                     : rawValue;
                   // 動態樣式
                   const style = column.getStyle
-                    ? column.getStyle(rawValue)
+                    ? column.getStyle(rawValue, item)
                     : undefined;
 
-                  return (
-                    <Td key={columnIndex} style={style}>
-                      {content}
-                    </Td>
-                  );
+                  // 動態className
+                  const className =
+                    typeof column.className === "function"
+                      ? column.className(rawValue, item)
+                      : column.className;
+
+                  if (column.render) {
+                    return column.render(content, item, columnIndex);
+                  } else {
+                    return (
+                      <Td key={columnIndex} style={style} className={className}>
+                        {content}
+                      </Td>
+                    );
+                  }
                 })}
               </Tr>
             );
