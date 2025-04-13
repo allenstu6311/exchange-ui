@@ -17,21 +17,13 @@ function Home() {
   const store = useDispatch<AppDispatch>();
   // console.log('store',store);
 
-  useEffect(() => {
-    const fetchDepth = async () => {
-      const res = await $http.get("/v3/depth?symbol=BTCUSDT");
-      console.log("res", res);
-    };
-    // fetchDepth()
-  }, []);
-
   return (
     <>
       <div className="w-full max-w-1524px mx-auto">
         <Grid
           templateAreas={`
     "header header header"
-    "Depth main Market"
+    "Depth TradeView Market"
     "Depth footer Market"
   `}
           gridTemplateColumns="21% 1fr 21%"
@@ -45,10 +37,10 @@ function Home() {
           <GridItem bg="orange.300" area={"header"}>
             <TradingPairHeader />
           </GridItem>
-          <GridItem bg="pink.300" area={"Depth"}>
+          <GridItem area={"Depth"}>
             <Depth />
           </GridItem>
-          <GridItem bg="green.300" area={"main"}>
+          <GridItem area={"TradeView"}>
             <TradeView />
           </GridItem>
           <GridItem bg="blue.300" area={"footer"}>

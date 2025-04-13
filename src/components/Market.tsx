@@ -52,7 +52,7 @@ export default function Market() {
   useEffect(() => {
     const getTickerBy24hrIn = async () => {
       const res = await getTickerBy24hr();
-      console.log("res", res);
+      // console.log("res", res);
 
       setMarketData(res.data);
 

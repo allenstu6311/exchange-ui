@@ -61,7 +61,8 @@ async function handleSuccessResponse(
       if (onSuccess) {
         onSuccess(data);
       } else {
-        alert(response.data.msg);
+        // 預設成功的動作
+        // alert(response.data.msg);
       }
       return { success: true, data };
     }
@@ -83,17 +84,8 @@ async function handleErrorResponse(
 }
 
 class HttpInstance {
-  /**重試次數 */
-  private retryCount: number = 0;
-
-  /**最大重複次數 */
-  private maxRetryCount = 3;
-
   /**請求實體 */
   public axiosInstance: AxiosInstance = axios.create(defauktConfig);
-
-  /**當前請求配置 */
-  private currRequestConfig: AxiosRequestConfig | null = null;
 
   private middlewares: Middleware<any>[] = [];
 
@@ -119,8 +111,6 @@ class HttpInstance {
   private httpInterceptorsRequest() {
     this.axiosInstance.interceptors.request.use(
       (config: CustomInternalAxiosRequestConfig) => {
-        this.currRequestConfig = config;
-
         const middleware = config?.meta?.middleware;
         if (middleware) {
           this.addMiddleware(middleware);
@@ -129,12 +119,6 @@ class HttpInstance {
         return config;
       },
       (error) => {
-        // 失敗時自動retry
-        if (this.retryCount < this.maxRetryCount) {
-          this.retryCount++;
-          return this.axiosInstance.request(this.currRequestConfig!);
-        }
-        this.retryCount = 0;
         return Promise.reject(error);
       }
     );
@@ -143,10 +127,24 @@ class HttpInstance {
   private httpInterceptorsResponse() {
     this.axiosInstance.interceptors.response.use(
       async (response) => {
-        this.retryCount = 0;
         return this.runMiddlewares(response.config, response);
       },
-      (error) => {
+      async (error) => {
+        const config = error.config
+        // 失敗時自動retry
+        const { retry: maxRetryCount } = config.meta;
+  
+        if (maxRetryCount > 0) {
+          config.retryCount = config.retryCount ?? 0;
+
+          if (config.retryCount < maxRetryCount) {
+            config.retryCount++;
+            // 請求延遲避免炸server
+            await new Promise((res) => setTimeout(res, 1500));
+            return this.axiosInstance.request(error.config);
+          }
+        }
+
         return handleErrorResponse(error.config, error.response);
       }
     );

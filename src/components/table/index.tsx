@@ -8,6 +8,7 @@ import {
   Td,
   TableCaption,
   TableContainer,
+  background,
 } from "@chakra-ui/react";
 import { CTableProps } from "@/types";
 import { tableAnatomy } from "@chakra-ui/anatomy";
@@ -28,6 +29,7 @@ function CTable({
   loading = false,
   rowData = [],
   columnData = [],
+  rowStyle = {}
 }: CTableProps) {
   return (
     <TableContainer>
@@ -42,7 +44,7 @@ function CTable({
         <Tbody>
           {rowData.map((item, itemIndex) => {
             return (
-              <Tr key={itemIndex}>
+              <Tr key={itemIndex} style={rowStyle}>
                 {columnData.map((column, columnIndex) => {
                   // 欄位值
                   const rawValue = item[column.key];

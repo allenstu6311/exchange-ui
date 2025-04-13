@@ -1,3 +1,4 @@
+
 export interface Ticker24hrStat {
   symbol: string; // 交易對，例如 "ETHBTC"
   priceChange: string; // 價格變化
@@ -33,4 +34,22 @@ export interface CTableProps {
   loading?: boolean;
   rowData: any[];
   columnData: TableColumns[];
+  rowStyle?: Record<string, string>
+}
+
+export interface KlineParam {
+  symbol: string,
+  interval: string
+}
+
+export interface DepthResponse {
+  asks: string[][],
+  bids: string[][],
+  lastUpdateId: number
+}
+
+export interface DepthTable {
+  price: string,
+  volume: string,
+  amount: number
 }
