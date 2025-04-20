@@ -1,7 +1,11 @@
+import { Ticker24hrStat, TickerSocketData } from "@/types";
+
 const sockets: Record<string, WebSocket> = {};
 
-function transformTickerData(raw: any) {
-  return raw.map((item) => {
+function transformTickerData(
+  raw: TickerSocketData[]
+): Partial<Ticker24hrStat>[] {
+  return raw.map((item: TickerSocketData) => {
     return {
       symbol: item.s,
       priceChange: item.p,
@@ -28,14 +32,12 @@ const postMessage = ({ type, data, url }: any) => {
 
 self.onmessage = (e) => {
   const { type, url } = e.data;
-
   if (sockets[url]) return;
-
   const ws = new WebSocket(url);
   sockets[url] = ws;
 
   sockets[url].onopen = () => {
-    // console.log('ws已連線');
+    // console.log("ws已連線");
   };
 
   sockets[url].onmessage = (event) => {
@@ -47,8 +49,7 @@ self.onmessage = (e) => {
       data = transformTickerData(data);
     }
 
-    if (type === "depth") {
-    }
+    // if (type === "depth") {}
 
     postMessage({
       type,

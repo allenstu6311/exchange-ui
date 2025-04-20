@@ -5,9 +5,11 @@ import { formatNumToFixed } from "@/utils";
 import { DepthResponse, DepthTable } from "@/types";
 import { Td } from "@chakra-ui/react";
 import worker from "@/workers";
+import { useSelector } from "react-redux";
+import { useDepthData } from "@/hook/Depth";
 
 export default function Depth() {
-  const tableHeader = [
+  const asksHeader = [
     {
       label: "價格 (USDT)",
       key: "price",
@@ -28,7 +30,7 @@ export default function Depth() {
       format: (val: string) => {
         return val?.slice(0, 9);
       },
-      render: (content: any, item: any, columnIndex: number) => {
+      render: (content: number, item: DepthTable, columnIndex: number) => {
         return (
           <Td key={columnIndex}>
             {content}
@@ -41,65 +43,61 @@ export default function Depth() {
       },
     },
   ];
-  const [askData, setAskData] = useState<DepthTable[]>([]);
-  const [bidsData, setBidsData] = useState([]);
+  const bidsHeader = [
+    {
+      label: "",
+      key: "price",
+      format: (val: string) => formatNumToFixed(val),
+      getStyle: (val: string) => ({
+        color: "green",
+      }),
+    },
+
+    {
+      label: "",
+      key: "volume",
+      format: (val: string) => formatNumToFixed(val, 5),
+    },
+    {
+      label: "",
+      key: "amount",
+      format: (val: string) => {
+        return val?.slice(0, 9);
+      },
+      render: (content: number, item: DepthTable, columnIndex: number) => {
+        return (
+          <Td key={columnIndex}>
+            {content}
+            <div
+              className={`absolute bg-green right-0 top-0 h-full opacity-40 transition-all duration-300`}
+              style={{ width: `${item.ratio}%` }}
+            ></div>
+          </Td>
+        );
+      },
+    },
+  ];
+  const { askData, bidsData } = useDepthData({ symbol: "btcusdt", deep: 20 });
   const [rowStyle, setRowStyle] = useState({});
-
-  function handleDepthData(depthData: string[][]): DepthTable[] {
-    const maxPrice = Math.max(
-      ...depthData
-        .map((row) => parseFloat(row[0]))
-        .filter((price) => !isNaN(price))
-    );
-
-    return depthData.map((item) => {
-      const amount = Number(item[0]) * Number(item[1]);
-      return {
-        price: item[0],
-        volume: item[1],
-        amount,
-        ratio: (amount / maxPrice) * 100,
-      };
-    });
-  }
+  const lastPrice = useSelector((state: any) => {
+    return state.currentSymbol.lastPrice;
+  });
 
   useEffect(() => {
-    const getDepthDataIn = async () => {
-      const res = await getDepthData();
-      const askData = handleDepthData(res.data.asks);
-      setAskData(askData.slice(0, 20));
-      setRowStyle({
-        position: " relative",
-      });
-
-      const symbol = "btcusdt";
-      const deep = "20";
-      worker.postMessage({
-        type: "depth",
-        url: `wss://stream.binance.com:9443/ws/${symbol}@depth${deep}@1000ms`,
-      });
-    };
-
-    function handleWsDepth(response: MessageEvent) {
-      if (response.data.type !== "depth") return;
-      const { asks, bids } = response.data?.data || {};
-      if (asks) {
-        setAskData(handleDepthData(asks));
-      }
-    }
-
-    getDepthDataIn();
-    worker.addEventListener("message", handleWsDepth);
-
-    return () => worker.removeEventListener("message", handleWsDepth);
+    setRowStyle({
+      position: " relative",
+    });
   }, []);
   return (
     <div className="">
       <div className="">
         <p>委託訂單</p>
       </div>
-
-      <CTable columnData={tableHeader} rowData={askData} rowStyle={rowStyle} />
+      <CTable columnData={asksHeader} rowData={askData} rowStyle={rowStyle} />
+      <div className="">
+        <p className="text-20px">{formatNumToFixed(lastPrice, 2)}</p>
+      </div>
+      <CTable columnData={bidsHeader} rowData={bidsData} rowStyle={rowStyle} />
     </div>
   );
 }

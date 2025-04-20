@@ -12,7 +12,7 @@ import Market from "@/components/Market";
 
 function Home() {
   const counter = useSelector((state: RootState) => {
-    // console.log('state', state);
+    // console.log("Home", state);
   });
   const store = useDispatch<AppDispatch>();
   // console.log('store',store);
@@ -26,7 +26,7 @@ function Home() {
     "Depth TradeView Market"
     "Depth footer Market"
   `}
-          gridTemplateColumns="21% 1fr 21%"
+          gridTemplateColumns="22% 1fr 21%"
           gridTemplateRows="150px 1fr 100px"
           gap="1"
           color="blackAlpha.700"

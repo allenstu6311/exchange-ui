@@ -1,14 +1,16 @@
     // Add the react-x and react-dom plugins
     'react-x': reactX,
     'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
+
+},
+rules: {
+// other rules...
+// Enable its recommended typescript rules
+...reactX.configs['recommended-typescript'].rules,
+...reactDom.configs.recommended.rules,
+},
 })
+
 ```
 
 
@@ -25,3 +27,6 @@ K線資料	/api/v3/klines?symbol=BTCUSDT&interval=1m	查 K 線
  /api/v3/ticker/24hr
 
 # errorMiddlewares
+
+#虛擬化列表
+```
