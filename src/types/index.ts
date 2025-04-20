@@ -1,3 +1,5 @@
+import { JSX } from "@emotion/react/jsx-runtime";
+
 export interface Ticker24hrStat {
   symbol: string; // 交易對，例如 "ETHBTC"
   priceChange: string; // 價格變化
@@ -25,10 +27,10 @@ export interface Ticker24hrStat {
 interface TableColumns {
   label: string;
   key: string;
-  format?: Function;
-  getStyle?: Function;
-  className?: string | Function;
-  render?: Function;
+  format?: (val: any, item?: any) => string;
+  getStyle?: (val: any, item: any) => { [style: string]: string };
+  className?: string | ((val: any, item: any) => string);
+  render?: (content: any, item: any, index: number) => JSX.Element;
 }
 
 export interface CTableProps {
@@ -86,3 +88,8 @@ export interface TickerSocketData {
   w: string;
   x: string;
 }
+
+export type WorkerRequest = {
+  type: "depth" | "ticker" | "kline";
+  url: string;
+};

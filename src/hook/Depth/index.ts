@@ -14,8 +14,8 @@ export function useDepthData({
   useEffect(() => {
     const getDepthDataIn = async () => {
       const res = await getDepthData();
-      const askData = handleDepthData(res.data.asks);
-      const bidsData = handleDepthData(res.data.bids);
+      const askData = handleDepthData(res.asks);
+      const bidsData = handleDepthData(res.bids);
 
       setAskData(askData.slice(0, 20));
       setBidsData(bidsData.slice(0, 20));
@@ -38,9 +38,9 @@ export function useDepthData({
     }
 
     getDepthDataIn();
-    worker.addEventListener("message", handleWsDepth);
+    worker.subscribe(handleWsDepth);
 
-    return () => worker.removeEventListener("message", handleWsDepth);
+    return () => worker.destroy(handleWsDepth);
   }, [symbol, deep]);
 
   return {

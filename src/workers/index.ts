@@ -1,3 +1,5 @@
+import { WorkerRequest } from "@/types";
+
 class WorkerClient {
   private worker: Worker;
 
@@ -8,25 +10,22 @@ class WorkerClient {
     );
   }
 
-  postMessage({ type, url }) {
-    worker.postMessage({
+  postMessage({ type, url }: WorkerRequest) {
+    this.worker.postMessage({
       type: type,
       url: url,
     });
   }
 
-  subscribe(fn: Function) {
+  subscribe(fn: (event: MessageEvent) => void) {
     this.worker.addEventListener("message", fn);
   }
 
-  destory(fn: Function) {
+  destroy(fn: (event: MessageEvent) => void) {
     this.worker.removeEventListener("message", fn);
   }
 }
 
-const worker = new Worker(
-  new URL("@/workers/socketWorker.ts", import.meta.url),
-  { type: "module" }
-);
+const worker = new WorkerClient();
 
 export default worker;
