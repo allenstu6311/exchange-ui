@@ -38,6 +38,7 @@ export interface CTableProps {
   rowData: any[];
   columnData: TableColumns[];
   rowStyle?: Record<string, string>;
+  trOnClick?: (item: any) => any;
 }
 
 export interface KlineParam {

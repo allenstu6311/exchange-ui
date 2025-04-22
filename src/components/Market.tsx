@@ -1,6 +1,9 @@
 import CTable from "@/components/table";
 import { formatNumToFixed } from "@/utils";
 import { useMarketData } from "@/hook/Market";
+import { Input } from "@chakra-ui/react";
+import { useDispatch } from "react-redux";
+import { AppDispatch, setSymbol } from "@/store";
 
 export default function Market() {
   const { marketData } = useMarketData();
@@ -23,15 +26,30 @@ export default function Market() {
         const formatVal = formatNumToFixed(val);
         return isRise ? `+${formatVal}%` : `${formatVal}%`;
       },
-      getStyle: (val: string) => ({
-        color: Number(val) > 0 ? "green" : "red",
-      }),
+      className: (val: string) => {
+        return Number(val) > 0 ? "text-fall" : "text-rise";
+      },
     },
   ];
+  const store = useDispatch<AppDispatch>();
 
   return (
     <div className="">
-      <CTable columnData={tableHeader} rowData={marketData} />
+      <div className="">
+        <Input placeholder="請輸入幣對名稱" />
+      </div>
+      <CTable
+        columnData={tableHeader}
+        rowData={marketData}
+        trOnClick={(item) => {
+          store(
+            setSymbol({
+              symbol: item.symbol.toLowerCase(),
+            })
+          );
+        }}
+        rowStyle={{ cursor: "pointer" }}
+      />
     </div>
   );
 }

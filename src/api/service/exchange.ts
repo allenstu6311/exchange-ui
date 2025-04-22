@@ -28,9 +28,10 @@ export async function getKlinesData(params: KlineParam) {
   return data;
 }
 
-export const getDepthData = async (): Promise<DepthResponse> => {
+export const getDepthData = async (params: any): Promise<DepthResponse> => {
+  const { symbol } = params;
   const res = await http.get({
-    url: `depth?symbol=BTCUSDT`,
+    url: `depth?symbol=${symbol}`,
   });
   return res.data;
 };

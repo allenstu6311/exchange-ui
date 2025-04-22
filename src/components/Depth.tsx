@@ -1,12 +1,11 @@
-import { getDepthData } from "@/api/service/exchange";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CTable from "./table";
 import { formatNumToFixed } from "@/utils";
-import { DepthResponse, DepthTable } from "@/types";
+import { DepthTable } from "@/types";
 import { Td } from "@chakra-ui/react";
-import worker from "@/workers";
-import { useSelector } from "react-redux";
-import { useDepthData } from "@/hook/Depth";
+import { useDispatch, useSelector } from "react-redux";
+import { useDepthData, usePriceDirection } from "@/hook/Depth";
+import { AppDispatch } from "@/store";
 
 export default function Depth() {
   const asksHeader = [
@@ -14,9 +13,7 @@ export default function Depth() {
       label: "價格 (USDT)",
       key: "price",
       format: (val: string) => formatNumToFixed(val),
-      getStyle: (val: string) => ({
-        color: "red",
-      }),
+      className: "text-rise",
     },
 
     {
@@ -35,7 +32,7 @@ export default function Depth() {
           <Td key={columnIndex}>
             {content}
             <div
-              className={`absolute bg-red right-0 top-0 h-full opacity-40 transition-all duration-300`}
+              className={`absolute bg-rise right-0 top-0 h-full opacity-40 transition-all duration-300`}
               style={{ width: `${item.ratio}%` }}
             ></div>
           </Td>
@@ -48,9 +45,7 @@ export default function Depth() {
       label: "",
       key: "price",
       format: (val: string) => formatNumToFixed(val),
-      getStyle: (val: string) => ({
-        color: "green",
-      }),
+      className: "text-fall",
     },
 
     {
@@ -69,7 +64,7 @@ export default function Depth() {
           <Td key={columnIndex}>
             {content}
             <div
-              className={`absolute bg-green right-0 top-0 h-full opacity-40 transition-all duration-300`}
+              className={`absolute bg-fall right-0 top-0 h-full opacity-40 transition-all duration-300`}
               style={{ width: `${item.ratio}%` }}
             ></div>
           </Td>
@@ -77,11 +72,24 @@ export default function Depth() {
       },
     },
   ];
-  const { askData, bidsData } = useDepthData({ symbol: "btcusdt", deep: 20 });
-  const [rowStyle, setRowStyle] = useState({});
-  const lastPrice = useSelector((state: any) => {
-    return state.currentSymbol.lastPrice;
+
+  const currentSymbol = useSelector((state: any) => {
+    return state.currentSymbol.symbol || {};
   });
+
+  const currentMarketData = useSelector((state: any) => {
+    return state.currentSymbol.marketData || {};
+  });
+
+  const { askData, bidsData } = useDepthData({
+    symbol: currentSymbol,
+    deep: 20,
+  });
+  const [rowStyle, setRowStyle] = useState({});
+
+  const direction = usePriceDirection(currentMarketData.lastPrice);
+  const arrow = direction === "up" ? "▲" : direction === "down" ? "▼" : "-";
+  const lasPriceStyle = direction === "up" ? "color-rise" : "text-fall";
 
   useEffect(() => {
     setRowStyle({
@@ -94,8 +102,9 @@ export default function Depth() {
         <p>委託訂單</p>
       </div>
       <CTable columnData={asksHeader} rowData={askData} rowStyle={rowStyle} />
-      <div className="">
-        <p className="text-20px">{formatNumToFixed(lastPrice, 2)}</p>
+      <div className={`text-20px flex items-center gap-5px ${lasPriceStyle}`}>
+        <p>{formatNumToFixed(currentMarketData.lastPrice, 2)}</p>
+        <p> {arrow}</p>
       </div>
       <CTable columnData={bidsHeader} rowData={bidsData} rowStyle={rowStyle} />
     </div>

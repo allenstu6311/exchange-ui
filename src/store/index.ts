@@ -1,3 +1,4 @@
+import { Ticker24hrStat } from "@/types";
 import { createSlice, configureStore } from "@reduxjs/toolkit";
 
 const counterSlice = createSlice({
@@ -22,9 +23,10 @@ const counterSlice = createSlice({
 const currentSymbol = createSlice({
   name: "symbol",
   initialState: {
-    symbol: "BTCUSDT",
+    symbol: "btcusdt",
     lastPrice: 0,
     prevClosePrice: 0, // 判斷漲跌
+    marketData: {} as Ticker24hrStat,
   },
   reducers: {
     setSymbol: (state, action) => {
@@ -32,6 +34,9 @@ const currentSymbol = createSlice({
     },
     setLastPrice: (state, action) => {
       state.lastPrice = action.payload.lastPrice;
+    },
+    setCurrMarketData: (state, action) => {
+      state.marketData = action.payload.marketData;
     },
   },
 });
@@ -46,6 +51,7 @@ const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-export const { setSymbol, setLastPrice } = currentSymbol.actions;
+export const { setSymbol, setLastPrice, setCurrMarketData } =
+  currentSymbol.actions;
 
 export default store;

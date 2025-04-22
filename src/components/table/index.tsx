@@ -32,6 +32,7 @@ function CTable({
   rowData = [],
   columnData = [],
   rowStyle = {},
+  trOnClick = () => {},
 }: CTableProps) {
   return (
     <TableContainer>
@@ -46,7 +47,11 @@ function CTable({
         <Tbody>
           {rowData.map((item, itemIndex) => {
             return (
-              <Tr key={itemIndex} style={rowStyle}>
+              <Tr
+                key={itemIndex}
+                style={rowStyle}
+                onClick={() => trOnClick(item)}
+              >
                 {columnData.map((column, columnIndex) => {
                   // 欄位值
                   const rawValue = item[column.key]?.toString();

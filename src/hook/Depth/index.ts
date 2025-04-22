@@ -1,5 +1,5 @@
 import { DepthTable, UseDepthDataParam } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getDepthData } from "@/api/service/exchange";
 import { handleDepthData } from "./utils";
 import worker from "@/workers";
@@ -13,7 +13,7 @@ export function useDepthData({
 
   useEffect(() => {
     const getDepthDataIn = async () => {
-      const res = await getDepthData();
+      const res = await getDepthData({ symbol: symbol.toUpperCase() });
       const askData = handleDepthData(res.asks);
       const bidsData = handleDepthData(res.bids);
 
@@ -29,6 +29,7 @@ export function useDepthData({
     function handleWsDepth(response: MessageEvent) {
       if (response.data.type !== "depth") return;
       const { asks, bids } = response.data?.data || {};
+
       if (asks) {
         setAskData(handleDepthData(asks));
       }
@@ -47,4 +48,28 @@ export function useDepthData({
     askData,
     bidsData,
   };
+}
+
+export function usePriceDirection(lastPrice: string) {
+  const prevPrice = useRef<number | null>(null);
+  const [direction, setDirection] = useState<"up" | "down" | "same">("same");
+
+  useEffect(() => {
+    const current = Number(lastPrice);
+    const previous = prevPrice.current;
+
+    if (previous !== null) {
+      if (current > previous) {
+        setDirection("up");
+      } else if (current < previous) {
+        setDirection("down");
+      } else {
+        setDirection("same");
+      }
+    }
+
+    prevPrice.current = current;
+  }, [lastPrice]);
+
+  return direction; // 在元件內做判斷顏色與箭頭
 }

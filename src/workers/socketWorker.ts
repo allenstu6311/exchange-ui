@@ -5,21 +5,23 @@ const sockets: Record<string, WebSocket> = {};
 function transformTickerData(
   raw: TickerSocketData[]
 ): Partial<Ticker24hrStat>[] {
-  return raw.map((item: TickerSocketData) => {
-    return {
-      symbol: item.s,
-      priceChange: item.p,
-      priceChangePercent: item.P,
-      lastPrice: item.c,
-      bidPrice: item.b,
-      askPrice: item.a,
-      highPrice: item.h,
-      lowPrice: item.l,
-      volume: item.v,
-      quoteVolume: item.q,
-      time: item.E,
-    };
-  });
+  return raw
+    .map((item: TickerSocketData) => {
+      return {
+        symbol: item.s,
+        priceChange: item.p,
+        priceChangePercent: item.P,
+        lastPrice: item.c,
+        bidPrice: item.b,
+        askPrice: item.a,
+        highPrice: item.h,
+        lowPrice: item.l,
+        volume: item.v,
+        quoteVolume: item.q,
+        time: item.E,
+      };
+    })
+    .filter((item) => item.symbol.endsWith("USDT"));
 }
 
 const postMessage = ({ type, data, url }: any) => {
@@ -32,15 +34,19 @@ const postMessage = ({ type, data, url }: any) => {
 
 self.onmessage = (e) => {
   const { type, url } = e.data;
-  if (sockets[url]) return;
-  const ws = new WebSocket(url);
-  sockets[url] = ws;
 
-  sockets[url].onopen = () => {
+  if (sockets[type]) {
+    sockets[type].close();
+  }
+
+  const ws = new WebSocket(url);
+  sockets[type] = ws;
+
+  sockets[type].onopen = () => {
     // console.log("ws已連線");
   };
 
-  sockets[url].onmessage = (event) => {
+  sockets[type].onmessage = (event) => {
     let data = JSON.parse(event.data);
     // console.log("type", type);
     // console.log("data", data);

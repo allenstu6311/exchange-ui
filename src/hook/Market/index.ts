@@ -4,7 +4,7 @@ import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
 import { handleTickerData } from "./utils";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, setLastPrice } from "@/store";
+import { AppDispatch, setLastPrice, setCurrMarketData } from "@/store";
 
 export function useMarketData() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
@@ -13,17 +13,16 @@ export function useMarketData() {
     return state.currentSymbol.symbol;
   });
   const store = useDispatch<AppDispatch>();
-
-  const getLastPrice = useCallback(
+  const setImmediateMarketData = useCallback(
     (data: Ticker24hrStat[]) => {
       const targetSymbol = data.find(
-        (item: Ticker24hrStat) => item.symbol === currentSymbol
+        (item: Ticker24hrStat) => item.symbol === currentSymbol.toUpperCase()
       );
 
       if (targetSymbol) {
         store(
-          setLastPrice({
-            lastPrice: targetSymbol.lastPrice,
+          setCurrMarketData({
+            marketData: targetSymbol,
           })
         );
       }
@@ -34,8 +33,8 @@ export function useMarketData() {
   useEffect(() => {
     const getTickerBy24hrIn = async () => {
       const res = await getTickerBy24hr();
-      setMarketData(res);
-      getLastPrice(res);
+      setMarketData(res.filter((item) => item.symbol.endsWith("USDT")));
+      setImmediateMarketData(res);
 
       worker.postMessage({
         type: "ticker",
@@ -48,7 +47,7 @@ export function useMarketData() {
 
       if (type === "ticker") {
         setMarketData((prev) => handleTickerData(data, prev));
-        getLastPrice(data);
+        setImmediateMarketData(data);
       }
     }
 
@@ -56,7 +55,7 @@ export function useMarketData() {
     worker.subscribe(handleWsTicker);
 
     return () => worker.destroy(handleWsTicker);
-  }, [getLastPrice]);
+  }, [setImmediateMarketData]);
 
   return { marketData };
 }
