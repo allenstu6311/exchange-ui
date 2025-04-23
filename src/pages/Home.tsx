@@ -1,7 +1,3 @@
-import $http from "@/api";
-import { AppDispatch, RootState } from "@/store";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Grid, GridItem } from "@chakra-ui/react";
 import TradingPairHeader from "@/components/TradingPairHeader";
 import Depth from "@/components/Depth";
@@ -9,44 +5,62 @@ import TradeView from "@/components/TradeView";
 import TradeForm from "@/components/TradeForm";
 import "@/App.css";
 import Market from "@/components/Market";
+import { useEffect } from "react";
+import { getSymbolMetaMap } from "@/api/service/exchange";
+import { useDispatch } from "react-redux";
+import { AppDispatch, setExchangeSymbolMeta } from "@/store";
 
 function Home() {
-  const counter = useSelector((state: RootState) => {
-    // console.log("Home", state);
-  });
   const store = useDispatch<AppDispatch>();
-  // console.log('store',store);
+  useEffect(() => {
+    const getSymbolMetaMapIn = async () => {
+      const exchangeInfo = await getSymbolMetaMap();
+      if (exchangeInfo) {
+        const { symbols } = exchangeInfo;
+        store(setExchangeSymbolMeta({ exchangeSymbolMeta: symbols }));
+      }
+    };
+
+    getSymbolMetaMapIn();
+  }, [store]);
 
   return (
     <>
-      <div className="w-full max-w-1524px mx-auto">
+      <div className="w-full max-w-1600px mx-auto">
         <Grid
           templateAreas={`
-    "header header header"
+    "header header Market"
     "Depth TradeView Market"
     "Depth footer Market"
   `}
-          gridTemplateColumns="22% 1fr 21%"
-          gridTemplateRows="150px 1fr 100px"
+          gridTemplateColumns="20% 1fr 20%"
+          gridTemplateRows="50px 1fr 100px"
           gap="1"
           color="blackAlpha.700"
           fontWeight="bold"
           w="100%"
           h="100vh"
         >
-          <GridItem bg="orange.300" area={"header"}>
+          <GridItem area={"header"} className="bg-#FFFF rd-10px">
             <TradingPairHeader />
           </GridItem>
-          <GridItem area={"Depth"}>
+          <GridItem area={"Depth"} className="bg-#FFFF rd-10px">
             <Depth />
           </GridItem>
-          <GridItem area={"TradeView"}>
+          <GridItem
+            area={"TradeView"}
+            className="bg-#FFFF rd-10px overflow-hidden"
+          >
             <TradeView />
           </GridItem>
           <GridItem bg="blue.300" area={"footer"}>
             <TradeForm />
           </GridItem>
-          <GridItem area={"Market"} overflowY={"scroll"}>
+          <GridItem
+            area={"Market"}
+            overflowY={"scroll"}
+            className="bg-#FFFF rd-10px"
+          >
             <Market />
           </GridItem>
         </Grid>

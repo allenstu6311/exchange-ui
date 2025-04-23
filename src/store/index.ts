@@ -1,3 +1,4 @@
+import { CurrentSymbolState, ExchangeSymbolMeta } from "./../types/index";
 import { Ticker24hrStat } from "@/types";
 import { createSlice, configureStore } from "@reduxjs/toolkit";
 
@@ -20,23 +21,30 @@ const counterSlice = createSlice({
   },
 });
 
+const initialState: CurrentSymbolState = {
+  symbol: "btcusdt",
+  upperSymbol: "BTCUSDT",
+  prettySymbol: "BTC/USDT",
+  marketData: {} as Ticker24hrStat,
+  exchangeSymbolMeta: [],
+};
+
 const currentSymbol = createSlice({
   name: "symbol",
-  initialState: {
-    symbol: "btcusdt",
-    lastPrice: 0,
-    prevClosePrice: 0, // 判斷漲跌
-    marketData: {} as Ticker24hrStat,
-  },
+  initialState,
   reducers: {
     setSymbol: (state, action) => {
       state.symbol = action.payload.symbol;
+      state.upperSymbol = action.payload.symbol.toUpperCase();
     },
-    setLastPrice: (state, action) => {
-      state.lastPrice = action.payload.lastPrice;
+    setPrettySymbol: (state, action) => {
+      state.prettySymbol = action.payload.prettySymbol;
     },
     setCurrMarketData: (state, action) => {
       state.marketData = action.payload.marketData;
+    },
+    setExchangeSymbolMeta: (state, action) => {
+      state.exchangeSymbolMeta = action.payload.exchangeSymbolMeta;
     },
   },
 });
@@ -51,7 +59,11 @@ const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-export const { setSymbol, setLastPrice, setCurrMarketData } =
-  currentSymbol.actions;
+export const {
+  setSymbol,
+  setCurrMarketData,
+  setExchangeSymbolMeta,
+  setPrettySymbol,
+} = currentSymbol.actions;
 
 export default store;

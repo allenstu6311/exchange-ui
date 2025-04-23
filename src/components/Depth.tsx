@@ -74,7 +74,7 @@ export default function Depth() {
   ];
 
   const currentSymbol = useSelector((state: any) => {
-    return state.currentSymbol.symbol || {};
+    return state.currentSymbol.symbol ?? "";
   });
 
   const currentMarketData = useSelector((state: any) => {
@@ -97,12 +97,14 @@ export default function Depth() {
     });
   }, []);
   return (
-    <div className="">
-      <div className="">
-        <p>委託訂單</p>
+    <div className="bg-#FFF">
+      <div className="px-16px py-8px  mb-8px border-b-1px border-solid ">
+        <p className="text-14px">委託訂單</p>
       </div>
       <CTable columnData={asksHeader} rowData={askData} rowStyle={rowStyle} />
-      <div className={`text-20px flex items-center gap-5px ${lasPriceStyle}`}>
+      <div
+        className={`text-20px flex items-center gap-5px px-16px py-8px ${lasPriceStyle}`}
+      >
         <p>{formatNumToFixed(currentMarketData.lastPrice, 2)}</p>
         <p> {arrow}</p>
       </div>

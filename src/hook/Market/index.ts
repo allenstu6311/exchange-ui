@@ -4,7 +4,7 @@ import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
 import { handleTickerData } from "./utils";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, setLastPrice, setCurrMarketData } from "@/store";
+import { AppDispatch, setCurrMarketData } from "@/store";
 
 export function useMarketData() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
@@ -13,6 +13,7 @@ export function useMarketData() {
     return state.currentSymbol.symbol;
   });
   const store = useDispatch<AppDispatch>();
+  // 設定即時的市場資料
   const setImmediateMarketData = useCallback(
     (data: Ticker24hrStat[]) => {
       const targetSymbol = data.find(

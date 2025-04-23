@@ -1,7 +1,3 @@
-import { formatNumToFixed } from "./format";
+import { formatNumToFixed, thousandComma, formatNumWithComma } from "./format";
 
-
-
-export {
-    formatNumToFixed
-}
+export { formatNumToFixed, thousandComma, formatNumWithComma };

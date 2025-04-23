@@ -1,6 +1,12 @@
-*{
+* {
     list-style: none;
 }
-#root{
+
+#root {
     width: 100%;
+}
+
+html,
+body {
+    background-color: #F5F5F5 !important;
 }

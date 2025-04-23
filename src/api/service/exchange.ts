@@ -1,5 +1,18 @@
 import http from "@/api";
-import { DepthResponse, KlineParam, Ticker24hrStat } from "@/types";
+import {
+  DepthResponse,
+  ExchangeInfoResponse,
+  ExchangeSymbolMeta,
+  KlineParam,
+  Ticker24hrStat,
+} from "@/types";
+
+export const getSymbolMetaMap = async (): Promise<ExchangeInfoResponse> => {
+  const res = await http.get({
+    url: "/exchangeInfo",
+  });
+  return res.data;
+};
 
 export const getTickerBy24hr = async (): Promise<Ticker24hrStat[]> => {
   const res = await http.get({
