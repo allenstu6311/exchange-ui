@@ -26,25 +26,42 @@ function Home() {
 
   return (
     <>
-      <div className="w-full max-w-1600px mx-auto">
+      <div className="w-full max-w-1800px mx-auto">
         <Grid
           templateAreas={`
-    "header header Market"
-    "Depth TradeView Market"
-    "Depth footer Market"
-  `}
-          gridTemplateColumns="20% 1fr 20%"
-          gridTemplateRows="50px 1fr 100px"
+"left header header Market right"
+"left Depth TradeView Market right"
+"left Depth TradeForm Market right"
+"left OrderList OrderList OrderList right"
+"footer footer footer footer footer "
+`}
+          gridTemplateColumns={`
+            1fr 
+            minmax(253px, 320px) 
+            minmax(510px, 880px) 
+            minmax(253px, 320px) 
+            1fr
+          `}
+          gridTemplateRows={`    
+            56px 
+            minmax(500px, 1fr) 
+            minmax(320px, 500px) 
+            320px
+            24px`}
           gap="1"
           color="blackAlpha.700"
           fontWeight="bold"
           w="100%"
-          h="100vh"
+          maxH="1600px"
         >
           <GridItem area={"header"} className="bg-#FFFF rd-10px">
             <TradingPairHeader />
           </GridItem>
-          <GridItem area={"Depth"} className="bg-#FFFF rd-10px">
+          <GridItem
+            area={"Depth"}
+            className="bg-#FFFF rd-10px"
+            overflowY={"auto"}
+          >
             <Depth />
           </GridItem>
           <GridItem
@@ -53,12 +70,15 @@ function Home() {
           >
             <TradeView />
           </GridItem>
-          <GridItem bg="blue.300" area={"footer"}>
+          <GridItem bg="blue.300" area={"TradeForm"}>
             <TradeForm />
+          </GridItem>
+          <GridItem area={"OrderList"} className="bg-#FFFF rd-10px">
+            <div className="">OrderList</div>
           </GridItem>
           <GridItem
             area={"Market"}
-            overflowY={"scroll"}
+            overflowY={"auto"}
             className="bg-#FFFF rd-10px"
           >
             <Market />
