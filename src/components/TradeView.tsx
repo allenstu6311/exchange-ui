@@ -1,10 +1,11 @@
 // TradingViewWidget.jsx
+import { RootState } from "@/store";
 import React, { useEffect, useRef, memo, useState } from "react";
 import { useSelector } from "react-redux";
 
 function TradingViewWidget() {
-  const currentSymbol = useSelector((state: any) => {
-    return state.currentSymbol.upperSymbol;
+  const slashSymbol = useSelector((state: RootState) => {
+    return state.symbolNameMap.slashSymbol;
   });
 
   const container = useRef<HTMLDivElement>(null);
@@ -24,7 +25,7 @@ function TradingViewWidget() {
       script.innerHTML = `
             {
               "autosize": true,
-              "symbol": "${currentSymbol}",
+              "symbol": "${slashSymbol}",
               "interval": "D",
               "timezone": "Etc/UTC",
               "theme": "light",
@@ -37,10 +38,10 @@ function TradingViewWidget() {
       container.current.appendChild(script);
     };
 
-    if (currentSymbol) {
+    if (slashSymbol) {
       createTradeView();
     }
-  }, [currentSymbol]);
+  }, [slashSymbol]);
 
   return (
     <div

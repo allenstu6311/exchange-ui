@@ -8,21 +8,21 @@ import Market from "@/components/Market";
 import { useEffect } from "react";
 import { getSymbolMetaMap } from "@/api/service/exchange";
 import { useDispatch } from "react-redux";
-import { AppDispatch, setExchangeSymbolMeta } from "@/store";
+import { AppDispatch, setExchangeSymbolMeta, setSymbolInfoList } from "@/store";
 
 function Home() {
-  const store = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     const getSymbolMetaMapIn = async () => {
       const exchangeInfo = await getSymbolMetaMap();
       if (exchangeInfo) {
         const { symbols } = exchangeInfo;
-        store(setExchangeSymbolMeta({ exchangeSymbolMeta: symbols }));
+        dispatch(setSymbolInfoList(symbols));
       }
     };
 
     getSymbolMetaMapIn();
-  }, [store]);
+  }, [dispatch]);
 
   return (
     <>

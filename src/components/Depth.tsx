@@ -5,7 +5,7 @@ import { DepthTable } from "@/types";
 import { Td } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useDepthData, usePriceDirection } from "@/hook/Depth";
-import { AppDispatch } from "@/store";
+import { AppDispatch, RootState } from "@/store";
 
 export default function Depth() {
   const asksHeader = [
@@ -73,16 +73,16 @@ export default function Depth() {
     },
   ];
 
-  const currentSymbol = useSelector((state: any) => {
-    return state.currentSymbol.symbol ?? "";
+  const lowercaseSymbol = useSelector((state: RootState) => {
+    return state.symbolNameMap.lowercaseSymbol;
   });
 
-  const currentMarketData = useSelector((state: any) => {
+  const currentMarketData = useSelector((state: RootState) => {
     return state.currentSymbol.marketData || {};
   });
 
   const { askData, bidsData } = useDepthData({
-    symbol: currentSymbol,
+    symbol: lowercaseSymbol,
     deep: 20,
   });
   const [rowStyle, setRowStyle] = useState({});

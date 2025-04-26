@@ -2,7 +2,7 @@ import http from "@/api";
 import {
   DepthResponse,
   ExchangeInfoResponse,
-  ExchangeSymbolMeta,
+  SymbolInfoListTypes,
   KlineParam,
   Ticker24hrStat,
 } from "@/types";

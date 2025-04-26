@@ -4,20 +4,20 @@ import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
 import { handleTickerData } from "./utils";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, setCurrMarketData } from "@/store";
+import { AppDispatch, RootState, setCurrMarketData } from "@/store";
 
 export function useMarketData() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
 
-  const currentSymbol = useSelector((state: any) => {
-    return state.currentSymbol.symbol;
+  const uppercaseSymbol = useSelector((state: RootState) => {
+    return state.symbolNameMap.uppercaseSymbol;
   });
   const store = useDispatch<AppDispatch>();
-  // 設定即時的市場資料
-  const setImmediateMarketData = useCallback(
+  // 設定當前幣對的即時價格
+  const setImmediateSymbolTicker = useCallback(
     (data: Ticker24hrStat[]) => {
       const targetSymbol = data.find(
-        (item: Ticker24hrStat) => item.symbol === currentSymbol.toUpperCase()
+        (item: Ticker24hrStat) => item.symbol === uppercaseSymbol
       );
 
       if (targetSymbol) {
@@ -28,14 +28,14 @@ export function useMarketData() {
         );
       }
     },
-    [currentSymbol, store]
+    [uppercaseSymbol, store]
   );
 
   useEffect(() => {
     const getTickerBy24hrIn = async () => {
       const res = await getTickerBy24hr();
       setMarketData(res.filter((item) => item.symbol.endsWith("USDT")));
-      setImmediateMarketData(res);
+      setImmediateSymbolTicker(res);
 
       worker.postMessage({
         type: "ticker",
@@ -48,7 +48,7 @@ export function useMarketData() {
 
       if (type === "ticker") {
         setMarketData((prev) => handleTickerData(data, prev));
-        setImmediateMarketData(data);
+        setImmediateSymbolTicker(data);
       }
     }
 
@@ -56,7 +56,7 @@ export function useMarketData() {
     worker.subscribe(handleWsTicker);
 
     return () => worker.destroy(handleWsTicker);
-  }, [setImmediateMarketData]);
+  }, [setImmediateSymbolTicker]);
 
   return { marketData };
 }

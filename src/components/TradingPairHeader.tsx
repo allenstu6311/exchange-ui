@@ -1,14 +1,15 @@
 import { Ticker24hrStat } from "@/types";
 import { formatNumWithComma, formatNumToFixed } from "@/utils";
+import { RootState } from "@/store";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export default function TradingPairHeader() {
-  const currentSymbol = useSelector((state: any) => {
-    return state.currentSymbol.prettySymbol;
+  const slashSymbol = useSelector((state: RootState) => {
+    return state.symbolNameMap.slashSymbol;
   });
 
-  const currentMarketData: Ticker24hrStat = useSelector((state: any) => {
+  const currentMarketData: Ticker24hrStat = useSelector((state: RootState) => {
     return state.currentSymbol.marketData;
   });
 
@@ -25,7 +26,7 @@ export default function TradingPairHeader() {
 
   const headerData = [
     {
-      title: currentSymbol,
+      title: slashSymbol,
       content: "Bitcoin",
       titleClass: "text-20px",
     },

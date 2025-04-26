@@ -3,14 +3,18 @@ import { formatNumToFixed } from "@/utils";
 import { useMarketData } from "@/hook/Market";
 import { Input } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, setPrettySymbol, setSymbol } from "@/store";
-import { symbol } from "framer-motion/client";
-import { ExchangeSymbolMeta } from "@/types";
+import { AppDispatch, RootState } from "@/store";
+import { SymbolInfoListTypes } from "@/types";
+import { setSymbolName } from "@/store";
+import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 
 export default function Market() {
-  const exchangeSymbolMeta: ExchangeSymbolMeta[] = useSelector((state: any) => {
-    return state.currentSymbol.exchangeSymbolMeta;
-  });
+  const symbolInfoList: SymbolInfoListTypes[] = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.list;
+    }
+  );
+  // console.log("symbolInfoList", symbolInfoList);
 
   const { marketData } = useMarketData();
   const tableHeader = [
@@ -39,20 +43,6 @@ export default function Market() {
   ];
   const dispatch = useDispatch<AppDispatch>();
 
-  const generatePrettySymbol = (symbol: string) => {
-    const upperSymbol = symbol.toUpperCase();
-    const currentSymbolInfo = exchangeSymbolMeta.find(
-      (item) => item.symbol === upperSymbol
-    );
-
-    if (currentSymbolInfo) {
-      const { baseAsset, quoteAsset } = currentSymbolInfo;
-      return `${baseAsset}/${quoteAsset}`;
-    }
-
-    return "";
-  };
-
   return (
     <div className="">
       <div className="p-8px">
@@ -63,14 +53,7 @@ export default function Market() {
         rowData={marketData}
         trOnClick={(item) => {
           dispatch(
-            setSymbol({
-              symbol: item.symbol.toLowerCase(),
-            })
-          );
-          dispatch(
-            setPrettySymbol({
-              prettySymbol: generatePrettySymbol(item.symbol),
-            })
+            setSymbolName(getCurrentSymbolInfo(item.symbol, symbolInfoList))
           );
         }}
         rowStyle={{ cursor: "pointer" }}

@@ -1,4 +1,5 @@
-import { Ticker24hrStat } from "@/types";
+import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
+import { symbol } from "framer-motion/client";
 
 export const handleTickerData = (
   newData: Ticker24hrStat[],
@@ -15,4 +16,14 @@ export const handleTickerData = (
     }
     return oldItem;
   });
+};
+
+export const getCurrentSymbolInfo = (
+  symbolName: string,
+  symbolInfoList: SymbolInfoListTypes[]
+): SymbolInfoListTypes | undefined => {
+  const currentSymbol = symbolInfoList.find(
+    (item) => item.symbol === symbolName
+  );
+  return currentSymbol;
 };

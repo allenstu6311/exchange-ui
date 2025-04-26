@@ -118,13 +118,13 @@ export interface ExchangeInfoResponse {
   /**
    * 所有交易對的設定清單
    */
-  symbols: ExchangeSymbolMeta[];
+  symbols: SymbolInfoListTypes[];
 }
 
 /**
  * Binance 單一交易對的詳細交易設定資訊
  */
-export interface ExchangeSymbolMeta {
+export interface SymbolInfoListTypes {
   /** 交易對代碼（例如：BTCUSDT） */
   symbol: string;
 
@@ -196,9 +196,21 @@ export interface ExchangeSymbolMeta {
 }
 
 export interface CurrentSymbolState {
-  symbol: string;
-  upperSymbol: string;
-  prettySymbol: string;
   marketData: Ticker24hrStat;
-  exchangeSymbolMeta: ExchangeSymbolMeta[];
+  exchangeSymbolMeta: SymbolInfoListTypes[];
+}
+
+export interface SymbolInfoListState {
+  list: SymbolInfoListTypes[];
+}
+
+export interface SymbolNameMapType {
+  base: string;
+  quote: string;
+  lowercaseSymbol: string;
+  uppercaseSymbol: string;
+  /**
+   * BTC/USDT
+   */
+  slashSymbol: string;
 }
