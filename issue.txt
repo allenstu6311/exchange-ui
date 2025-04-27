@@ -6,3 +6,4 @@ tradeForm開發
 2.市場查詢功能
 4.Table組件拆成兩個table支援滾動
 5.WebSocket封裝
+6.endsWith("USDT")

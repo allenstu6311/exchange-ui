@@ -16,12 +16,12 @@ export function useMarketData() {
   // 設定當前幣對的即時價格
   const setImmediateSymbolTicker = useCallback(
     (data: Ticker24hrStat[]) => {
-      const targetSymbol = data.find(
+      const targetSymbolTicker = data.find(
         (item: Ticker24hrStat) => item.symbol === uppercaseSymbol
       );
 
-      if (targetSymbol) {
-        dispatch(setTicker24hData(targetSymbol));
+      if (targetSymbolTicker) {
+        dispatch(setTicker24hData(targetSymbolTicker));
       }
     },
     [uppercaseSymbol, dispatch]

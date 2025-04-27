@@ -1,5 +1,4 @@
 import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
-import { symbol } from "framer-motion/client";
 
 export const handleTickerData = (
   newData: Ticker24hrStat[],

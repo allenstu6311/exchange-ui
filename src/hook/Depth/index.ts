@@ -14,11 +14,11 @@ export function useDepthData({
   useEffect(() => {
     const getDepthDataIn = async () => {
       const res = await getDepthData({ symbol: symbol.toUpperCase() });
-      const askData = handleDepthData(res.asks);
+      const askData = handleDepthData(res.asks.reverse());
       const bidsData = handleDepthData(res.bids);
 
-      setAskData(askData.slice(0, 20));
-      setBidsData(bidsData.slice(0, 20));
+      setAskData(askData.reverse());
+      setBidsData(bidsData);
 
       worker.postMessage({
         type: "depth",
@@ -31,7 +31,7 @@ export function useDepthData({
       const { asks, bids } = response.data?.data || {};
 
       if (asks) {
-        setAskData(handleDepthData(asks));
+        setAskData(handleDepthData(asks).reverse());
       }
       if (asks) {
         setBidsData(handleDepthData(bids));

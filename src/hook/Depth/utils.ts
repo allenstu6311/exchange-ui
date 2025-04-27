@@ -20,8 +20,10 @@ export function handleDepthData(depthData: string[][]): DepthTable[] {
   );
 
   // 最後加上 ratio
-  return rowsWithAmount.map((row) => ({
-    ...row,
-    ratio: maxAmount > 0 ? (row.amount / maxAmount) * 100 : 0,
-  }));
+  return rowsWithAmount
+    .map((row) => ({
+      ...row,
+      ratio: maxAmount > 0 ? (row.amount / maxAmount) * 100 : 0,
+    }))
+    .slice(0, 17);
 }
