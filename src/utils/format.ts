@@ -8,7 +8,12 @@ export function formatNumToFixed(
 }
 
 export function thousandComma(num: number | string): string {
-  return Number(num)?.toLocaleString() ?? "--";
+  return (
+    Number(num)?.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) ?? "--"
+  );
 }
 
 export function formatNumWithComma(num: number | string, digits = 2): string {

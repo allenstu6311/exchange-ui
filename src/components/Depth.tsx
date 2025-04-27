@@ -78,7 +78,7 @@ export default function Depth() {
   });
 
   const currentMarketData = useSelector((state: RootState) => {
-    return state.currentSymbol.marketData || {};
+    return state.ticker24hrData.map;
   });
 
   const { askData, bidsData } = useDepthData({

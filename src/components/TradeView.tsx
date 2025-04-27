@@ -7,6 +7,7 @@ function TradingViewWidget() {
   const slashSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.slashSymbol;
   });
+  const [key, setKey] = useState(0); // 這裡用 key 來強制讓 div 重掛載
 
   const container = useRef<HTMLDivElement>(null);
 
@@ -14,7 +15,10 @@ function TradingViewWidget() {
     const createTradeView = () => {
       if (!container.current) return;
 
-      // 清空舊內容（關鍵）
+      /**
+       * 會導致Cannot read properties of null (reading 'querySelector')
+       * 到時會使用自製圖表解決該問題
+       */
       container.current.innerHTML = "";
 
       const script = document.createElement("script");
@@ -41,6 +45,11 @@ function TradingViewWidget() {
     if (slashSymbol) {
       createTradeView();
     }
+  }, [slashSymbol, key]);
+
+  useEffect(() => {
+    // slashSymbol 每變一次，強制 key +1，讓 container 重新掛載
+    setKey((prev) => prev + 1);
   }, [slashSymbol]);
 
   return (
@@ -53,6 +62,7 @@ function TradingViewWidget() {
         className="tradingview-widget-container__widget"
         style={{ height: "calc(100% - 32px)", width: "100%" }}
       ></div>
+      <div className="tradingview-widget-copyright"></div>
       {/* <div className="tradingview-widget-copyright">
         <a
           href="https://www.tradingview.com/"

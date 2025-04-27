@@ -194,14 +194,12 @@ export interface SymbolInfoListTypes {
   /** 支援的防自成交機制列表 */
   allowedSelfTradePreventionModes: string[];
 }
-
-export interface CurrentSymbolState {
-  marketData: Ticker24hrStat;
-  exchangeSymbolMeta: SymbolInfoListTypes[];
-}
-
 export interface SymbolInfoListState {
   list: SymbolInfoListTypes[];
+}
+
+export interface Ticker24hrDataStatMap {
+  map: Ticker24hrStat;
 }
 
 export interface SymbolNameMapType {

@@ -50,6 +50,9 @@ export function useDepthData({
   };
 }
 
+/**
+ * 在元件內做判斷顏色與箭頭
+ */
 export function usePriceDirection(lastPrice: string) {
   const prevPrice = useRef<number | null>(null);
   const [direction, setDirection] = useState<"up" | "down" | "same">("same");
@@ -71,5 +74,5 @@ export function usePriceDirection(lastPrice: string) {
     prevPrice.current = current;
   }, [lastPrice]);
 
-  return direction; // 在元件內做判斷顏色與箭頭
+  return direction;
 }

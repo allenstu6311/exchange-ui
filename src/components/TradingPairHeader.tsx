@@ -3,6 +3,7 @@ import { formatNumWithComma, formatNumToFixed } from "@/utils";
 import { RootState } from "@/store";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { usePriceDirection } from "@/hook/Depth";
 
 export default function TradingPairHeader() {
   const slashSymbol = useSelector((state: RootState) => {
@@ -10,7 +11,7 @@ export default function TradingPairHeader() {
   });
 
   const currentMarketData: Ticker24hrStat = useSelector((state: RootState) => {
-    return state.currentSymbol.marketData;
+    return state.ticker24hrData.map;
   });
 
   const {
@@ -23,6 +24,7 @@ export default function TradingPairHeader() {
   } = currentMarketData;
 
   const isRise = Number(priceChangePercent) > 0;
+  const direction = usePriceDirection(lastPrice);
 
   const headerData = [
     {
@@ -33,14 +35,14 @@ export default function TradingPairHeader() {
     {
       title: formatNumWithComma(lastPrice),
       content: `$${formatNumWithComma(lastPrice)}`,
-      titleClass: `text-20px ${isRise ? "text-fall" : "text-rise"}`,
+      titleClass: `text-20px ${direction === "up" ? "text-fall" : "text-rise"}`,
     },
     {
       title: "24h漲跌",
       content: `${
         isRise
           ? `+${formatNumToFixed(priceChangePercent)}`
-          : `-${formatNumToFixed(priceChangePercent)}`
+          : `${formatNumToFixed(priceChangePercent)}`
       }
       %`,
 

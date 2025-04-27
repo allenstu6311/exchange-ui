@@ -3,7 +3,7 @@ import {
   SymbolInfoListState,
   SymbolNameMapType,
 } from "./../types/index";
-import { createSlice, configureStore, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { handleSymbolName } from "./utils/symbol";
 
 const symbolNameMapState: SymbolNameMapType = {
@@ -22,7 +22,10 @@ export const symbolNameMap = createSlice({
       state,
       action: PayloadAction<SymbolInfoListTypes | undefined>
     ) {
-      if (!action.payload) return;
+      if (!action.payload) {
+        console.error("symbolName與symbolInfoList名稱不匹配");
+        return;
+      }
       const newState = handleSymbolName(action.payload);
       Object.assign(state, newState);
     },
@@ -37,7 +40,7 @@ export const symbolInfoList = createSlice({
   name: "symbolInfoList",
   initialState: symbolInfoListStatge,
   reducers: {
-    setSymbolInfoList(state, action) {
+    setSymbolInfoList(state, action: PayloadAction<SymbolInfoListTypes[]>) {
       state.list = action.payload;
     },
   },

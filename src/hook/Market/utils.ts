@@ -22,8 +22,5 @@ export const getCurrentSymbolInfo = (
   symbolName: string,
   symbolInfoList: SymbolInfoListTypes[]
 ): SymbolInfoListTypes | undefined => {
-  const currentSymbol = symbolInfoList.find(
-    (item) => item.symbol === symbolName
-  );
-  return currentSymbol;
+  return symbolInfoList.find((item) => item.symbol === symbolName);
 };

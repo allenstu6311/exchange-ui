@@ -8,7 +8,7 @@ import Market from "@/components/Market";
 import { useEffect } from "react";
 import { getSymbolMetaMap } from "@/api/service/exchange";
 import { useDispatch } from "react-redux";
-import { AppDispatch, setExchangeSymbolMeta, setSymbolInfoList } from "@/store";
+import { AppDispatch, setSymbolInfoList } from "@/store";
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,12 +29,12 @@ function Home() {
       <div className="w-full max-w-1800px mx-auto">
         <Grid
           templateAreas={`
-"left header header Market right"
-"left Depth TradeView Market right"
-"left Depth TradeForm Market right"
-"left OrderList OrderList OrderList right"
-"footer footer footer footer footer "
-`}
+          "left header header Market right"
+          "left Depth TradeView Market right"
+          "left Depth TradeForm Market right"
+          "left OrderList OrderList OrderList right"
+          "footer footer footer footer footer "
+          `}
           gridTemplateColumns={`
             1fr 
             minmax(253px, 320px) 

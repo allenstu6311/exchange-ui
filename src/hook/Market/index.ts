@@ -4,7 +4,7 @@ import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
 import { handleTickerData } from "./utils";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState, setCurrMarketData } from "@/store";
+import { AppDispatch, RootState, setTicker24hData } from "@/store";
 
 export function useMarketData() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
@@ -12,7 +12,7 @@ export function useMarketData() {
   const uppercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.uppercaseSymbol;
   });
-  const store = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   // 設定當前幣對的即時價格
   const setImmediateSymbolTicker = useCallback(
     (data: Ticker24hrStat[]) => {
@@ -21,14 +21,10 @@ export function useMarketData() {
       );
 
       if (targetSymbol) {
-        store(
-          setCurrMarketData({
-            marketData: targetSymbol,
-          })
-        );
+        dispatch(setTicker24hData(targetSymbol));
       }
     },
-    [uppercaseSymbol, store]
+    [uppercaseSymbol, dispatch]
   );
 
   useEffect(() => {
