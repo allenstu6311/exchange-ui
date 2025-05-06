@@ -1,11 +1,13 @@
-import http from "@/api";
+import { http, proxyHttp } from "@/api";
 import {
   DepthResponse,
   ExchangeInfoResponse,
   SymbolInfoListTypes,
   KlineParam,
   Ticker24hrStat,
+  OrderRequest,
 } from "@/types";
+import { getSignature } from "@/utils";
 
 export const getSymbolMetaMap = async (): Promise<ExchangeInfoResponse> => {
   const res = await http.get({
@@ -46,5 +48,28 @@ export const getDepthData = async (params: any): Promise<DepthResponse> => {
   const res = await http.get({
     url: `depth?symbol=${symbol}`,
   });
+  return res.data;
+};
+
+export const createOrder = async (body: OrderRequest) => {
+  const { query, signature } = getSignature(body); // ✅ 產生簽名
+  const finalQuery = `${query}&signature=${signature}`;
+
+  const data = await proxyHttp.post({
+    url: `order?${finalQuery}`,
+  });
+
+  return data;
+};
+
+export const getCurrentOrder = async () => {
+  const { query, signature } = getSignature({
+    timestamp: Date.now(),
+  }); // ✅ 產生簽名
+  const finalQuery = `${query}&signature=${signature}`;
+  const res = await proxyHttp.get({
+    url: `openOrders?${finalQuery}`,
+  });
+  console.log("getCurrentOrder", res);
   return res.data;
 };

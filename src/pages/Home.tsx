@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { getSymbolMetaMap } from "@/api/service/exchange";
 import { useDispatch } from "react-redux";
 import { AppDispatch, setSymbolInfoList } from "@/store";
+import OrderList from "@/components/OrderList";
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>();
@@ -74,7 +75,7 @@ function Home() {
             <TradeForm />
           </GridItem>
           <GridItem area={"OrderList"} className="bg-#FFFF rd-10px">
-            <div className="">OrderList</div>
+            <OrderList />
           </GridItem>
           <GridItem
             area={"Market"}

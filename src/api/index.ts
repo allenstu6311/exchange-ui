@@ -7,10 +7,10 @@ import axios, {
 } from "axios";
 // import CryptoJS from "crypto-js";
 
-// const API_KEY =
-//   "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
-// const SECRET_KEY =
-//   "4mSUiEArmbdTraMjjAuQYM0g1dVL4EH44UvIhyYXaoXmZblg1ZWtlv08wW4QMk9h";
+const API_KEY =
+  "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
+const SECRET_KEY =
+  "4mSUiEArmbdTraMjjAuQYM0g1dVL4EH44UvIhyYXaoXmZblg1ZWtlv08wW4QMk9h";
 
 interface CustomRequestConfig extends AxiosRequestConfig {
   meta?: Record<string, any>;
@@ -20,18 +20,19 @@ interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
   meta?: Record<string, any>;
 }
 
-const defauktConfig: AxiosRequestConfig = {
+const defaultConfig: AxiosRequestConfig = {
   baseURL: "https://testnet.binance.vision/api/v3",
   timeout: 10000,
-  // headers: {
-  //     'X-MBX-APIKEY': API_KEY
-  // }
 };
 
-// const createSignature = (params: Record<string, string>) => {
-//     const query = new URLSearchParams(params).toString();
-//     return CryptoJS.HmacSHA256(query, SECRET_KEY).toString();
-//   };
+const proxyConfig: AxiosRequestConfig = {
+  baseURL: "/proxy",
+  timeout: 10000,
+  headers: {
+    "X-MBX-APIKEY": API_KEY,
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+};
 
 // type MiddlewareContext = {
 //   config: AxiosRequestConfig;
@@ -76,16 +77,18 @@ async function handleErrorResponse(
   const { onError } = config?.meta || {};
 
   if (onError) {
-    onError(config);
+    onError(config, response);
   } else {
-    alert(response.msg);
+    const { data } = response || {};
+
+    alert(data.msg);
   }
   return { success: false, data: {}, error: config };
 }
 
 class HttpInstance {
   /**請求實體 */
-  public axiosInstance: AxiosInstance = axios.create(defauktConfig);
+  public axiosInstance: AxiosInstance;
 
   private middlewares: Middleware<any>[] = [];
 
@@ -93,7 +96,9 @@ class HttpInstance {
     this.middlewares = [...this.middlewares, ...middleware];
   }
 
-  constructor() {
+  constructor(config?: AxiosRequestConfig) {
+    const finalConfig = config || defaultConfig;
+    this.axiosInstance = axios.create(finalConfig); // ✅ 先創建 axios instance
     this.httpInterceptorsRequest();
     this.httpInterceptorsResponse();
   }
@@ -115,7 +120,6 @@ class HttpInstance {
         if (middleware) {
           this.addMiddleware(middleware);
         }
-
         return config;
       },
       (error) => {
@@ -130,10 +134,10 @@ class HttpInstance {
         return this.runMiddlewares(response.config, response);
       },
       async (error) => {
-        const config = error.config
+        const config = error.config;
         // 失敗時自動retry
-        const { retry: maxRetryCount } = config.meta;
-  
+        const { retry: maxRetryCount } = config.meta || {};
+
         if (maxRetryCount > 0) {
           config.retryCount = config.retryCount ?? 0;
 
@@ -152,19 +156,48 @@ class HttpInstance {
 }
 
 const instance = new HttpInstance().axiosInstance;
+const postInstance = new HttpInstance(proxyConfig).axiosInstance;
+
+const proxyHttp = {
+  get: async ({
+    url,
+    params,
+    meta,
+  }: {
+    url: string;
+    params?: Record<string, any>;
+    meta?: Record<string, any>;
+  }) => postInstance.get(url, { params, meta } as CustomRequestConfig),
+  post: async ({
+    url,
+    body,
+    meta,
+  }: {
+    url: string;
+    body?: Record<string, any>;
+    meta?: Record<string, any>;
+  }) => postInstance.post(url, { body, meta } as CustomRequestConfig),
+};
 
 const http = {
   get: async ({
     url,
     params,
-    meta = {},
+    meta,
   }: {
     url: string;
     params?: Record<string, any>;
     meta?: Record<string, any>;
   }) => instance.get(url, { params, meta } as CustomRequestConfig),
-  post: async (url: string, data?: Record<string, any>) =>
-    instance.post(url, data),
+  post: async ({
+    url,
+    body,
+    meta,
+  }: {
+    url: string;
+    body?: Record<string, any>;
+    meta?: Record<string, any>;
+  }) => instance.post(url, { body, meta } as CustomRequestConfig),
 };
 
-export default http;
+export { http, proxyHttp };

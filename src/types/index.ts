@@ -212,3 +212,41 @@ export interface SymbolNameMapType {
    */
   slashSymbol: string;
 }
+
+// ENUM 定義（需根據實際 API 枚舉值進一步擴充）
+type OrderSide = "BUY" | "SELL";
+type OrderType =
+  | "LIMIT"
+  | "MARKET"
+  | "STOP_LOSS"
+  | "STOP_LOSS_LIMIT"
+  | "TAKE_PROFIT"
+  | "TAKE_PROFIT_LIMIT";
+type TimeInForce = "GTC" | "IOC" | "FOK";
+type OrderResponseType = "ACK" | "RESULT" | "FULL";
+type SelfTradePreventionMode =
+  | "NONE"
+  | "EXPIRE_TAKER"
+  | "EXPIRE_MAKER"
+  | "EXPIRE_BOTH"; // 根據實際 STP 支援擴充
+
+// 主請求型別定義
+export interface OrderRequest {
+  symbol: string; // 交易對名稱，如 BTCUSDT
+  side: OrderSide; // 訂單方向
+  type: OrderType; // 訂單類型
+  timeInForce?: TimeInForce; // 生效時間策略
+  quantity?: number; // 購買數量
+  quoteOrderQty?: number; // 使用報價幣種的金額下單
+  price?: number; // 價格
+  newClientOrderId?: string; // 自定義訂單 ID
+  strategyId?: number; // 策略 ID
+  strategyType?: number; // 策略類型，需大於等於 1000000
+  stopPrice?: number; // 觸發價格，僅部分訂單類型適用
+  trailingDelta?: number; // 追蹤止損距離
+  icebergQty?: number; // 冰山訂單的顯示數量
+  newOrderRespType?: OrderResponseType; // 訂單響應類型
+  selfTradePreventionMode?: SelfTradePreventionMode; // 防止自成交模式
+  recvWindow?: number; // 接收視窗
+  timestamp: number; // 當前時間戳（毫秒）
+}
