@@ -5,7 +5,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-// import CryptoJS from "crypto-js";
+import { errorToast, successToast } from "@/utils/notify";
 
 const API_KEY =
   "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
@@ -13,11 +13,11 @@ const SECRET_KEY =
   "4mSUiEArmbdTraMjjAuQYM0g1dVL4EH44UvIhyYXaoXmZblg1ZWtlv08wW4QMk9h";
 
 interface CustomRequestConfig extends AxiosRequestConfig {
-  meta?: Record<string, any>;
+  metas?: Record<string, any>;
 }
 
 interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
-  meta?: Record<string, any>;
+  metas?: Record<string, any>;
 }
 
 const defaultConfig: AxiosRequestConfig = {
@@ -39,7 +39,7 @@ const proxyConfig: AxiosRequestConfig = {
 //   response?: any;
 //   error?: any;
 //   result?: { success: boolean; data?: any; error?: any };
-//   meta?: {
+//   metas?: {
 //     onSuccess?: (data: any) => void;
 //     onError?: (err: any) => void;
 //     [key: string]: any;
@@ -55,15 +55,12 @@ async function handleSuccessResponse(
   config: CustomRequestConfig,
   response?: AxiosResponse
 ) {
-  const { onSuccess } = config?.meta || {};
+  const { onSuccess } = config?.metas || {};
   if (response) {
     const { status, data } = response;
     if (status === 200) {
       if (onSuccess) {
         onSuccess(data);
-      } else {
-        // 預設成功的動作
-        // alert(response.data.msg);
       }
       return { success: true, data };
     }
@@ -74,14 +71,13 @@ async function handleErrorResponse(
   config: CustomRequestConfig,
   response: any = {}
 ) {
-  const { onError } = config?.meta || {};
+  const { onError } = config?.metas || {};
 
   if (onError) {
     onError(config, response);
   } else {
     const { data } = response || {};
-
-    alert(data.msg);
+    errorToast("錯誤", data.msg);
   }
   return { success: false, data: {}, error: config };
 }
@@ -91,6 +87,8 @@ class HttpInstance {
   public axiosInstance: AxiosInstance;
 
   private middlewares: Middleware<any>[] = [];
+
+  private metaInfo: Record<string, any> = {};
 
   private addMiddleware(middleware: Middleware<any>[]) {
     this.middlewares = [...this.middlewares, ...middleware];
@@ -116,7 +114,7 @@ class HttpInstance {
   private httpInterceptorsRequest() {
     this.axiosInstance.interceptors.request.use(
       (config: CustomInternalAxiosRequestConfig) => {
-        const middleware = config?.meta?.middleware;
+        const middleware = config?.metas?.middleware;
         if (middleware) {
           this.addMiddleware(middleware);
         }
@@ -136,7 +134,7 @@ class HttpInstance {
       async (error) => {
         const config = error.config;
         // 失敗時自動retry
-        const { retry: maxRetryCount } = config.meta || {};
+        const { retry: maxRetryCount } = config.metas || {};
 
         if (maxRetryCount > 0) {
           config.retryCount = config.retryCount ?? 0;
@@ -162,42 +160,42 @@ const proxyHttp = {
   get: async ({
     url,
     params,
-    meta,
+    metas,
   }: {
     url: string;
     params?: Record<string, any>;
-    meta?: Record<string, any>;
-  }) => postInstance.get(url, { params, meta } as CustomRequestConfig),
+    metas?: Record<string, any>;
+  }) => postInstance.get(url, { params, metas } as CustomRequestConfig),
   post: async ({
     url,
     body,
-    meta,
+    metas,
   }: {
     url: string;
     body?: Record<string, any>;
-    meta?: Record<string, any>;
-  }) => postInstance.post(url, { body, meta } as CustomRequestConfig),
+    metas?: Record<string, any>;
+  }) => postInstance.post(url, body, { metas } as CustomRequestConfig),
 };
 
 const http = {
   get: async ({
     url,
     params,
-    meta,
+    metas,
   }: {
     url: string;
     params?: Record<string, any>;
-    meta?: Record<string, any>;
-  }) => instance.get(url, { params, meta } as CustomRequestConfig),
+    metas?: Record<string, any>;
+  }) => instance.get(url, { params, metas } as CustomRequestConfig),
   post: async ({
     url,
     body,
-    meta,
+    metas,
   }: {
     url: string;
     body?: Record<string, any>;
-    meta?: Record<string, any>;
-  }) => instance.post(url, { body, meta } as CustomRequestConfig),
+    metas?: Record<string, any>;
+  }) => instance.post(url, { body, metas } as CustomRequestConfig),
 };
 
 export { http, proxyHttp };

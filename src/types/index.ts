@@ -214,8 +214,8 @@ export interface SymbolNameMapType {
 }
 
 // ENUM 定義（需根據實際 API 枚舉值進一步擴充）
-type OrderSide = "BUY" | "SELL";
-type OrderType =
+export type OrderSide = "BUY" | "SELL";
+export type OrderType =
   | "LIMIT"
   | "MARKET"
   | "STOP_LOSS"
@@ -236,9 +236,9 @@ export interface OrderRequest {
   side: OrderSide; // 訂單方向
   type: OrderType; // 訂單類型
   timeInForce?: TimeInForce; // 生效時間策略
-  quantity?: number; // 購買數量
-  quoteOrderQty?: number; // 使用報價幣種的金額下單
-  price?: number; // 價格
+  quantity?: number | string; // 購買數量
+  quoteOrderQty?: number | string; // 使用報價幣種的金額下單
+  price?: number | string; // 價格
   newClientOrderId?: string; // 自定義訂單 ID
   strategyId?: number; // 策略 ID
   strategyType?: number; // 策略類型，需大於等於 1000000
@@ -249,4 +249,80 @@ export interface OrderRequest {
   selfTradePreventionMode?: SelfTradePreventionMode; // 防止自成交模式
   recvWindow?: number; // 接收視窗
   timestamp: number; // 當前時間戳（毫秒）
+}
+
+export interface ICurrentOrder {
+  symbol: string; // 交易對，例如 "ETHUSDT"
+  orderId: number; // 訂單 ID
+  orderListId: number; // OCO ID，沒用到會是 -1
+  clientOrderId: string; // 使用者自定義的訂單 ID
+  price: string; // 價格（字串格式）
+  origQty: string; // 原始下單數量
+  executedQty: string; // 已成交數量
+  cumulativeQuoteQty: string; // 已成交總額（以 quote asset 計算）
+  status:
+    | "NEW"
+    | "PARTIALLY_FILLED"
+    | "FILLED"
+    | "CANCELED"
+    | "REJECTED"
+    | "EXPIRED";
+  timeInForce: "GTC" | "IOC" | "FOK";
+  type:
+    | "LIMIT"
+    | "MARKET"
+    | "STOP_LOSS"
+    | "STOP_LOSS_LIMIT"
+    | "TAKE_PROFIT"
+    | "TAKE_PROFIT_LIMIT"
+    | "LIMIT_MAKER";
+  side: "BUY" | "SELL";
+  stopPrice: string; // 停損價格（沒有則為 "0.00000000"）
+  icebergQty: string; // 冰山訂單可見數量
+  time: number; // 建立時間（timestamp 毫秒）
+  updateTime: number; // 最後更新時間（timestamp 毫秒）
+  isWorking: boolean; // 是否為有效訂單
+  workingTime: number; // 生效時間（timestamp 毫秒）
+  origQuoteOrderQty: string; // 原始下單的 quote 數量（只有市價單會用）
+  selfTradePreventionMode?:
+    | "EXPIRE_TAKER"
+    | "EXPIRE_MAKER"
+    | "EXPIRE_BOTH"
+    | "NONE"; // 只有開啟 STP 的帳號會有
+}
+
+export interface ICurrentOrderRequest {
+  symbol: string;
+}
+
+export interface IBalance {
+  asset: string;
+  free: string;
+  locked: string;
+}
+
+export interface ICommissionRates {
+  maker: string;
+  taker: string;
+  buyer: string;
+  seller: string;
+}
+
+export interface IAccountInfo {
+  makerCommission: number;
+  takerCommission: number;
+  buyerCommission: number;
+  sellerCommission: number;
+  commissionRates: ICommissionRates;
+  canTrade: boolean;
+  canWithdraw: boolean;
+  canDeposit: boolean;
+  brokered: boolean;
+  requireSelfTradePrevention: boolean;
+  preventSor: boolean;
+  updateTime: number;
+  accountType: "SPOT" | string;
+  balances: IBalance[];
+  permissions: string[];
+  uid: number;
 }

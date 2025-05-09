@@ -71,7 +71,7 @@ function Home() {
           >
             <TradeView />
           </GridItem>
-          <GridItem bg="blue.300" area={"TradeForm"}>
+          <GridItem area={"TradeForm"} className="bg-#FFFF rd-10px">
             <TradeForm />
           </GridItem>
           <GridItem area={"OrderList"} className="bg-#FFFF rd-10px">
