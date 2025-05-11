@@ -1,5 +1,5 @@
 import { OrderRequest, SymbolNameMapType } from "@/types";
-import { div, mul } from "@/utils";
+import { add, div, mul } from "@/utils";
 import {
   Input,
   InputGroup,
@@ -43,7 +43,6 @@ const ExForm = forwardRef(function ExForm(
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const { base, quote } = symbolMap;
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // ✅ 暴露方法給父元件使用
   useImperativeHandle(ref, () => ({
@@ -67,7 +66,7 @@ const ExForm = forwardRef(function ExForm(
 
   const handleFormChange = (key: InputKey, value: string) => {
     setIsDragging(false);
-    let nextFormData: OrderRequest = { ...formData, [key]: value };
+    const nextFormData: OrderRequest = { ...formData, [key]: value };
 
     const limitPrice = nextFormData.price || "";
     const currPrice = isMarket ? lastPrice : limitPrice;
@@ -76,7 +75,7 @@ const ExForm = forwardRef(function ExForm(
       case "price":
         if (currPrice && nextFormData.quantity) {
           const newAmount = mul(currPrice, nextFormData.quantity);
-          setAmount(newAmount.toString());
+          setAmount(newAmount);
         } else if (amount) {
           nextFormData.quantity = div(amount, value);
         }
@@ -84,7 +83,8 @@ const ExForm = forwardRef(function ExForm(
         break;
       case "quantity":
         if (currPrice) {
-          setAmount(mul(currPrice, value)?.toString());
+          const newAmount = mul(currPrice, value);
+          setAmount(newAmount);
         }
         break;
       case "amount":
@@ -96,11 +96,11 @@ const ExForm = forwardRef(function ExForm(
       case "slider":
         if (maxValue) {
           setIsDragging(true);
-          const currAmount = div(mul(maxValue, value), 100);
-          setAmount(currAmount?.toString());
+          const newAmount = div(mul(maxValue, value), 100);
+          setAmount(newAmount);
 
           if (currPrice) {
-            nextFormData.quantity = div(currAmount, currPrice);
+            nextFormData.quantity = div(newAmount, currPrice);
           }
         }
 
@@ -171,7 +171,6 @@ const ExForm = forwardRef(function ExForm(
 
         <InputGroup>
           <Input
-            ref={inputRef}
             type="number"
             placeholder="成交額"
             value={amount}
