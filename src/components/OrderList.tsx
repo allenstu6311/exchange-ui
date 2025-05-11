@@ -2,10 +2,11 @@ import { getCurrentOrder } from "@/api/service/exchange";
 import { ICurrentOrder } from "@/types";
 import { useEffect, useState } from "react";
 import CTable from "./table";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState, setCurrentOrder } from "@/store";
 
 export default function OrderList() {
+   const dispatch = useDispatch<AppDispatch>();
   const columnData = [
     {
       label: "交易對",
@@ -41,13 +42,16 @@ export default function OrderList() {
     return state.symbolNameMap.uppercaseSymbol;
   });
 
-  const [currOrder, setCurrOrder] = useState<ICurrentOrder[]>([]);
+  const orderMap = useSelector((state: RootState)=>{
+    return state.orderMap
+  })
+
   useEffect(() => {
     async function getCurrentOrderIn() {
       const res = await getCurrentOrder({
         symbol: uppercaseSymbol,
       });
-      setCurrOrder(res);
+      dispatch(setCurrentOrder(res));
     }
 
     getCurrentOrderIn();
@@ -55,7 +59,7 @@ export default function OrderList() {
 
   return (
     <div className="">
-      <CTable columnData={columnData} rowData={currOrder}></CTable>
+      <CTable columnData={columnData} rowData={orderMap.current}></CTable>
     </div>
   );
 }

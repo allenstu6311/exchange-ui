@@ -14,7 +14,7 @@ export function createDefaultOrderRequest(params: {
     timeInForce: "GTC",
     timestamp: Date.now(),
     recvWindow: 5000,
-    price: params.price ?? undefined,
-    quantity: params.quantity ?? undefined,
+    price: params.price ?? '',
+    quantity: params.quantity ?? '',
   };
 }

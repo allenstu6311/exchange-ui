@@ -46,6 +46,12 @@ const proxyConfig: AxiosRequestConfig = {
 //   };
 // };
 
+interface IAPIResponse {
+  success: boolean,
+  data: any,
+  error?:CustomRequestConfig
+}
+
 export type Middleware<T> = (
   config: CustomRequestConfig,
   response: any
@@ -54,7 +60,7 @@ export type Middleware<T> = (
 async function handleSuccessResponse(
   config: CustomRequestConfig,
   response?: AxiosResponse
-) {
+):Promise<IAPIResponse> {
   const { onSuccess } = config?.metas || {};
   if (response) {
     const { status, data } = response;
@@ -65,6 +71,7 @@ async function handleSuccessResponse(
       return { success: true, data };
     }
   }
+   return { success: false, data: {}, error: config };
 }
 
 async function handleErrorResponse(

@@ -46,7 +46,7 @@ function Home() {
           gridTemplateRows={`    
             56px 
             minmax(500px, 1fr) 
-            minmax(320px, 500px) 
+            minmax(320px, 450px) 
             320px
             24px`}
           gap="1"

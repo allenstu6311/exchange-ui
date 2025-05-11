@@ -236,9 +236,9 @@ export interface OrderRequest {
   side: OrderSide; // 訂單方向
   type: OrderType; // 訂單類型
   timeInForce?: TimeInForce; // 生效時間策略
-  quantity?: number | string; // 購買數量
-  quoteOrderQty?: number | string; // 使用報價幣種的金額下單
-  price?: number | string; // 價格
+  quantity?:number  | string; // 購買數量
+  quoteOrderQty?:number; // 使用報價幣種的金額下單
+  price?:number | string; // 價格
   newClientOrderId?: string; // 自定義訂單 ID
   strategyId?: number; // 策略 ID
   strategyType?: number; // 策略類型，需大於等於 1000000

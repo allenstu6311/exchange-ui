@@ -1,38 +1,114 @@
-import { OrderRequest } from "@/types";
-import { isNumber } from "@/utils";
-import { Input, InputGroup, InputRightElement } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { OrderRequest, SymbolNameMapType } from "@/types";
+import { div, mul } from "@/utils";
+import {
+  Input,
+  InputGroup,
+  InputRightElement,
+  Slider,
+  SliderFilledTrack,
+  SliderMark,
+  SliderThumb,
+  SliderTrack,
+} from "@chakra-ui/react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-function ExForm({
-  base,
-  quote,
-  setFormData,
-  formData,
-}: {
-  base: string;
-  quote: string;
-  setFormData: React.Dispatch<React.SetStateAction<OrderRequest>>;
-  formData: OrderRequest;
-}) {
-  const [amount, setAmount] = useState<number | string>("");
+type InputKey = "amount" | "quantity" | "price" | "slider";
+
+const ExForm = forwardRef(function ExForm(
+  {
+    symbolMap,
+    setFormData,
+    formData,
+    isMarket,
+    maxValue,
+    lastPrice,
+  }: {
+    symbolMap: SymbolNameMapType;
+    setFormData: React.Dispatch<React.SetStateAction<OrderRequest>>;
+    formData: OrderRequest;
+    isMarket: boolean;
+    maxValue: number;
+    lastPrice: string;
+  },
+  ref: React.Ref<{ reset: () => void }> // 👈 暴露一個 reset 方法
+) {
+  const [amount, setAmount] = useState<string>("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [sliderValue, setSliderValue] = useState(0);
+  const { base, quote } = symbolMap;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // ✅ 暴露方法給父元件使用
+  useImperativeHandle(ref, () => ({
+    reset() {
+      setAmount("");
+      setSliderValue(0);
+      setFormData((prev) => ({
+        ...prev,
+        price: "",
+        quantity: "",
+      }));
+    },
+  }));
 
   useEffect(() => {
-    const { price, quantity } = formData;
-    if (price && quantity) {
-      const amount = Number(price) * Number(quantity);
-      setAmount(amount);
-    } else {
-      setAmount("");
+    if (amount && maxValue && !isDragging) {
+      const percent = div(amount, maxValue, { precision: 3 });
+      setSliderValue(Number(mul(percent, 100, { precision: 2 })));
     }
-  }, [formData]);
+  }, [amount]);
 
-  const handleChange = (key: keyof OrderRequest, value: string) => {
-    setFormData((prev: OrderRequest) => {
-      return {
-        ...prev,
-        [key]: value,
-      };
-    });
+  const handleFormChange = (key: InputKey, value: string) => {
+    setIsDragging(false);
+    let nextFormData: OrderRequest = { ...formData, [key]: value };
+
+    const limitPrice = nextFormData.price || "";
+    const currPrice = isMarket ? lastPrice : limitPrice;
+
+    switch (key) {
+      case "price":
+        if (currPrice && nextFormData.quantity) {
+          const newAmount = mul(currPrice, nextFormData.quantity);
+          setAmount(newAmount.toString());
+        } else if (amount) {
+          nextFormData.quantity = div(amount, value);
+        }
+
+        break;
+      case "quantity":
+        if (currPrice) {
+          setAmount(mul(currPrice, value)?.toString());
+        }
+        break;
+      case "amount":
+        if (currPrice || isMarket) {
+          nextFormData.quantity = div(value, currPrice);
+        }
+        break;
+
+      case "slider":
+        if (maxValue) {
+          setIsDragging(true);
+          const currAmount = div(mul(maxValue, value), 100);
+          setAmount(currAmount?.toString());
+
+          if (currPrice) {
+            nextFormData.quantity = div(currAmount, currPrice);
+          }
+        }
+
+        break;
+      default:
+        break;
+    }
+    setFormData(nextFormData);
   };
 
   return (
@@ -43,7 +119,8 @@ function ExForm({
             type="number"
             placeholder="價格"
             value={formData.price}
-            onChange={(e) => handleChange("price", e.target.value)}
+            onChange={(e) => handleFormChange("price", e.target.value)}
+            disabled={isMarket}
           />
           <InputRightElement width="4.5rem">
             <p>{quote}</p>
@@ -54,18 +131,54 @@ function ExForm({
             type="number"
             placeholder="數量"
             value={formData.quantity}
-            onChange={(e) => handleChange("quantity", e.target.value)}
+            onChange={(e) => handleFormChange("quantity", e.target.value)}
           />
           <InputRightElement width="4.5rem">
             <p>{base}</p>
           </InputRightElement>
         </InputGroup>
+
+        <InputGroup className="my-8px">
+          <Slider
+            aria-label="slider-ex-1"
+            defaultValue={0}
+            max={100}
+            value={sliderValue}
+            onChange={(val) => {
+              setSliderValue(val);
+              handleFormChange("slider", val as any);
+            }}
+            focusThumbOnChange={false}
+          >
+            <SliderTrack>
+              <SliderFilledTrack />
+            </SliderTrack>
+            <SliderThumb className="peer" />
+            <SliderMark
+              value={sliderValue}
+              textAlign="center"
+              bg="blue.500"
+              color="white"
+              mt="-10"
+              ml="-5"
+              w="12"
+              className="hidden peer-hover:block peer-active:block!"
+            >
+              {sliderValue}%
+            </SliderMark>
+          </Slider>
+        </InputGroup>
+
         <InputGroup>
           <Input
+            ref={inputRef}
             type="number"
             placeholder="成交額"
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              handleFormChange("amount", e.target.value);
+            }}
           />
           <InputRightElement width="4.5rem">
             <p>{quote}</p>
@@ -74,5 +187,5 @@ function ExForm({
       </form>
     </div>
   );
-}
+});
 export default ExForm;

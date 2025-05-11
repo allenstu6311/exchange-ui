@@ -17,11 +17,11 @@ export function useTradeAvailability(
       typeof currPrice === "string" ? parseFloat(currPrice) : currPrice;
 
     const maxBuyQty = price > 0 ? quoteFree / price : 0; // quote 用來買 base
-    const maxSellQty = baseFree * price; // base 拿來賣
+    const maxSellAmount = baseFree * price; // base 拿來賣
 
     return {
       maxBuyQty, // 最多可買入 baseAsset 的數量
-      maxSellQty, // 最多可賣出 baseAsset 的數量
+      maxSellAmount, // 最多可賣出 baseAsset 的數量
       quoteFree, // 當前 quote 可用資金
       baseFree,
     };
