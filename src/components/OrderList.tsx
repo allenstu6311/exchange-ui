@@ -1,12 +1,13 @@
-import { getCurrentOrder } from "@/api/service/exchange";
+import { getCurrentOrder, cancleOrder } from "@/api/service/exchange";
 import { ICurrentOrder } from "@/types";
 import { useEffect, useState } from "react";
 import CTable from "./table";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, setCurrentOrder } from "@/store";
+import { Button } from "@chakra-ui/react";
 
 export default function OrderList() {
-   const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   const columnData = [
     {
       label: "交易對",
@@ -36,15 +37,34 @@ export default function OrderList() {
       label: "時間",
       key: "workingTime",
     },
+    {
+      label: "操作",
+      key: "operation",
+      render: (content: string, rowData: ICurrentOrder) => {
+        return (
+          <div className="my-5px">
+            <Button
+              className=""
+              size="xs"
+              onClick={() => {
+                handleCancelOrder(rowData);
+              }}
+            >
+              取消訂單
+            </Button>
+          </div>
+        );
+      },
+    },
   ];
 
   const uppercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.uppercaseSymbol;
   });
 
-  const orderMap = useSelector((state: RootState)=>{
-    return state.orderMap
-  })
+  const orderMap = useSelector((state: RootState) => {
+    return state.orderMap;
+  });
 
   useEffect(() => {
     async function getCurrentOrderIn() {
@@ -56,6 +76,24 @@ export default function OrderList() {
 
     getCurrentOrderIn();
   }, [uppercaseSymbol]);
+
+  const handleCancelOrder = async (orderInfo: ICurrentOrder) => {
+    console.log("orderInfo", orderInfo);
+    const { symbol, orderId, side } = orderInfo;
+
+    const res = await cancleOrder({
+      symbol,
+      orderId,
+      timestamp: Date.now(),
+    });
+
+    if (res) {
+      const newOrderMap = orderMap.current.filter(
+        (item: ICurrentOrder) => item.orderId !== orderId
+      );
+      dispatch(setCurrentOrder(newOrderMap));
+    }
+  };
 
   return (
     <div className="">

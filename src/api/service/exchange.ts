@@ -9,6 +9,7 @@ import {
   ICurrentOrder,
   ICurrentOrderRequest,
   IAccountInfo,
+  ICancelOrderRequest,
 } from "@/types";
 import { getSignature } from "@/utils";
 import { successToast } from "@/utils/notify";
@@ -66,6 +67,23 @@ export const createOrder = async (
     metas: {
       onSuccess() {
         successToast("成功", "訂單已成功建立！");
+      },
+    },
+  });
+  return res.data;
+};
+
+export const cancleOrder = async (
+  body: ICancelOrderRequest
+): Promise<ICancelOrderRequest> => {
+  const { query, signature } = getSignature(body); // ✅ 產生簽名
+  const finalQuery = `${query}&signature=${signature}`;
+
+  const res = await proxyHttp.delete({
+    url: `order?${finalQuery}`,
+    metas: {
+      onSuccess() {
+        successToast("成功", "訂單已取消！");
       },
     },
   });

@@ -236,9 +236,9 @@ export interface OrderRequest {
   side: OrderSide; // 訂單方向
   type: OrderType; // 訂單類型
   timeInForce?: TimeInForce; // 生效時間策略
-  quantity?:number  | string; // 購買數量
-  quoteOrderQty?:number; // 使用報價幣種的金額下單
-  price?:number | string; // 價格
+  quantity?: number | string; // 購買數量
+  quoteOrderQty?: number; // 使用報價幣種的金額下單
+  price?: number | string; // 價格
   newClientOrderId?: string; // 自定義訂單 ID
   strategyId?: number; // 策略 ID
   strategyType?: number; // 策略類型，需大於等於 1000000
@@ -249,6 +249,19 @@ export interface OrderRequest {
   selfTradePreventionMode?: SelfTradePreventionMode; // 防止自成交模式
   recvWindow?: number; // 接收視窗
   timestamp: number; // 當前時間戳（毫秒）
+}
+
+type CancelRestrictions = "ONLY_NEW" | "ONLY_PARTIALLY_FILLED";
+
+export interface ICancelOrderRequest {
+  symbol: string;
+  orderId?: number;
+  origClientOrderId?: string;
+  newClientOrderId?: string;
+  cancelRestrictions?: CancelRestrictions;
+  recvWindow?: number;
+  timestamp: number;
+  side?: OrderSide;
 }
 
 export interface ICurrentOrder {

@@ -47,9 +47,9 @@ const proxyConfig: AxiosRequestConfig = {
 // };
 
 interface IAPIResponse {
-  success: boolean,
-  data: any,
-  error?:CustomRequestConfig
+  success: boolean;
+  data: any;
+  error?: CustomRequestConfig;
 }
 
 export type Middleware<T> = (
@@ -60,7 +60,7 @@ export type Middleware<T> = (
 async function handleSuccessResponse(
   config: CustomRequestConfig,
   response?: AxiosResponse
-):Promise<IAPIResponse> {
+): Promise<IAPIResponse> {
   const { onSuccess } = config?.metas || {};
   if (response) {
     const { status, data } = response;
@@ -71,7 +71,7 @@ async function handleSuccessResponse(
       return { success: true, data };
     }
   }
-   return { success: false, data: {}, error: config };
+  return { success: false, data: {}, error: config };
 }
 
 async function handleErrorResponse(
@@ -182,6 +182,15 @@ const proxyHttp = {
     body?: Record<string, any>;
     metas?: Record<string, any>;
   }) => postInstance.post(url, body, { metas } as CustomRequestConfig),
+  delete: async ({
+    url,
+    body,
+    metas,
+  }: {
+    url: string;
+    body?: Record<string, any>;
+    metas?: Record<string, any>;
+  }) => postInstance.delete(url, { body, metas } as CustomRequestConfig),
 };
 
 const http = {
