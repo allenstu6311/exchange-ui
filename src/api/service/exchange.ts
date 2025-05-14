@@ -14,15 +14,15 @@ import {
 import { getSignature } from "@/utils";
 import { successToast } from "@/utils/notify";
 
-export const getSymbolMetaMap = async (): Promise<ExchangeInfoResponse> => {
-  const res = await http.get({
+export const getSymbolMetaMap = async () => {
+  const res = await http.get<ExchangeInfoResponse>({
     url: "/exchangeInfo",
   });
   return res.data;
 };
 
-export const getTickerBy24hr = async (): Promise<Ticker24hrStat[]> => {
-  const res = await http.get({
+export const getTickerBy24hr = async () => {
+  const res = await http.get<Ticker24hrStat[]>({
     url: "/ticker/24hr",
     params: {},
     metas: {
@@ -48,21 +48,19 @@ export const getTickerBy24hr = async (): Promise<Ticker24hrStat[]> => {
 //   return data;
 // }
 
-export const getDepthData = async (params: any): Promise<DepthResponse> => {
+export const getDepthData = async (params: any) => {
   const { symbol } = params;
-  const res = await http.get({
+  const res = await http.get<DepthResponse>({
     url: `depth?symbol=${symbol}`,
   });
   return res.data;
 };
 
-export const createOrder = async (
-  body: OrderRequest
-): Promise<OrderRequest> => {
+export const createOrder = async (body: OrderRequest) => {
   const { query, signature } = getSignature(body); // ✅ 產生簽名
   const finalQuery = `${query}&signature=${signature}`;
 
-  const res = await proxyHttp.post({
+  const res = await proxyHttp.post<OrderRequest>({
     url: `order?${finalQuery}`,
     metas: {
       onSuccess() {
@@ -73,13 +71,11 @@ export const createOrder = async (
   return res.data;
 };
 
-export const cancleOrder = async (
-  body: ICancelOrderRequest
-): Promise<ICancelOrderRequest> => {
+export const cancleOrder = async (body: ICancelOrderRequest) => {
   const { query, signature } = getSignature(body); // ✅ 產生簽名
   const finalQuery = `${query}&signature=${signature}`;
 
-  const res = await proxyHttp.delete({
+  const res = await proxyHttp.delete<ICancelOrderRequest>({
     url: `order?${finalQuery}`,
     metas: {
       onSuccess() {
@@ -90,27 +86,25 @@ export const cancleOrder = async (
   return res.data;
 };
 
-export const getCurrentOrder = async (
-  params: ICurrentOrderRequest
-): Promise<ICurrentOrder[]> => {
+export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { symbol } = params;
   const { query, signature } = getSignature({
     timestamp: Date.now(),
     symbol,
   }); // ✅ 產生簽名
   const finalQuery = `${query}&signature=${signature}`;
-  const res = await proxyHttp.get({
+  const res = await proxyHttp.get<ICurrentOrder[]>({
     url: `openOrders?${finalQuery}`,
   });
   return res.data;
 };
 
-export const getAccountInfo = async (): Promise<IAccountInfo> => {
+export const getAccountInfo = async () => {
   const { query, signature } = getSignature({
     timestamp: Date.now(),
   }); // ✅ 產生簽名
   const finalQuery = `${query}&signature=${signature}`;
-  const res = await proxyHttp.get({
+  const res = await proxyHttp.get<IAccountInfo>({
     url: `account?${finalQuery}`,
   });
   return res.data;

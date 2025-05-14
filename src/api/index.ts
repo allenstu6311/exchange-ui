@@ -46,38 +46,36 @@ const proxyConfig: AxiosRequestConfig = {
 //   };
 // };
 
-interface IAPIResponse {
-  success: boolean;
-  data: any;
-  error?: CustomRequestConfig;
-}
-
 export type Middleware<T> = (
   config: CustomRequestConfig,
   response: any
 ) => Promise<T>;
 
-async function handleSuccessResponse(
-  config: CustomRequestConfig,
-  response?: AxiosResponse
-): Promise<IAPIResponse> {
-  const { onSuccess } = config?.metas || {};
-  if (response) {
-    const { status, data } = response;
-    if (status === 200) {
-      if (onSuccess) {
-        onSuccess(data);
-      }
-      return { success: true, data };
-    }
-  }
-  return { success: false, data: {}, error: config };
+interface IAPIResponse<T = any> {
+  success: boolean;
+  data: T;
+  error?: CustomRequestConfig;
 }
 
-async function handleErrorResponse(
+async function handleSuccessResponse<T = any>(
+  response: AxiosResponse
+): Promise<IAPIResponse<T>> {
+  const { status, data, config } = response;
+  const { onSuccess } =
+    (config as CustomInternalAxiosRequestConfig).metas || {};
+  if (status === 200) {
+    if (onSuccess) {
+      onSuccess(data);
+    }
+    return { success: true, data };
+  }
+  return { success: true, data: {} as T, error: config };
+}
+
+async function handleErrorResponse<T = any>(
   config: CustomRequestConfig,
   response: any = {}
-) {
+): Promise<IAPIResponse<T>> {
   const { onError } = config?.metas || {};
 
   if (onError) {
@@ -86,7 +84,7 @@ async function handleErrorResponse(
     const { data } = response || {};
     errorToast("錯誤", data.msg);
   }
-  return { success: false, data: {}, error: config };
+  return { success: false, data: {} as T, error: config };
 }
 
 class HttpInstance {
@@ -94,8 +92,6 @@ class HttpInstance {
   public axiosInstance: AxiosInstance;
 
   private middlewares: Middleware<any>[] = [];
-
-  private metaInfo: Record<string, any> = {};
 
   private addMiddleware(middleware: Middleware<any>[]) {
     this.middlewares = [...this.middlewares, ...middleware];
@@ -109,7 +105,6 @@ class HttpInstance {
   }
 
   private async runMiddlewares(config: any, response: AxiosResponse) {
-    this.middlewares.push(handleSuccessResponse);
     let result = response;
     for (const middleware of this.middlewares) {
       result = await middleware(config, result);
@@ -163,55 +158,48 @@ class HttpInstance {
 const instance = new HttpInstance().axiosInstance;
 const postInstance = new HttpInstance(proxyConfig).axiosInstance;
 
-const proxyHttp = {
-  get: async ({
-    url,
-    params,
-    metas,
-  }: {
-    url: string;
-    params?: Record<string, any>;
-    metas?: Record<string, any>;
-  }) => postInstance.get(url, { params, metas } as CustomRequestConfig),
-  post: async ({
-    url,
-    body,
-    metas,
-  }: {
-    url: string;
-    body?: Record<string, any>;
-    metas?: Record<string, any>;
-  }) => postInstance.post(url, body, { metas } as CustomRequestConfig),
-  delete: async ({
-    url,
-    body,
-    metas,
-  }: {
-    url: string;
-    body?: Record<string, any>;
-    metas?: Record<string, any>;
-  }) => postInstance.delete(url, { body, metas } as CustomRequestConfig),
-};
+function createHttpClient(instance: AxiosInstance) {
+  return {
+    get: <T = any>(args: {
+      url: string;
+      params?: Record<string, any>;
+      metas?: Record<string, any>;
+    }): Promise<IAPIResponse<T>> => {
+      return instance
+        .get<T>(args.url, {
+          params: args.params,
+          metas: args.metas,
+        } as CustomRequestConfig)
+        .then((res) => handleSuccessResponse<T>(res));
+    },
 
-const http = {
-  get: async ({
-    url,
-    params,
-    metas,
-  }: {
-    url: string;
-    params?: Record<string, any>;
-    metas?: Record<string, any>;
-  }) => instance.get(url, { params, metas } as CustomRequestConfig),
-  post: async ({
-    url,
-    body,
-    metas,
-  }: {
-    url: string;
-    body?: Record<string, any>;
-    metas?: Record<string, any>;
-  }) => instance.post(url, { body, metas } as CustomRequestConfig),
-};
+    post: <T = any>(args: {
+      url: string;
+      body?: Record<string, any>;
+      metas?: Record<string, any>;
+    }): Promise<IAPIResponse<T>> => {
+      return instance
+        .post<T>(args.url, args.body, {
+          metas: args.metas,
+        } as CustomRequestConfig)
+        .then((res) => handleSuccessResponse<T>(res));
+    },
+
+    delete: <T = any>(args: {
+      url: string;
+      body?: Record<string, any>;
+      metas?: Record<string, any>;
+    }): Promise<IAPIResponse<T>> => {
+      return instance
+        .delete<T>(args.url, {
+          data: args.body,
+          metas: args.metas,
+        } as CustomRequestConfig)
+        .then((res) => handleSuccessResponse<T>(res));
+    },
+  };
+}
+const http = createHttpClient(instance);
+const proxyHttp = createHttpClient(postInstance);
 
 export { http, proxyHttp };
