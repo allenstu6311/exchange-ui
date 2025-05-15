@@ -48,17 +48,16 @@ export const getTickerBy24hr = async () => {
 
 export const getDepthData = async (params: any) => {
   const { symbol } = params;
-  const res = await http.get<DepthResponse>({
+  return http.get<DepthResponse>({
     url: `depth?symbol=${symbol}`,
   });
-  return res;
 };
 
 export const createOrder = async (body: OrderRequest) => {
   const { query, signature } = getSignature(body); // ✅ 產生簽名
   const finalQuery = `${query}&signature=${signature}`;
 
-  const res = await proxyHttp.post<OrderRequest>({
+  return proxyHttp.post<OrderRequest>({
     url: `order?${finalQuery}`,
     metas: {
       onSuccess() {
@@ -66,14 +65,13 @@ export const createOrder = async (body: OrderRequest) => {
       },
     },
   });
-  return res;
 };
 
 export const cancleOrder = async (body: ICancelOrderRequest) => {
   const { query, signature } = getSignature(body); // ✅ 產生簽名
   const finalQuery = `${query}&signature=${signature}`;
 
-  const res = await proxyHttp.delete<ICancelOrderRequest>({
+  return proxyHttp.delete<ICancelOrderRequest>({
     url: `order?${finalQuery}`,
     metas: {
       onSuccess() {
@@ -81,7 +79,6 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
       },
     },
   });
-  return res;
 };
 
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
@@ -89,21 +86,19 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { query, signature } = getSignature({
     timestamp: Date.now(),
     symbol,
-  }); // ✅ 產生簽名
+  });
   const finalQuery = `${query}&signature=${signature}`;
-  const res = await proxyHttp.get<ICurrentOrder[]>({
+  return proxyHttp.get<ICurrentOrder[]>({
     url: `openOrders?${finalQuery}`,
   });
-  return res;
 };
 
 export const getAccountInfo = async () => {
   const { query, signature } = getSignature({
     timestamp: Date.now(),
-  }); // ✅ 產生簽名
+  });
   const finalQuery = `${query}&signature=${signature}`;
-  const res = await proxyHttp.get<IAccountInfo>({
+  return proxyHttp.get<IAccountInfo>({
     url: `account?${finalQuery}`,
   });
-  return res;
 };
