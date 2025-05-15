@@ -17,7 +17,7 @@ function Home() {
     const getSymbolMetaMapIn = async () => {
       const exchangeInfo = await getSymbolMetaMap();
       if (exchangeInfo) {
-        const { symbols } = exchangeInfo;
+        const { symbols } = exchangeInfo.data;
         dispatch(setSymbolInfoList(symbols));
       }
     };

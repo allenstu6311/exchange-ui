@@ -1,12 +1,29 @@
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react";
 
-function CTabs() {
+export interface ITabData {
+  label: string;
+  index: number;
+}
+
+interface CTabsProps {
+  tabOnChange: (item: ITabData) => void;
+  tabData: ITabData[];
+}
+
+function CTabs({ tabOnChange, tabData }: CTabsProps) {
   return (
     <Tabs>
       <TabList>
-        <Tab>One</Tab>
-        <Tab>Two</Tab>
-        <Tab>Three</Tab>
+        {tabData.map((item) => (
+          <Tab
+            key={item.index}
+            onClick={() => {
+              tabOnChange(item);
+            }}
+          >
+            {item.label}
+          </Tab>
+        ))}
       </TabList>
     </Tabs>
   );

@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, setCurrentOrder } from "@/store";
 import { createDefaultOrderRequest } from "@/hook/TradeForm/utils";
 import { useTradeAvailability } from "@/hook/TradeForm";
-import CTabs from "@/components/tabs/index";
+import CTabs, { ITabData } from "@/components/tabs/index";
 import { useRef } from "react";
 
 export default function TradeForm() {
@@ -64,15 +64,15 @@ export default function TradeForm() {
     const getAccountInfoIn = async () => {
       const accountInfo = await getAccountInfo();
       if (accountInfo) {
-        setAccountInfo(accountInfo);
+        setAccountInfo(accountInfo.data);
       }
     };
     getAccountInfoIn();
   }, [base, orderMap]);
 
   const resetForm = () => {
-    buyFormRef.current?.reset()
-    sellFormRef.current?.reset()
+    buyFormRef.current?.reset();
+    sellFormRef.current?.reset();
   };
 
   const tradeBtnClick = async (order: OrderRequest) => {
@@ -84,9 +84,9 @@ export default function TradeForm() {
       quantity: Number(order.quantity),
     });
 
-    if(isMarket){
-      delete requestData.timeInForce
-      delete requestData.price
+    if (isMarket) {
+      delete requestData.timeInForce;
+      delete requestData.price;
     }
     // 下單
     const createRes = await createOrder(requestData);
@@ -95,20 +95,42 @@ export default function TradeForm() {
     const orderData = await getCurrentOrder({
       symbol: uppercaseSymbol,
     });
-    dispatch(setCurrentOrder(orderData));
+    dispatch(setCurrentOrder(orderData.data));
 
     // 重置form
-    if(createRes){
-    const actions = requestData.side === "BUY" ? buyFormRef : sellFormRef;
-    actions.current?.reset();
+    if (createRes) {
+      const actions = requestData.side === "BUY" ? buyFormRef : sellFormRef;
+      actions.current?.reset();
     }
+  };
 
+  enum TabsType {
+    SPOT = 0,
+    CROSS = 1,
+  }
+
+  const [currTabsIndex, setCurrTabsIndex] = useState<number>(0);
+
+  const tabData = [
+    {
+      label: "現貨",
+      index: 0,
+    },
+    {
+      label: "全倉",
+      index: 1,
+    },
+  ];
+
+  const tabOnChange = (currTab: ITabData) => {
+    console.log("currTab", currTab);
+    setCurrTabsIndex(currTab.index);
   };
 
   return (
     <div className="p-16px">
       <div className="mb-20px">
-        <CTabs />
+        <CTabs tabOnChange={tabOnChange} tabData={tabData} />
       </div>
       {/* tab */}
       <div className="flex gap-16px mb-16px">
@@ -118,7 +140,7 @@ export default function TradeForm() {
           })}
           onClick={() => {
             setTradeType("LIMIT");
-            resetForm()
+            resetForm();
           }}
         >
           限價
@@ -129,14 +151,17 @@ export default function TradeForm() {
           })}
           onClick={() => {
             setTradeType("MARKET");
-            resetForm()
+            resetForm();
           }}
         >
           市價
         </span>
       </div>
       {/* form */}
-      <div className="flex gap-16px">
+      <div
+        className="flex gap-16px"
+        style={{ display: currTabsIndex === TabsType.SPOT ? "flex" : "none" }}
+      >
         {/* 買入 */}
         <div className="w-full">
           <ExForm

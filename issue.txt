@@ -1,11 +1,9 @@
 (進行中)
-處理前端res.success
-
+4.Table組件拆成兩個table支援滾動
 
 1.市場tab切換USDT, USDC...
 2.市場查詢功能
-4.Table組件拆成兩個table支援滾動
+
 5.WebSocket封裝
 6.endsWith("USDT")
 7.輪詢更新訂單
-8.拉霸計算

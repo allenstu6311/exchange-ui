@@ -138,7 +138,7 @@ const ExForm = forwardRef(function ExForm(
           </InputRightElement>
         </InputGroup>
 
-        <InputGroup className="my-8px">
+        <InputGroup className="my-8px px-8px">
           <Slider
             aria-label="slider-ex-1"
             defaultValue={0}

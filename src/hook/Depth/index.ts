@@ -14,8 +14,8 @@ export function useDepthData({
   useEffect(() => {
     const getDepthDataIn = async () => {
       const res = await getDepthData({ symbol: symbol.toUpperCase() });
-      const askData = handleDepthData(res.asks.reverse());
-      const bidsData = handleDepthData(res.bids);
+      const askData = handleDepthData(res.data.asks.reverse());
+      const bidsData = handleDepthData(res.data.bids);
 
       setAskData(askData.reverse());
       setBidsData(bidsData);

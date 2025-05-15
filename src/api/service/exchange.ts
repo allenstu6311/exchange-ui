@@ -15,14 +15,13 @@ import { getSignature } from "@/utils";
 import { successToast } from "@/utils/notify";
 
 export const getSymbolMetaMap = async () => {
-  const res = await http.get<ExchangeInfoResponse>({
+  return http.get<ExchangeInfoResponse>({
     url: "/exchangeInfo",
   });
-  return res.data;
 };
 
 export const getTickerBy24hr = async () => {
-  const res = await http.get<Ticker24hrStat[]>({
+  return http.get<Ticker24hrStat[]>({
     url: "/ticker/24hr",
     params: {},
     metas: {
@@ -36,7 +35,6 @@ export const getTickerBy24hr = async () => {
       ],
     },
   });
-  return res.data;
 };
 
 // 暫時停用
@@ -53,7 +51,7 @@ export const getDepthData = async (params: any) => {
   const res = await http.get<DepthResponse>({
     url: `depth?symbol=${symbol}`,
   });
-  return res.data;
+  return res;
 };
 
 export const createOrder = async (body: OrderRequest) => {
@@ -68,7 +66,7 @@ export const createOrder = async (body: OrderRequest) => {
       },
     },
   });
-  return res.data;
+  return res;
 };
 
 export const cancleOrder = async (body: ICancelOrderRequest) => {
@@ -83,7 +81,7 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
       },
     },
   });
-  return res.data;
+  return res;
 };
 
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
@@ -96,7 +94,7 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const res = await proxyHttp.get<ICurrentOrder[]>({
     url: `openOrders?${finalQuery}`,
   });
-  return res.data;
+  return res;
 };
 
 export const getAccountInfo = async () => {
@@ -107,5 +105,5 @@ export const getAccountInfo = async () => {
   const res = await proxyHttp.get<IAccountInfo>({
     url: `account?${finalQuery}`,
   });
-  return res.data;
+  return res;
 };

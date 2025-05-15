@@ -71,7 +71,7 @@ export default function OrderList() {
       const res = await getCurrentOrder({
         symbol: uppercaseSymbol,
       });
-      dispatch(setCurrentOrder(res));
+      dispatch(setCurrentOrder(res.data));
     }
 
     getCurrentOrderIn();
@@ -87,7 +87,7 @@ export default function OrderList() {
       timestamp: Date.now(),
     });
 
-    if (res) {
+    if (res.success) {
       const newOrderMap = orderMap.current.filter(
         (item: ICurrentOrder) => item.orderId !== orderId
       );

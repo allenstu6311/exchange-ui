@@ -30,8 +30,8 @@ export function useMarketData() {
   useEffect(() => {
     const getTickerBy24hrIn = async () => {
       const res = await getTickerBy24hr();
-      setMarketData(res.filter((item) => item.symbol.endsWith("USDT")));
-      setImmediateSymbolTicker(res);
+      setMarketData(res.data.filter((item) => item.symbol.endsWith("USDT")));
+      setImmediateSymbolTicker(res.data);
 
       worker.postMessage({
         type: "ticker",
