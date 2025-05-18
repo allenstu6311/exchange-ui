@@ -1,7 +1,7 @@
 import { getKlinesData } from "@/api/service/exchange/exchange";
 import { RootState } from "@/store";
 import { IKlineData } from "./types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { generateKlineChart, transformKlineData } from "./utils";
 import worker from "@/workers";
@@ -60,7 +60,7 @@ export function useKlineData() {
 }
 
 export function useKlineChart(container: HTMLElement | null) {
-  const [KlineChart, setKlineChart] = useState<IChartApi>();
+  const chartRef = useRef<IChartApi>(null);
   const [series, setSeries] = useState<ISeriesApi<"Candlestick", Time>>();
 
   const uppercaseSymbol = useSelector((state: RootState) => {
@@ -69,13 +69,13 @@ export function useKlineChart(container: HTMLElement | null) {
 
   useEffect(() => {
     if (container) {
-      if (KlineChart) {
-        KlineChart.remove();
+      if (chartRef.current) {
+        chartRef.current.remove();
       }
 
       const { candlestickSeries, chart } = generateKlineChart(container);
       setSeries(candlestickSeries);
-      setKlineChart(chart);
+      chartRef.current = chart;
     }
   }, [uppercaseSymbol, container]);
 
