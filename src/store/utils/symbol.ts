@@ -6,7 +6,7 @@ const makePrettySymbol = (base: string, quote: string) => {
 
 export const handleSymbolName = (
   currentSymbol: SymbolInfoListTypes
-): SymbolNameMapType => {
+): SymbolNameMapType => {  
   const { baseAsset, quoteAsset, symbol } = currentSymbol;
   return {
     base: baseAsset,

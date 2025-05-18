@@ -2,7 +2,7 @@ import {
   createOrder,
   getAccountInfo,
   getCurrentOrder,
-} from "@/api/service/exchange";
+} from "@/api/service/exchange/exchange";
 import { IAccountInfo, OrderRequest, OrderSide, OrderType } from "@/types";
 import { useEffect, useState } from "react";
 import classNames from "classnames";
@@ -60,15 +60,16 @@ export default function TradeForm() {
   const { maxBuyQty, quoteFree, maxSellAmount, baseFree } =
     useTradeAvailability(balances, base, quote, lastPrice);
 
+  const getAccountInfoIn = async () => {
+    const res = await getAccountInfo();
+    if (res.success) {
+      setAccountInfo(res.data);
+    }
+  };
+
   useEffect(() => {
-    const getAccountInfoIn = async () => {
-      const accountInfo = await getAccountInfo();
-      if (accountInfo) {
-        setAccountInfo(accountInfo.data);
-      }
-    };
     getAccountInfoIn();
-  }, [base, orderMap]);
+  }, [base]);
 
   const resetForm = () => {
     buyFormRef.current?.reset();
@@ -96,6 +97,7 @@ export default function TradeForm() {
       symbol: uppercaseSymbol,
     });
     dispatch(setCurrentOrder(orderData.data));
+    await getAccountInfoIn();
 
     // 重置form
     if (createRes) {
@@ -123,7 +125,6 @@ export default function TradeForm() {
   ];
 
   const tabOnChange = (currTab: ITabData) => {
-    console.log("currTab", currTab);
     setCurrTabsIndex(currTab.index);
   };
 
@@ -203,6 +204,7 @@ export default function TradeForm() {
         {/* 賣出 */}
         <div className="w-full">
           <ExForm
+            ref={sellFormRef}
             setFormData={setSellFormData}
             formData={sellFormData}
             symbolMap={symbolMap}

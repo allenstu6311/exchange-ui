@@ -1,9 +1,9 @@
 import { http, proxyHttp } from "@/api";
+import { IKlinesRequest } from "@/hook/TradeView/types";
 import {
   DepthResponse,
   ExchangeInfoResponse,
   SymbolInfoListTypes,
-  KlineParam,
   Ticker24hrStat,
   OrderRequest,
   ICurrentOrder,
@@ -25,8 +25,8 @@ export const getTickerBy24hr = async () => {
     url: "/ticker/24hr",
     params: {},
     metas: {
-      onSuccess() {},
-      onError() {},
+      onSuccess() { },
+      onError() { },
       retry: 3,
       middleware: [
         (config: any, result: any) => {
@@ -37,14 +37,15 @@ export const getTickerBy24hr = async () => {
   });
 };
 
-// 暫時停用
-// export async function getKlinesData(params: KlineParam) {
-//   const { symbol, interval } = params;
-//   const data = await http.get({
-//     url: `klines?symbol=${symbol}&interval=${interval}`,
-//   });
-//   return data;
-// }
+export async function getKlinesData(params: IKlinesRequest) {
+  const data = await http.get({
+    //      url: `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000&startTime=1672531200000
+    // `,
+    url: `https://api.binance.com/api/v3/klines`,
+    params,
+  });
+  return data;
+}
 
 export const getDepthData = async (params: any) => {
   const { symbol } = params;

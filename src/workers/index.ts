@@ -1,5 +1,9 @@
 import { WorkerRequest } from "@/types";
 
+/**
+ * 1.重連機制
+ * 2.心跳檢測
+ */
 class WorkerClient {
   private worker: Worker;
 

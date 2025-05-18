@@ -1,6 +1,6 @@
 import { DepthTable, UseDepthDataParam } from "@/types";
 import { useEffect, useRef, useState } from "react";
-import { getDepthData } from "@/api/service/exchange";
+import { getDepthData } from "@/api/service/exchange/exchange";
 import { handleDepthData } from "./utils";
 import worker from "@/workers";
 

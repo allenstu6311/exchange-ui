@@ -4,9 +4,10 @@ import { useMarketData } from "@/hook/Market";
 import { Input } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
-import { SymbolInfoListTypes } from "@/types";
+import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
 import { setSymbolName } from "@/store";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
+import { useEffect, useRef, useState } from "react";
 
 export default function Market() {
   const symbolInfoList: SymbolInfoListTypes[] = useSelector(
@@ -14,7 +15,6 @@ export default function Market() {
       return state.symbolInfoList.list;
     }
   );
-  // console.log("symbolInfoList", symbolInfoList);
 
   const { marketData } = useMarketData();
   const tableHeader = [
@@ -43,14 +43,41 @@ export default function Market() {
   ];
   const dispatch = useDispatch<AppDispatch>();
 
+  const [visibleMarketData, setVisibleMarketData] =
+    useState<Ticker24hrStat[]>(marketData);
+  const [filtering, setfiltering] = useState(false);
+
+  useEffect(() => {
+    if (!filtering) {
+      setVisibleMarketData(marketData);
+    }
+  }, [marketData]);
+
+  const filterMarketData = (value: string) => {
+    if (value) {
+      setfiltering(true);
+      setVisibleMarketData(
+        visibleMarketData.filter((item) => item.symbol.includes(value))
+      );
+    } else {
+      setfiltering(false);
+      setVisibleMarketData(marketData)
+    }
+  };
+
   return (
-    <div className="">
+    <div className="h-full">
       <div className="p-8px">
-        <Input placeholder="請輸入幣對名稱" />
+        <Input
+          placeholder="請輸入幣對名稱"
+          onInput={(e) =>
+            filterMarketData((e.target as HTMLInputElement).value)
+          }
+        />
       </div>
       <CTable
         columnData={tableHeader}
-        rowData={marketData}
+        rowData={visibleMarketData}
         trOnClick={(item) => {
           dispatch(
             setSymbolName(getCurrentSymbolInfo(item.symbol, symbolInfoList))

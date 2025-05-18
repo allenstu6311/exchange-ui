@@ -25,5 +25,5 @@ export function handleDepthData(depthData: string[][]): DepthTable[] {
       ...row,
       ratio: maxAmount > 0 ? (row.amount / maxAmount) * 100 : 0,
     }))
-    .slice(0, 17);
+    .slice(0, 16);
 }

@@ -1,7 +1,8 @@
-import { formatNumToFixed, thousandComma, formatNumWithComma } from "./format";
+import { formatNumToFixed, thousandComma, formatNumWithComma, transformTickerData } from "./format";
 import { getSignature } from "./sign";
 import { isNumber } from "./general";
 import { add, sub, div, mul} from "./calcaute"
+import { polling } from "./polling";
 
 export {
   formatNumToFixed,
@@ -12,5 +13,7 @@ export {
   add,
   sub,
   div,
-  mul
+  mul,
+  polling,
+  transformTickerData
 };

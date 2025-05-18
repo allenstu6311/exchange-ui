@@ -1,12 +1,13 @@
 import { Grid, GridItem } from "@chakra-ui/react";
 import TradingPairHeader from "@/components/TradingPairHeader";
 import Depth from "@/components/Depth";
-import TradeView from "@/components/TradeView";
+// import TradeView from "@/components/TradeView";
+import TradeView from "@/components/_TradeView";
 import TradeForm from "@/components/TradeForm";
 import "@/App.css";
 import Market from "@/components/Market";
 import { useEffect } from "react";
-import { getSymbolMetaMap } from "@/api/service/exchange";
+import { getSymbolMetaMap } from "@/api/service/exchange/exchange";
 import { useDispatch } from "react-redux";
 import { AppDispatch, setSymbolInfoList } from "@/store";
 import OrderList from "@/components/OrderList";
@@ -79,7 +80,7 @@ function Home() {
           </GridItem>
           <GridItem
             area={"Market"}
-            overflowY={"auto"}
+            // overflowY={"auto"}
             className="bg-#FFFF rd-10px"
           >
             <Market />

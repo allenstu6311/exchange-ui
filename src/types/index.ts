@@ -41,11 +41,6 @@ export interface CTableProps {
   trOnClick?: (item: any) => any;
 }
 
-export interface KlineParam {
-  symbol: string;
-  interval: string;
-}
-
 export interface DepthResponse {
   asks: string[][];
   bids: string[][];
@@ -339,3 +334,4 @@ export interface IAccountInfo {
   permissions: string[];
   uid: number;
 }
+

@@ -1,10 +1,14 @@
-import { getCurrentOrder, cancleOrder } from "@/api/service/exchange";
+import { getCurrentOrder, cancleOrder } from "@/api/service/exchange/exchange";
 import { ICurrentOrder } from "@/types";
 import { useEffect, useState } from "react";
 import CTable from "./table";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, setCurrentOrder } from "@/store";
-import { Button } from "@chakra-ui/react";
+import { Button, Td } from "@chakra-ui/react";
+import { polling } from "@/utils";
+import { IPollingController } from "@/utils/polling";
+
+let pollingGetCurrentOrder: IPollingController | null = null;
 
 export default function OrderList() {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,7 +46,7 @@ export default function OrderList() {
       key: "operation",
       render: (content: string, rowData: ICurrentOrder) => {
         return (
-          <div className="my-5px">
+          <Td className="my-5px text-center" key={rowData.orderId}>
             <Button
               className=""
               size="xs"
@@ -52,7 +56,7 @@ export default function OrderList() {
             >
               取消訂單
             </Button>
-          </div>
+          </Td>
         );
       },
     },
@@ -66,21 +70,23 @@ export default function OrderList() {
     return state.orderMap;
   });
 
-  useEffect(() => {
-    async function getCurrentOrderIn() {
-      const res = await getCurrentOrder({
-        symbol: uppercaseSymbol,
-      });
-      dispatch(setCurrentOrder(res.data));
-    }
+  async function getCurrentOrderIn() {
+    const res = await getCurrentOrder({
+      symbol: uppercaseSymbol,
+    });
+    dispatch(setCurrentOrder(res.data));
+  }
 
-    getCurrentOrderIn();
+  useEffect(() => {
+    if (pollingGetCurrentOrder) {
+      pollingGetCurrentOrder.stop();
+    }
+    pollingGetCurrentOrder = polling(getCurrentOrderIn, 3000);
+    pollingGetCurrentOrder.start();
   }, [uppercaseSymbol]);
 
   const handleCancelOrder = async (orderInfo: ICurrentOrder) => {
-    console.log("orderInfo", orderInfo);
     const { symbol, orderId, side } = orderInfo;
-
     const res = await cancleOrder({
       symbol,
       orderId,

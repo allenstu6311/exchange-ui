@@ -6,6 +6,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { errorToast, successToast } from "@/utils/notify";
+import { log } from "node:console";
 
 const API_KEY =
   "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
@@ -56,6 +57,7 @@ async function handleSuccessResponse<T = any>(
   response: AxiosResponse
 ): Promise<IAPIResponse<T>> {
   const { status, data, config } = response;
+  
   const { onSuccess } =
     (config as CustomInternalAxiosRequestConfig).metas || {};
   if (status === 200) {
@@ -144,7 +146,7 @@ class HttpInstance {
           }
         }
 
-        return handleErrorResponse(error.config, error.response);
+        return Promise.reject(await handleErrorResponse(config, error.response));        
       }
     );
   }
@@ -179,7 +181,6 @@ function createHttpClient(instance: AxiosInstance) {
         } as CustomRequestConfig)
         .then((res) => handleSuccessResponse<T>(res));
     },
-
     delete: async <T = any>(args: {
       url: string;
       body?: Record<string, any>;

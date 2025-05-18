@@ -35,64 +35,74 @@ function CTable({
   trOnClick = () => {},
 }: CTableProps) {
   return (
-    <TableContainer>
-      <Table variant="simple" size="sm">
-        <Thead>
-          <Tr>
-            {columnData.map((columnName, index) => {
-              return <Th key={index}>{columnName.label}</Th>;
+    <>
+      <TableContainer>
+        <Table>
+          <Thead >
+            <Tr>
+              {columnData.map((columnName, index) => {
+                return <Th  hidden={columnName.label === ''} key={index}>{columnName.label}</Th>;
+              })}
+            </Tr>
+          </Thead>
+        </Table>
+      </TableContainer>
+      <TableContainer className="h-[calc(100%-95px)]" overflowY="auto">
+        <Table variant="simple" size="sm">
+          <Tbody>
+            {rowData.map((item, itemIndex) => {
+              return (
+                <Tr
+                  key={itemIndex}
+                  style={rowStyle}
+                  onClick={() => trOnClick(item)}
+                >
+                  {columnData.map((column, columnIndex) => {
+                    // 欄位值
+                    const rawValue = item[column.key]?.toString();
+                    // 是否需要format
+                    const content = column.format
+                      ? column.format(rawValue, item)
+                      : rawValue;
+                    // 動態樣式
+                    const style = column.getStyle
+                      ? column.getStyle(rawValue, item)
+                      : undefined;
+
+                    // 動態className
+                    const className =
+                      typeof column.className === "function"
+                        ? column.className(rawValue, item)
+                        : column.className;
+
+                    if (column.render) {
+                      return column.render(content, item, columnIndex);
+                    } else {
+                      return (
+                        <Td
+                          key={columnIndex}
+                          style={style}
+                          className={className}
+                        >
+                          {content}
+                        </Td>
+                      );
+                    }
+                  })}
+                </Tr>
+              );
             })}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {rowData.map((item, itemIndex) => {
-            return (
-              <Tr
-                key={itemIndex}
-                style={rowStyle}
-                onClick={() => trOnClick(item)}
-              >
-                {columnData.map((column, columnIndex) => {
-                  // 欄位值
-                  const rawValue = item[column.key]?.toString();
-                  // 是否需要format
-                  const content = column.format
-                    ? column.format(rawValue, item)
-                    : rawValue;
-                  // 動態樣式
-                  const style = column.getStyle
-                    ? column.getStyle(rawValue, item)
-                    : undefined;
-
-                  // 動態className
-                  const className =
-                    typeof column.className === "function"
-                      ? column.className(rawValue, item)
-                      : column.className;
-
-                  if (column.render) {
-                    return column.render(content, item, columnIndex);
-                  } else {
-                    return (
-                      <Td key={columnIndex} style={style} className={className}>
-                        {content}
-                      </Td>
-                    );
-                  }
-                })}
-              </Tr>
-            );
-          })}
-        </Tbody>
-        {/* <Tfoot>
+          </Tbody>
+          {/* <Tfoot>
           <Tr>
             <Th>To convert</Th>
             <Th>into</Th>
             <Th isNumeric>multiply by</Th>
           </Tr>
         </Tfoot> */}
-      </Table>
-    </TableContainer>
+        </Table>
+      </TableContainer>
+    </>
   );
 }
 export default CTable;

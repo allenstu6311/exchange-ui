@@ -57,12 +57,12 @@ export default function TradingPairHeader() {
       content: formatNumWithComma(lowPrice),
     },
     {
-      title: "24h成交價",
-      content: formatNumWithComma(quoteVolume),
+      title: "24h成交量",
+      content: formatNumWithComma(volume),
     },
     {
       title: "24h成交額",
-      content: formatNumWithComma(volume),
+      content: formatNumWithComma(quoteVolume),
     },
   ];
 

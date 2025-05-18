@@ -1,9 +1,10 @@
 (進行中)
-4.Table組件拆成兩個table支援滾動
+K線上面要有文字
+把生成圖的方法做成hook根據幣別動態變更
+
 
 1.市場tab切換USDT, USDC...
-2.市場查詢功能
-
-5.WebSocket封裝
-6.endsWith("USDT")
-7.輪詢更新訂單
+2.虛擬滾動
+3.endsWith("USDT")
+4.WebSocket封裝
+5.歷史訂單

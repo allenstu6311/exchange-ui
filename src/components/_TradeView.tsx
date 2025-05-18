@@ -1,45 +1,33 @@
-import { useEffect, useRef } from "react";
-import { getKlinesData } from "@/api/service/exchange";
-import { createChart, LineSeries } from "lightweight-charts";
-
-function convertBinanceKlineToChart(data: any[][]) {
-    return data.map((item, index) => ({
-      time: `${2018 + index}-12-12`,  // 轉換成秒為單位
-      value :parseFloat(item[1]),
-      open: parseFloat(item[1]),
-      high: parseFloat(item[2]),
-      low: parseFloat(item[3]),
-      close: parseFloat(item[4]),
-    }));
-}
+import { useEffect, useRef, useState } from "react";
+import { ISeriesApi, Time } from "lightweight-charts";
+import useKlineData from "@/hook/TradeView";
+import { generateKlineChart } from "@/hook/TradeView/utils";
 
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
-  let isRender = false;
+
+  const { KlineData, WsKlineData } = useKlineData();
+  const [KlineChart, setKlineChart] =
+    useState<ISeriesApi<"Candlestick", Time>>();
 
   useEffect(() => {
-    const getKlinesDataIn = async () => {
-      const res = await getKlinesData({
-        symbol: "BTCUSDT",
-        interval: "1m",
-      });
-        console.log("res", res);
-      if (!chartContainerRef.current || isRender) return;
-      const chart = createChart(chartContainerRef.current, {
-        width: 800,
-        height: 600,
-      });
-      const lineSeries = chart.addSeries(LineSeries);
-      const data = convertBinanceKlineToChart(res.data)
-      lineSeries.setData(data);
-      isRender = true;
-    };
-
-    getKlinesDataIn();
-  }, []);
+    if (KlineData.length && chartContainerRef.current) {
+      if (KlineChart) {
+        if (WsKlineData.time) {
+          KlineChart.update(WsKlineData);
+        }
+      } else {
+        const { candlestickSeries } = generateKlineChart(
+          chartContainerRef.current as HTMLElement
+        );
+        candlestickSeries.setData(KlineData);
+        setKlineChart(candlestickSeries);
+      }
+    }
+  }, [KlineData, WsKlineData]);
 
   return (
-    <div className="" ref={chartContainerRef}>
+    <div className="w-full h-full" ref={chartContainerRef}>
       <div className=""></div>
     </div>
   );

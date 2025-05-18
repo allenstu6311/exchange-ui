@@ -1,4 +1,4 @@
-import { getTickerBy24hr } from "@/api/service/exchange";
+import { getTickerBy24hr } from "@/api/service/exchange/exchange";
 import { Ticker24hrStat } from "@/types";
 import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
