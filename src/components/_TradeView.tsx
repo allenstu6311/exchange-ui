@@ -1,30 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { ISeriesApi, Time } from "lightweight-charts";
-import useKlineData from "@/hook/TradeView";
-import { generateKlineChart } from "@/hook/TradeView/utils";
+import { useKlineData, useKlineChart } from "@/hook/TradeView";
 
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
 
   const { KlineData, WsKlineData } = useKlineData();
-  const [KlineChart, setKlineChart] =
-    useState<ISeriesApi<"Candlestick", Time>>();
+  const { series } = useKlineChart(chartContainerRef?.current);
 
   useEffect(() => {
-    if (KlineData.length && chartContainerRef.current) {
-      if (KlineChart) {
-        if (WsKlineData.time) {
-          KlineChart.update(WsKlineData);
-        }
-      } else {
-        const { candlestickSeries } = generateKlineChart(
-          chartContainerRef.current as HTMLElement
-        );
-        candlestickSeries.setData(KlineData);
-        setKlineChart(candlestickSeries);
-      }
+    if (KlineData.length) {
+      series?.setData(KlineData);
     }
-  }, [KlineData, WsKlineData]);
+  }, [KlineData, series]);
+
+  useEffect(() => {
+    if (WsKlineData.time) {
+      series?.update(WsKlineData);
+    }
+  }, [WsKlineData, series]);
 
   return (
     <div className="w-full h-full" ref={chartContainerRef}>
