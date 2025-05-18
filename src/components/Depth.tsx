@@ -103,7 +103,7 @@ export default function Depth() {
       </div>
       <CTable columnData={asksHeader} rowData={askData} rowStyle={rowStyle} />
       <div
-        className={`text-20px flex items-center gap-5px px-16px py-8px ${lasPriceStyle}`}
+        className={`text-20px flex items-center gap-5px px-16px py-5px ${lasPriceStyle}`}
       >
         <p>{formatNumToFixed(currentMarketData.lastPrice, 2)}</p>
         <p> {arrow}</p>

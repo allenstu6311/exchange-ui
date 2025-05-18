@@ -39,22 +39,22 @@ function Home() {
           `}
           gridTemplateColumns={`
             1fr 
-            minmax(253px, 320px) 
-            minmax(510px, 880px) 
+            minmax(253px, 320px)
+            minmax(510px, 1080px) 
             minmax(253px, 320px) 
             1fr
           `}
           gridTemplateRows={`    
             56px 
             minmax(500px, 1fr) 
-            minmax(320px, 450px) 
+            minmax(320px, 440px) 
             320px
             24px`}
           gap="1"
           color="blackAlpha.700"
           fontWeight="bold"
           w="100%"
-          maxH="1600px"
+          maxH="1610px"
         >
           <GridItem area={"header"} className="bg-#FFFF rd-10px">
             <TradingPairHeader />
