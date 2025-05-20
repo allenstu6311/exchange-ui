@@ -1,11 +1,22 @@
+import { log } from "node:console";
+import { klineTimelyData } from "./../../store/kline";
 import { getKlinesData } from "@/api/service/exchange/exchange";
-import { RootState } from "@/store";
+import { AppDispatch, RootState, setKlineTimelyData } from "@/store";
 import { IKlineData } from "./types";
-import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { generateKlineChart, transformKlineData } from "./utils";
 import worker from "@/workers";
-import { IChartApi, ISeriesApi, Time, UTCTimestamp } from "lightweight-charts";
+import {
+  BarData,
+  IChartApi,
+  ISeriesApi,
+  OhlcData,
+  Time,
+  UTCTimestamp,
+} from "lightweight-charts";
+import { Lengend } from "@/components/_TradeView";
+import { createRoot } from "react-dom/client";
 
 export function useKlineData() {
   const [KlineData, setKlineData] = useState<IKlineData[]>([]);
@@ -24,7 +35,7 @@ export function useKlineData() {
   const lowercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.lowercaseSymbol;
   });
-
+  const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     const getKlinesDataIn = async () => {
       const res = await getKlinesData({
@@ -34,7 +45,8 @@ export function useKlineData() {
         startTime: 1672531200000,
       });
       if (res.success) {
-        setKlineData(transformKlineData(res.data));
+        const klineData = transformKlineData(res.data);
+        setKlineData(klineData);
       }
 
       worker.postMessage({
@@ -49,17 +61,21 @@ export function useKlineData() {
       const { type, data } = response.data;
       if (type !== "kline") return;
       setWsKlineData(data);
+      dispatch(setKlineTimelyData({ ...data }));
     };
 
     getKlinesDataIn();
     worker.subscribe(handleWsKlineData);
     return () => worker.destroy(handleWsKlineData);
-  }, [uppercaseSymbol, lowercaseSymbol]);
+  }, [uppercaseSymbol, lowercaseSymbol, dispatch]);
 
   return { KlineData, WsKlineData };
 }
 
-export function useKlineChart(container: HTMLElement | null) {
+export function useKlineChart(
+  container: HTMLElement | null,
+  WsKlineData: IKlineData
+) {
   const chartRef = useRef<IChartApi>(null);
   const [series, setSeries] = useState<ISeriesApi<"Candlestick", Time>>();
 
@@ -67,17 +83,56 @@ export function useKlineChart(container: HTMLElement | null) {
     return state.symbolNameMap.uppercaseSymbol;
   });
 
+  const hasInitializedRef = useRef(false);
+
+  const latestWsDataRef = useRef(WsKlineData);
+
   useEffect(() => {
-    if (container) {
+    latestWsDataRef.current = WsKlineData;
+  }, [WsKlineData]);
+
+  useEffect(() => {
+    // 容器資料都準備好才開始渲染
+    if (!hasInitializedRef.current && container && WsKlineData.time) {
+      hasInitializedRef.current = true; //避免Ws影響
+      container.innerHTML = "";
       if (chartRef.current) {
         chartRef.current.remove();
       }
 
       const { candlestickSeries, chart } = generateKlineChart(container);
       setSeries(candlestickSeries);
+
+      const legendContainer = document.createElement("div");
+      container.appendChild(legendContainer);
+      const legendRoot = createRoot(legendContainer);
+
+      legendRoot.render(
+        React.createElement(Lengend, {
+          ...WsKlineData,
+        })
+      );
+
+      chart.subscribeCrosshairMove((param) => {
+        if (param.time) {
+          const data = param.seriesData.get(candlestickSeries) as OhlcData;
+
+          legendRoot.render(
+            React.createElement(Lengend, {
+              ...data, // BarData: open, high, low, close
+            })
+          );
+        } else {
+          legendRoot.render(
+            React.createElement(Lengend, {
+              ...latestWsDataRef.current,
+            })
+          );
+        }
+      });
       chartRef.current = chart;
     }
-  }, [uppercaseSymbol, container]);
+  }, [uppercaseSymbol, container, WsKlineData]);
 
   return { series };
 }

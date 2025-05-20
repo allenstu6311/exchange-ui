@@ -26,11 +26,8 @@ export const symbolNameMap = createSlice({
         console.error("symbolName與symbolInfoList名稱不匹配");
         return;
       }
-    
-      
       const newState = handleSymbolName(action.payload);
-        console.log('newState',newState);
-      return newState
+      return newState;
     },
   },
 });

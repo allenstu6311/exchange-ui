@@ -1,6 +1,6 @@
 (進行中)
-K線上面要有文字
-把生成圖的方法做成hook根據幣別動態變更
+K線下面的柱狀圖，或更多其他資訊
+https://tradingview.github.io/lightweight-charts/tutorials/how_to/legends
 
 
 1.市場tab切換USDT, USDC...
