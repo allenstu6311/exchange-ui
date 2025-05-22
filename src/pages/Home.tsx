@@ -66,10 +66,7 @@ function Home() {
           >
             <Depth />
           </GridItem>
-          <GridItem
-            area={"TradeView"}
-            className="bg-#FFFF rd-10px overflow-hidden"
-          >
+          <GridItem area={"TradeView"} className="bg-#FFFF rd-10px">
             <TradeView />
           </GridItem>
           <GridItem area={"TradeForm"} className="bg-#FFFF rd-10px">

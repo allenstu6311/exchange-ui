@@ -122,7 +122,16 @@ export function useKlineChart(
       setBarSeries(volumeSeries);
 
       const legendContainer = document.createElement("div");
+
+      legendContainer.style.position = "absolute";
+      legendContainer.style.top = "0";
+      legendContainer.style.left = "0";
+      legendContainer.style.pointerEvents = "none";
+      legendContainer.style.zIndex = "10";
+      legendContainer.style.width = "100%";
+
       container.appendChild(legendContainer);
+
       const legendRoot = createRoot(legendContainer);
 
       legendRoot.render(

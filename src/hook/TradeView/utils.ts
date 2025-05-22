@@ -60,6 +60,18 @@ export function generateKlineChart(container: HTMLElement) {
     // },
   };
   const chart = createChart(container, chartOptions);
+  // chart.resize(container.offsetWidth, container.offsetHeight);
+
+  chart.applyOptions({
+    rightPriceScale: {
+      scaleMargins: {
+        top: 0.3, // leave some space for the legend
+        bottom: 0.25,
+      },
+      borderVisible: false,
+    },
+  });
+
   const candlestickSeries = chart.addSeries(CandlestickSeries, {
     upColor: "#26a69a",
     downColor: "#ef5350",
@@ -82,6 +94,7 @@ export function generateKlineChart(container: HTMLElement) {
       bottom: 0,
     },
   });
+  // chart.timeScale().fitContent();
 
   return { candlestickSeries, volumeSeries, chart };
 }
