@@ -1,4 +1,4 @@
-import { IKlineData, KlineTuple } from "./types";
+import { IBarData, IKlineData, KlineTuple } from "./types";
 import dayjs from "dayjs";
 import {
   CandlestickSeries,
@@ -6,6 +6,7 @@ import {
   ColorType,
   createChart,
   DeepPartial,
+  HistogramSeries,
   UTCTimestamp,
 } from "lightweight-charts";
 
@@ -19,7 +20,6 @@ export function transformKlineData(data: KlineTuple[]): IKlineData[] {
       //     month: d.month() + 1, // ✅ 注意：dayjs 的 month 從 0 開始
       //     day: d.date(),
       // },
-      // value: parseFloat(item[1]),
       open: parseFloat(item[1]),
       high: parseFloat(item[2]),
       low: parseFloat(item[3]),
@@ -27,10 +27,19 @@ export function transformKlineData(data: KlineTuple[]): IKlineData[] {
     };
   });
   // .filter(({ high, low }) => {
-  //   const maxReasonable = 1.2 * 110000; // 依你幣種與當前行情設上下限
   //   const minReasonable = 0.8 * 100000;
   //   return high < maxReasonable && low > minReasonable;
   // });
+}
+
+export function transformBarData(data: KlineTuple[]): IBarData[] {
+  return data.map((item, index) => {
+    return {
+      time: Math.floor(item[0] / 1000) as UTCTimestamp, // 轉換成秒為單位、、
+      value: parseFloat(item[5]),
+      color: parseFloat(item[4]) >= parseFloat(item[1]) ? "#26a69a" : "#ef5350", // or custom logic
+    };
+  });
 }
 
 export function generateKlineChart(container: HTMLElement) {
@@ -59,5 +68,20 @@ export function generateKlineChart(container: HTMLElement) {
     wickDownColor: "#ef5350",
   });
 
-  return { candlestickSeries, chart };
+  const volumeSeries = chart.addSeries(HistogramSeries, {
+    // color: "#26a69a",
+    priceFormat: {
+      type: "volume",
+    },
+    priceScaleId: "", // set as an overlay by setting a blank priceScaleId
+  });
+
+  volumeSeries.priceScale().applyOptions({
+    scaleMargins: {
+      top: 0.9, // highest point of the series will be 70% away from the top
+      bottom: 0,
+    },
+  });
+
+  return { candlestickSeries, volumeSeries, chart };
 }

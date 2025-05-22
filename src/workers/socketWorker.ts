@@ -1,8 +1,7 @@
 import { transformTickerData } from "@/utils";
-import { transformKlineFromWs } from "./utils";
+import { transformKlineFromWs, transformVolumFromWs } from "./utils";
 
 const sockets: Record<string, WebSocket> = {};
-
 
 const postMessage = ({ type, data, url }: any) => {
   self.postMessage({
@@ -29,10 +28,18 @@ self.onmessage = (e) => {
   sockets[type].onmessage = (event) => {
     let data = JSON.parse(event.data);
 
-    switch(type){
-      case 'ticker': data = transformTickerData(data); break;
-      case 'kline' : data = transformKlineFromWs(data); break;
-      default : break;
+    switch (type) {
+      case "ticker":
+        data = transformTickerData(data);
+        break;
+      case "kline":
+        data = {
+          kline: transformKlineFromWs(data),
+          bar: transformVolumFromWs(data),
+        };
+        break;
+      default:
+        break;
     }
     postMessage({
       type,

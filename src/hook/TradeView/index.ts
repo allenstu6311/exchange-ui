@@ -2,10 +2,14 @@ import { log } from "node:console";
 import { klineTimelyData } from "./../../store/kline";
 import { getKlinesData } from "@/api/service/exchange/exchange";
 import { AppDispatch, RootState, setKlineTimelyData } from "@/store";
-import { IKlineData } from "./types";
+import { IBarData, IKlineData } from "./types";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { generateKlineChart, transformKlineData } from "./utils";
+import {
+  generateKlineChart,
+  transformBarData,
+  transformKlineData,
+} from "./utils";
 import worker from "@/workers";
 import {
   BarData,
@@ -28,6 +32,13 @@ export function useKlineData() {
     close: 0,
   });
 
+  const [barData, setBarData] = useState<IBarData[]>([]);
+  const [WsBarData, setWsBarData] = useState<IBarData>({
+    time: 0 as UTCTimestamp,
+    value: 0,
+    color: "",
+  });
+
   const uppercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.uppercaseSymbol;
   });
@@ -46,7 +57,9 @@ export function useKlineData() {
       });
       if (res.success) {
         const klineData = transformKlineData(res.data);
+        const barData = transformBarData(res.data);
         setKlineData(klineData);
+        setBarData(barData);
       }
 
       worker.postMessage({
@@ -60,8 +73,10 @@ export function useKlineData() {
     const handleWsKlineData = (response: MessageEvent) => {
       const { type, data } = response.data;
       if (type !== "kline") return;
-      setWsKlineData(data);
-      dispatch(setKlineTimelyData({ ...data }));
+      const { kline, bar } = data;
+      setWsKlineData(kline);
+      setWsBarData(bar);
+      dispatch(setKlineTimelyData({ ...kline }));
     };
 
     getKlinesDataIn();
@@ -69,7 +84,7 @@ export function useKlineData() {
     return () => worker.destroy(handleWsKlineData);
   }, [uppercaseSymbol, lowercaseSymbol, dispatch]);
 
-  return { KlineData, WsKlineData };
+  return { KlineData, WsKlineData, barData, WsBarData };
 }
 
 export function useKlineChart(
@@ -77,14 +92,15 @@ export function useKlineChart(
   WsKlineData: IKlineData
 ) {
   const chartRef = useRef<IChartApi>(null);
-  const [series, setSeries] = useState<ISeriesApi<"Candlestick", Time>>();
+  const [lineSeries, setLineSeries] =
+    useState<ISeriesApi<"Candlestick", Time>>();
+  const [barSeries, setBarSeries] = useState<ISeriesApi<"Histogram", Time>>();
 
   const uppercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.uppercaseSymbol;
   });
 
   const hasInitializedRef = useRef(false);
-
   const latestWsDataRef = useRef(WsKlineData);
 
   useEffect(() => {
@@ -100,8 +116,10 @@ export function useKlineChart(
         chartRef.current.remove();
       }
 
-      const { candlestickSeries, chart } = generateKlineChart(container);
-      setSeries(candlestickSeries);
+      const { candlestickSeries, chart, volumeSeries } =
+        generateKlineChart(container);
+      setLineSeries(candlestickSeries);
+      setBarSeries(volumeSeries);
 
       const legendContainer = document.createElement("div");
       container.appendChild(legendContainer);
@@ -134,5 +152,5 @@ export function useKlineChart(
     }
   }, [uppercaseSymbol, container, WsKlineData]);
 
-  return { series };
+  return { lineSeries, barSeries };
 }

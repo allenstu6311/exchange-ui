@@ -8,20 +8,35 @@ import { formatNumToFixed } from "@/utils";
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
 
-  const { KlineData, WsKlineData } = useKlineData();
-  const { series } = useKlineChart(chartContainerRef?.current, WsKlineData);
+  const { KlineData, WsKlineData, barData, WsBarData } = useKlineData();
+  const { lineSeries, barSeries } = useKlineChart(
+    chartContainerRef?.current,
+    WsKlineData
+  );
 
   useEffect(() => {
     if (KlineData.length) {
-      series?.setData(KlineData);
+      lineSeries?.setData(KlineData);
     }
-  }, [KlineData, series]);
+  }, [KlineData, lineSeries]);
+
+  useEffect(() => {
+    if (barData.length) {
+      barSeries?.setData(barData);
+    }
+  }, [barData, barSeries]);
 
   useEffect(() => {
     if (WsKlineData.time) {
-      series?.update(WsKlineData);
+      lineSeries?.update(WsKlineData);
     }
-  }, [WsKlineData, series]);
+  }, [WsKlineData, lineSeries]);
+
+  useEffect(() => {
+    if (WsBarData.time) {
+      barSeries?.update(WsBarData);
+    }
+  }, [WsBarData, barSeries]);
 
   return (
     <div className="w-full h-full relative" ref={chartContainerRef}>
