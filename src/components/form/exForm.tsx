@@ -70,15 +70,14 @@ const ExForm = forwardRef(function ExForm(
 
     const limitPrice = nextFormData.price || "";
     const currPrice = isMarket ? lastPrice : limitPrice;
-    const defaultVal = value || 1
 
     switch (key) {
       case "price":
         if (currPrice && nextFormData.quantity) {
           const newAmount = mul(currPrice, nextFormData.quantity);
           setAmount(newAmount);
-        } else if (amount && value) {
-          nextFormData.quantity = div(amount, value);
+        } else if (amount && currPrice) {
+          nextFormData.quantity = div(amount, currPrice);
         }else{
           setAmount('')
         }
@@ -93,7 +92,7 @@ const ExForm = forwardRef(function ExForm(
         }
         break;
       case "amount":
-        if ((currPrice || isMarket) && value) {
+        if (currPrice && value) {
           nextFormData.quantity = div(value, currPrice);
         }else{
           nextFormData.quantity = ''
@@ -103,7 +102,7 @@ const ExForm = forwardRef(function ExForm(
       case "slider":
         if (assets) {
           setIsDragging(true);
-          const newAmount = div(mul(assets, defaultVal), 100);
+          const newAmount = div(mul(assets, value || 1), 100);
           setAmount(newAmount);
 
           if (currPrice) {
@@ -153,7 +152,7 @@ const ExForm = forwardRef(function ExForm(
             value={sliderValue}
             onChange={(val) => {
               setSliderValue(val);
-              handleFormChange("slider", val as any);
+              handleFormChange("slider", val.toString());
             }}
             focusThumbOnChange={false}
           >
