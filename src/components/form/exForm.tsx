@@ -27,14 +27,14 @@ const ExForm = forwardRef(function ExForm(
     setFormData,
     formData,
     isMarket,
-    maxValue,
+    assets,
     lastPrice,
   }: {
     symbolMap: SymbolNameMapType;
     setFormData: React.Dispatch<React.SetStateAction<OrderRequest>>;
     formData: OrderRequest;
     isMarket: boolean;
-    maxValue: number;
+    assets: number; //可用 && 可賣
     lastPrice: string;
   },
   ref: React.Ref<{ reset: () => void }> // 👈 暴露一個 reset 方法
@@ -58,8 +58,8 @@ const ExForm = forwardRef(function ExForm(
   }));
 
   useEffect(() => {
-    if (amount && maxValue && !isDragging) {
-      const percent = div(amount, maxValue, { precision: 3 });
+    if (assets && !isDragging) {
+      const percent = div(amount || 0, assets, { precision: 3 });
       setSliderValue(Number(mul(percent, 100, { precision: 2 })));
     }
   }, [amount]);
@@ -70,33 +70,40 @@ const ExForm = forwardRef(function ExForm(
 
     const limitPrice = nextFormData.price || "";
     const currPrice = isMarket ? lastPrice : limitPrice;
+    const defaultVal = value || 1
 
     switch (key) {
       case "price":
         if (currPrice && nextFormData.quantity) {
           const newAmount = mul(currPrice, nextFormData.quantity);
           setAmount(newAmount);
-        } else if (amount) {
+        } else if (amount && value) {
           nextFormData.quantity = div(amount, value);
+        }else{
+          setAmount('')
         }
 
         break;
-      case "quantity":
-        if (currPrice) {
+      case "quantity":        
+        if (currPrice && value) {
           const newAmount = mul(currPrice, value);
           setAmount(newAmount);
+        }else{
+          setAmount('')
         }
         break;
       case "amount":
-        if (currPrice || isMarket) {
+        if ((currPrice || isMarket) && value) {
           nextFormData.quantity = div(value, currPrice);
+        }else{
+          nextFormData.quantity = ''
         }
         break;
 
       case "slider":
-        if (maxValue) {
+        if (assets) {
           setIsDragging(true);
-          const newAmount = div(mul(maxValue, value), 100);
+          const newAmount = div(mul(assets, defaultVal), 100);
           setAmount(newAmount);
 
           if (currPrice) {

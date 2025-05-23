@@ -28,7 +28,7 @@ function Home() {
 
   return (
     <>
-      <div className="w-full max-w-1800px mx-auto">
+      <div className="w-full max-w-1600px mx-auto">
         <Grid
           templateAreas={`
           "left header header Market right"

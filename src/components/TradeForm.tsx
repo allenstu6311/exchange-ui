@@ -171,7 +171,7 @@ export default function TradeForm() {
             formData={buyFormData}
             symbolMap={symbolMap}
             isMarket={isMarket}
-            maxValue={quoteFree}
+            assets={quoteFree}
             lastPrice={lastPrice}
           ></ExForm>
           {/* 可用 */}
@@ -209,7 +209,7 @@ export default function TradeForm() {
             formData={sellFormData}
             symbolMap={symbolMap}
             isMarket={isMarket}
-            maxValue={maxSellAmount}
+            assets={maxSellAmount}
             lastPrice={lastPrice}
           ></ExForm>
           {/* 可用 */}
