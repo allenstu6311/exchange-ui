@@ -1,4 +1,5 @@
 import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
+import { ISymbolInfoWithPrecision } from "./types";
 
 export const handleTickerData = (
   newData: Ticker24hrStat[],
@@ -19,7 +20,7 @@ export const handleTickerData = (
 
 export const getCurrentSymbolInfo = (
   symbolName: string,
-  symbolInfoList: SymbolInfoListTypes[]
-): SymbolInfoListTypes | undefined => {
+  symbolInfoList: ISymbolInfoWithPrecision[]
+): ISymbolInfoWithPrecision | undefined => {
   return symbolInfoList.find((item) => item.symbol === symbolName);
 };

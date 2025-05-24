@@ -8,12 +8,22 @@ import "@/App.css";
 import Market from "@/components/Market";
 import { useEffect } from "react";
 import { getSymbolMetaMap } from "@/api/service/exchange/exchange";
-import { useDispatch } from "react-redux";
-import { AppDispatch, setSymbolInfoList } from "@/store";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  AppDispatch,
+  RootState,
+  setCurrSymbolInfo,
+  setSymbolInfoList,
+} from "@/store";
 import OrderList from "@/components/OrderList";
+import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>();
+  const symbolInfoList = useSelector((state: RootState) => {
+    return state.symbolInfoList.list;
+  });
+
   useEffect(() => {
     const getSymbolMetaMapIn = async () => {
       const exchangeInfo = await getSymbolMetaMap();
@@ -25,6 +35,14 @@ function Home() {
 
     getSymbolMetaMapIn();
   }, [dispatch]);
+
+  // 設定預設幣種的資訊
+  useEffect(() => {
+    const currSymbolInfo = getCurrentSymbolInfo("BTCUSDT",symbolInfoList)
+    if (currSymbolInfo) {
+      dispatch(setCurrSymbolInfo(currSymbolInfo));
+    }
+  }, [symbolInfoList]);
 
   return (
     <>

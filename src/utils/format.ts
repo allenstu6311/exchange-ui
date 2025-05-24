@@ -1,4 +1,5 @@
 import { Ticker24hrStat, TickerSocketData } from "@/types";
+import Decimal from "decimal.js";
 
 export function formatNumToFixed(
   val: number | string | null | undefined,
@@ -9,18 +10,18 @@ export function formatNumToFixed(
   return isFinite(num) ? num.toFixed(digits) : defaultVal;
 }
 
-export function thousandComma(num: number | string): string {
+export function thousandComma(num: number | string, digits:number): string {
   return (
     Number(num)?.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
     }) ?? "--"
   );
 }
 
-export function formatNumWithComma(num: number | string, digits = 2): string {
+export function formatNumWithComma(num: number | string, digits = 2): string {  
   const newNum = formatNumToFixed(num, digits);
-  return thousandComma(newNum);
+  return thousandComma(newNum, digits);
 }
 
 export function transformTickerData(

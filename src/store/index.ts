@@ -20,7 +20,7 @@ export type AppDispatch = typeof dispatch.dispatch;
 
 export const { setSymbolName } = symbolNameMap.actions;
 
-export const { setSymbolInfoList } = symbolInfoList.actions;
+export const { setSymbolInfoList, setCurrSymbolInfo } = symbolInfoList.actions;
 
 export const { setTicker24hData } = ticker24hrData.actions;
 

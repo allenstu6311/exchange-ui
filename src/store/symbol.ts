@@ -4,7 +4,8 @@ import {
   SymbolNameMapType,
 } from "./../types/index";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { handleSymbolName } from "./utils/symbol";
+import { handleFilters, handleSymbolName } from "./utils/symbol";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
 const symbolNameMapState: SymbolNameMapType = {
   base: "BTC",
@@ -34,6 +35,7 @@ export const symbolNameMap = createSlice({
 
 const symbolInfoListStatge: SymbolInfoListState = {
   list: [],
+  currentSymbolInfo: {} as ISymbolInfoWithPrecision
 };
 
 export const symbolInfoList = createSlice({
@@ -41,7 +43,10 @@ export const symbolInfoList = createSlice({
   initialState: symbolInfoListStatge,
   reducers: {
     setSymbolInfoList(state, action: PayloadAction<SymbolInfoListTypes[]>) {
-      state.list = action.payload;
+      state.list = handleFilters(action.payload);
     },
+    setCurrSymbolInfo(state, action:PayloadAction<ISymbolInfoWithPrecision>){
+      state.currentSymbolInfo = action.payload
+    }
   },
 });

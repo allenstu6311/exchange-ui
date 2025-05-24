@@ -4,6 +4,7 @@ import { RootState } from "@/store";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { usePriceDirection } from "@/hook/Depth";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
 export default function TradingPairHeader() {
   const slashSymbol = useSelector((state: RootState) => {
@@ -14,6 +15,12 @@ export default function TradingPairHeader() {
     return state.ticker24hrData.map;
   });
 
+  const currSymbolInfo:ISymbolInfoWithPrecision = useSelector((state:RootState)=>{
+    return state.symbolInfoList.currentSymbolInfo
+  })
+
+  const { showPrecision } = currSymbolInfo;
+
   const {
     lastPrice,
     highPrice,
@@ -22,7 +29,7 @@ export default function TradingPairHeader() {
     volume,
     priceChangePercent,
   } = currentMarketData;
-
+  
   const isRise = Number(priceChangePercent) > 0;
   const direction = usePriceDirection(lastPrice);
 
@@ -33,8 +40,8 @@ export default function TradingPairHeader() {
       titleClass: "text-20px",
     },
     {
-      title: formatNumWithComma(lastPrice),
-      content: `$${formatNumWithComma(lastPrice)}`,
+      title: formatNumToFixed(lastPrice, showPrecision),
+      content: `$${formatNumToFixed(lastPrice, showPrecision)}`,
       titleClass: `text-20px ${direction === "up" ? "text-fall" : "text-rise"}`,
     },
     {

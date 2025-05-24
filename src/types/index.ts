@@ -1,3 +1,4 @@
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { JSX } from "@emotion/react/jsx-runtime";
 
 export interface Ticker24hrStat {
@@ -39,6 +40,8 @@ export interface CTableProps {
   columnData: TableColumns[];
   rowStyle?: Record<string, string>;
   trOnClick?: (item: any) => any;
+  height?: string
+  virtualed?:boolean
 }
 
 export interface DepthResponse {
@@ -190,7 +193,8 @@ export interface SymbolInfoListTypes {
   allowedSelfTradePreventionModes: string[];
 }
 export interface SymbolInfoListState {
-  list: SymbolInfoListTypes[];
+  list: ISymbolInfoWithPrecision[];
+  currentSymbolInfo: ISymbolInfoWithPrecision
 }
 
 export interface Ticker24hrDataStatMap {

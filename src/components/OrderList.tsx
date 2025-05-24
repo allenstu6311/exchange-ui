@@ -46,17 +46,15 @@ export default function OrderList() {
       key: "operation",
       render: (content: string, rowData: ICurrentOrder) => {
         return (
-          <Td className="my-5px text-center" key={rowData.orderId}>
-            <Button
-              className=""
-              size="xs"
-              onClick={() => {
-                handleCancelOrder(rowData);
-              }}
-            >
-              取消訂單
-            </Button>
-          </Td>
+          <Button
+            className=""
+            size="xs"
+            onClick={() => {
+              handleCancelOrder(rowData);
+            }}
+          >
+            取消訂單
+          </Button>
         );
       },
     },

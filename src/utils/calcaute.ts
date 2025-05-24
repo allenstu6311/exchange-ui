@@ -108,4 +108,11 @@ function mul<T extends string | number = string>(
   });
 }
 
-export { isNumberVaild, add, sub, div, mul };
+function getDecimalPrecision(num: string | number): number {
+  if(!num) return 0
+  const str = typeof num === 'number' ? num.toString() : num;
+  const [, decimal = ''] = str.split('.');
+  return decimal.replace(/0+$/, '').length;
+}
+
+export { isNumberVaild, add, sub, div, mul, getDecimalPrecision };

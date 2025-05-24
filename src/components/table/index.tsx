@@ -13,6 +13,8 @@ import {
 import { CTableProps } from "@/types";
 import { tableAnatomy } from "@chakra-ui/anatomy";
 import { createMultiStyleConfigHelpers } from "@chakra-ui/react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const { definePartsStyle, defineMultiStyleConfig } =
   createMultiStyleConfigHelpers(tableAnatomy.keys);
@@ -22,10 +24,7 @@ const baseStyle = definePartsStyle({
     tableLayout: "fixed",
   },
 });
-
 export const tableTheme = defineMultiStyleConfig({ baseStyle });
-
-// const handleAttribute = (value: string) => {}
 
 function CTable({
   loading = false,
@@ -33,29 +32,61 @@ function CTable({
   columnData = [],
   rowStyle = {},
   trOnClick = () => {},
+  height,
+  virtualed = false,
 }: CTableProps) {
+  const tbodyRef = useRef(null);
+  const trRef = useRef<HTMLTableRowElement>(null);
+  const [trHeight, setTrHeight] = useState<number>(0);
+
+  const rowVirtualizer = useVirtualizer({
+    count: rowData.length,
+    getScrollElement: () => tbodyRef.current,
+    estimateSize: () => 33,
+  });
+
+  const renderRowData = virtualed ? rowVirtualizer.getVirtualItems() : rowData;
+  if (trRef.current && trHeight === 0) {
+    setTrHeight(trRef.current?.clientHeight);
+  }
+
   return (
     <>
       <TableContainer>
         <Table>
-          <Thead >
+          <Thead>
             <Tr>
               {columnData.map((columnName, index) => {
-                return <Th  hidden={columnName.label === ''} key={index}>{columnName.label}</Th>;
+                return (
+                  <Th hidden={columnName.label === ""} key={index}>
+                    {columnName.label}
+                  </Th>
+                );
               })}
             </Tr>
           </Thead>
         </Table>
       </TableContainer>
-      <TableContainer className="h-[calc(100%-95px)]" overflowY="auto">
+      <TableContainer
+        className="h-full relative"
+        overflowY="auto"
+        ref={tbodyRef}
+      >
         <Table variant="simple" size="sm">
-          <Tbody>
-            {rowData.map((item, itemIndex) => {
+          <Tbody height={virtualed ? 33 * rowData.length + "px" : ""}>
+            {renderRowData.map((data, index) => {
+              const item = virtualed ? rowData[data.index] : data;
+              const itemIndex = virtualed ? data.index : index;
+
               return (
                 <Tr
+                  ref={trRef}
                   key={itemIndex}
                   style={rowStyle}
                   onClick={() => trOnClick(item)}
+                  position={virtualed ? "absolute" : "static"}
+                  top={virtualed ? trHeight * itemIndex + "px" : ""}
+                  className="w-full flex justify-between items-center gap-0"
                 >
                   {columnData.map((column, columnIndex) => {
                     // 欄位值
@@ -74,32 +105,22 @@ function CTable({
                       typeof column.className === "function"
                         ? column.className(rawValue, item)
                         : column.className;
-
-                    if (column.render) {
-                      return column.render(content, item, columnIndex);
-                    } else {
-                      return (
-                        <Td
-                          key={columnIndex}
-                          style={style}
-                          className={className}
-                        >
-                          {content}
-                        </Td>
-                      );
-                    }
+                    return (
+                      <Td
+                        key={columnIndex}
+                        style={style}
+                        className={`${className} text-center w-full`}
+                      >
+                        {column.render
+                          ? column.render(content, item, columnIndex)
+                          : content}
+                      </Td>
+                    );
                   })}
                 </Tr>
               );
             })}
           </Tbody>
-          {/* <Tfoot>
-          <Tr>
-            <Th>To convert</Th>
-            <Th>into</Th>
-            <Th isNumeric>multiply by</Th>
-          </Tr>
-        </Tfoot> */}
         </Table>
       </TableContainer>
     </>

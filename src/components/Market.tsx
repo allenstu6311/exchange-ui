@@ -3,14 +3,15 @@ import { formatNumToFixed } from "@/utils";
 import { useMarketData } from "@/hook/Market";
 import { Input } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store";
+import { AppDispatch, RootState, setCurrSymbolInfo } from "@/store";
 import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
 import { setSymbolName } from "@/store";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 import { useEffect, useRef, useState } from "react";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
 export default function Market() {
-  const symbolInfoList: SymbolInfoListTypes[] = useSelector(
+  const symbolInfoList: ISymbolInfoWithPrecision[] = useSelector(
     (state: RootState) => {
       return state.symbolInfoList.list;
     }
@@ -26,7 +27,13 @@ export default function Market() {
     {
       label: "最新價",
       key: "askPrice",
-      format: (val: string) => formatNumToFixed(val),
+      format: (val: string, data: any) => {
+        const currSymbol = symbolInfoList.find(
+          (item) => item.symbol === data.symbol
+        );
+        const precision = currSymbol ? currSymbol.showPrecision : 2;
+        return formatNumToFixed(val, precision);
+      },
     },
     {
       label: "24h漲跌",
@@ -61,12 +68,12 @@ export default function Market() {
       );
     } else {
       setfiltering(false);
-      setVisibleMarketData(marketData)
+      setVisibleMarketData(marketData);
     }
   };
 
   return (
-    <div className="h-full">
+    <div className="h-[calc(100%-95px)]">
       <div className="p-8px">
         <Input
           placeholder="請輸入幣對名稱"
@@ -78,12 +85,18 @@ export default function Market() {
       <CTable
         columnData={tableHeader}
         rowData={visibleMarketData}
-        trOnClick={(item) => {
-          dispatch(
-            setSymbolName(getCurrentSymbolInfo(item.symbol, symbolInfoList))
+        trOnClick={(item: ISymbolInfoWithPrecision) => {
+          const currSymbolInfo = getCurrentSymbolInfo(
+            item.symbol,
+            symbolInfoList
           );
+          if (currSymbolInfo) {
+            dispatch(setSymbolName(currSymbolInfo));
+            dispatch(setCurrSymbolInfo(currSymbolInfo));
+          }
         }}
         rowStyle={{ cursor: "pointer" }}
+        virtualed={true}
       />
     </div>
   );
