@@ -1,4 +1,3 @@
-import { log } from "node:console";
 import { klineTimelyData } from "./../../store/kline";
 import { getKlinesData } from "@/api/service/exchange/exchange";
 import { AppDispatch, RootState, setKlineTimelyData } from "@/store";
@@ -19,12 +18,12 @@ import {
   Time,
   UTCTimestamp,
 } from "lightweight-charts";
-// import { Lengend } from "@/components/_TradeView";
-import { createRoot } from "react-dom/client";
 import { ISymbolInfoWithPrecision } from "../Market/types";
 
 export function useKlineData(
-  setLegendsData: React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>
+  setLegendsData: React.Dispatch<
+    React.SetStateAction<OhlcData<Time> | undefined>
+  >
 ) {
   const [KlineData, setKlineData] = useState<IKlineData[]>([]);
   const [WsKlineData, setWsKlineData] = useState<IKlineData | null>();
@@ -42,6 +41,12 @@ export function useKlineData(
   const lowercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.lowercaseSymbol;
   });
+
+  const setLegendsDataRef =
+    useRef<React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>>(
+      setLegendsData
+    );
+
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     const getKlinesDataIn = async () => {
@@ -54,9 +59,9 @@ export function useKlineData(
       if (res.success) {
         const klineData = transformKlineData(res.data);
         const barData = transformBarData(res.data);
-        
+
         setKlineData(klineData);
-        setLegendsData(klineData[klineData.length-1])
+        setLegendsDataRef.current(klineData[klineData.length - 1]);
         setBarData(barData);
       }
 
@@ -74,9 +79,14 @@ export function useKlineData(
       const { kline, bar } = data;
       setWsKlineData(kline);
       setWsBarData(bar);
+
+      /**
+       * Redux會對物件做「凍結」處理，導致light-chart無法
+       * 設定必要屬性，所以使用淺拷貝分開
+       */
       dispatch(setKlineTimelyData({ ...kline }));
     };
-    setWsKlineData(null)
+    setWsKlineData(null);
     getKlinesDataIn();
     worker.subscribe(handleWsKlineData);
     return () => worker.destroy(handleWsKlineData);
@@ -87,8 +97,10 @@ export function useKlineData(
 
 export function useKlineChart(
   container: HTMLElement | null,
-  setLegendsData: React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>,
-  resetLegendsData: ()=>void
+  setLegendsData: React.Dispatch<
+    React.SetStateAction<OhlcData<Time> | undefined>
+  >,
+  resetLegendsData: () => void
 ) {
   const chartRef = useRef<IChartApi>(null);
   const [lineSeries, setLineSeries] =
@@ -99,26 +111,44 @@ export function useKlineChart(
     return state.symbolNameMap.uppercaseSymbol;
   });
 
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+  const { showPrecision } = currSymbolInfo;
+
+  const resetLegendsDataRef = useRef<() => void>(resetLegendsData);
+  const setLegendsDataRef =
+    useRef<React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>>(
+      setLegendsData
+    );
+
   useEffect(() => {
-    // 容器資料都準備好才開始渲染
     if (container) {
       container.innerHTML = "";
       if (chartRef.current) {
         chartRef.current.remove();
       }
 
-      const { candlestickSeries, chart, volumeSeries } =
-        generateKlineChart(container);
+      const { candlestickSeries, chart, volumeSeries } = generateKlineChart(
+        container,
+        {
+          priceFormat: {
+            precision: showPrecision,
+          },
+        }
+      );
       setLineSeries(candlestickSeries);
       setBarSeries(volumeSeries);
 
       chart.subscribeCrosshairMove((param) => {
         if (param.time) {
           const data = param.seriesData.get(candlestickSeries) as OhlcData;
-          setLegendsData(data)
+          setLegendsDataRef.current(data);
         } else {
           // 滑鼠離開圖表返回父層重製數據
-          resetLegendsData()
+          resetLegendsDataRef.current();
         }
       });
       chartRef.current = chart;

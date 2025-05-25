@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import CTable from "./table";
 import { formatNumToFixed } from "@/utils";
 import { DepthTable } from "@/types";
-import { Td } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useDepthData, usePriceDirection } from "@/hook/Depth";
 import { AppDispatch, RootState } from "@/store";
@@ -15,18 +14,18 @@ export default function Depth() {
     }
   );
 
-  const { showPrecision } = currSymbolInfo;
+  const { showPrecision, baseAsset, quoteAsset } = currSymbolInfo;
 
   const asksHeader = [
     {
-      label: "價格 (USDT)",
+      label: `價格 (${quoteAsset})`,
       key: "price",
       format: (val: string, item: any) => formatNumToFixed(val, showPrecision),
       className: "text-rise",
     },
 
     {
-      label: "數量(BTC)",
+      label: `數量(${baseAsset})`,
       key: "volume",
       format: (val: string) => formatNumToFixed(val, 5),
     },

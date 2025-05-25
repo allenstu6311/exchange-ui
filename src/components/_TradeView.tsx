@@ -11,7 +11,6 @@ import { useSelector } from "react-redux";
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
   const [legendsData, setLegendsData] = useState<OhlcData>();
-
   const { KlineData, WsKlineData, barData, WsBarData } =
     useKlineData(setLegendsData);
 
@@ -22,7 +21,6 @@ export default function TradeView() {
     setLegendsData,
     resetLegendsData
   );
-  const lastWsKlineData = useRef<any>(null);
 
   function resetLegendsData() {
     setLegendsData(latestKlineDataRef.current);

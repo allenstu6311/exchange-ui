@@ -7,6 +7,7 @@ import {
   createChart,
   DeepPartial,
   HistogramSeries,
+  SeriesPartialOptionsMap,
   UTCTimestamp,
 } from "lightweight-charts";
 
@@ -42,7 +43,10 @@ export function transformBarData(data: KlineTuple[]): IBarData[] {
   });
 }
 
-export function generateKlineChart(container: HTMLElement) {
+export function generateKlineChart(
+  container: HTMLElement,
+  candlestickOptions?: SeriesPartialOptionsMap["Candlestick"]
+) {
   const chartOptions: DeepPartial<ChartOptions> = {
     autoSize: true, //可添加ResizeObserver
     layout: {
@@ -54,15 +58,6 @@ export function generateKlineChart(container: HTMLElement) {
     crosshair: {
       mode: 0, // 十字準線模式對焦滑鼠
     },
-    // timeScale: {
-    //   barSpacing: 9,
-    //      minBarSpacing: 9,
-    // },
-  };
-  const chart = createChart(container, chartOptions);
-  // chart.resize(container.offsetWidth, container.offsetHeight);
-
-  chart.applyOptions({
     rightPriceScale: {
       scaleMargins: {
         top: 0.3, // leave some space for the legend
@@ -70,7 +65,8 @@ export function generateKlineChart(container: HTMLElement) {
       },
       borderVisible: false,
     },
-  });
+  };
+  const chart = createChart(container, chartOptions);
 
   const candlestickSeries = chart.addSeries(CandlestickSeries, {
     upColor: "#26a69a",
@@ -78,18 +74,10 @@ export function generateKlineChart(container: HTMLElement) {
     borderVisible: false,
     wickUpColor: "#26a69a",
     wickDownColor: "#ef5350",
-    // priceFormat: {
-    //   type: 'custom',
-    //   formatter: (price) => {
-    //     console.log('price',price);
-        
-    //     return price.toString()
-    //   }
-    // }
+    ...candlestickOptions,
   });
 
   const volumeSeries = chart.addSeries(HistogramSeries, {
-    // color: "#26a69a",
     priceFormat: {
       type: "volume",
     },

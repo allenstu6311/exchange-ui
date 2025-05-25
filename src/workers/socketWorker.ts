@@ -11,12 +11,14 @@ const postMessage = ({ type, data, url }: any) => {
   });
 };
 
-self.onmessage = (e) => {
+self.onmessage = async (e) => {
   const { type, url } = e.data;
 
   if (sockets[type]) {
     sockets[type].close();
   }
+
+  // await new Promise((res) => setTimeout(res, 100)); // 👈 留一點時間讓 TCP/WS 結束
 
   const ws = new WebSocket(url);
   sockets[type] = ws;
