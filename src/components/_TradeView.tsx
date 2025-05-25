@@ -1,22 +1,37 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useKlineData, useKlineChart } from "@/hook/TradeView";
 import { IKlineData } from "@/hook/TradeView/types";
-import { OhlcData } from "lightweight-charts";
+import { OhlcData, UTCTimestamp } from "lightweight-charts";
 import dayjs from "dayjs";
 import { formatNumToFixed } from "@/utils";
+import { RootState } from "@/store";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import { useSelector } from "react-redux";
 
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
+  const [legendsData, setLegendsData] = useState<OhlcData>();
 
-  const { KlineData, WsKlineData, barData, WsBarData } = useKlineData();
+  const { KlineData, WsKlineData, barData, WsBarData } =
+    useKlineData(setLegendsData);
+
+  const latestKlineDataRef = useRef<any>(null);
+
   const { lineSeries, barSeries } = useKlineChart(
     chartContainerRef?.current,
-    WsKlineData
+    setLegendsData,
+    resetLegendsData
   );
+  const lastWsKlineData = useRef<any>(null);
+
+  function resetLegendsData() {
+    setLegendsData(latestKlineDataRef.current);
+  }
 
   useEffect(() => {
     if (KlineData.length) {
       lineSeries?.setData(KlineData);
+      latestKlineDataRef.current = KlineData[KlineData.length - 1];
     }
   }, [KlineData, lineSeries]);
 
@@ -27,8 +42,10 @@ export default function TradeView() {
   }, [barData, barSeries]);
 
   useEffect(() => {
-    if (WsKlineData.time) {
+    if (WsKlineData?.time) {
       lineSeries?.update(WsKlineData);
+      setLegendsData(WsKlineData);
+      latestKlineDataRef.current = WsKlineData;
     }
   }, [WsKlineData, lineSeries]);
 
@@ -39,43 +56,55 @@ export default function TradeView() {
   }, [WsBarData, barSeries]);
 
   return (
-    <div className="w-full h-full relative" ref={chartContainerRef}>
-      <div className=""></div>
-    </div>
+    <>
+      <div className="w-full h-full relative">
+        <div className="w-full h-full" ref={chartContainerRef}></div>
+        <Legends data={legendsData} />
+      </div>
+    </>
   );
 }
 
-export function Lengend(data: OhlcData) {
-  const lengendData = [
+export function Legends({ data }: { data: OhlcData | undefined }) {
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+  const { showPrecision } = currSymbolInfo;
+
+  if (!data) return;
+
+  const LegendsData = [
     {
       label: "開盤價",
-      value: data.open,
+      value: data?.open,
     },
     {
       label: "最高價",
-      value: data.high,
+      value: data?.high,
     },
     {
       label: "最低價",
-      value: data.low,
+      value: data?.low,
     },
     {
       label: "收盤價",
-      value: data.close,
+      value: data?.close,
     },
   ];
 
   return (
-    <div className="absolute top-5px left-10px w-full z-10 flex gap-5px text-14px  font-mono">
+    <div className="absolute top-5px left-10px z-10 flex gap-5px text-14px  font-mono">
       <div className="">
         <p>{dayjs(new Date()).format("YYYY/MM/DD")}</p>
       </div>
-      {lengendData.map((item, index) => {
+      {LegendsData.map((item, index) => {
         return (
           <div className="flex ga-3px" key={index}>
             <p>{item.label}: </p>
             <p className="text-rise  min-w-[80px]">
-              {formatNumToFixed(item.value)}
+              {formatNumToFixed(item.value, showPrecision)}
             </p>
           </div>
         );

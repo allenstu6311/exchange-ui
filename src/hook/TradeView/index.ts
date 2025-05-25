@@ -19,19 +19,15 @@ import {
   Time,
   UTCTimestamp,
 } from "lightweight-charts";
-import { Lengend } from "@/components/_TradeView";
+// import { Lengend } from "@/components/_TradeView";
 import { createRoot } from "react-dom/client";
+import { ISymbolInfoWithPrecision } from "../Market/types";
 
-export function useKlineData() {
+export function useKlineData(
+  setLegendsData: React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>
+) {
   const [KlineData, setKlineData] = useState<IKlineData[]>([]);
-  const [WsKlineData, setWsKlineData] = useState<IKlineData>({
-    time: 0 as UTCTimestamp,
-    open: 0,
-    high: 0,
-    low: 0,
-    close: 0,
-  });
-
+  const [WsKlineData, setWsKlineData] = useState<IKlineData | null>();
   const [barData, setBarData] = useState<IBarData[]>([]);
   const [WsBarData, setWsBarData] = useState<IBarData>({
     time: 0 as UTCTimestamp,
@@ -58,7 +54,9 @@ export function useKlineData() {
       if (res.success) {
         const klineData = transformKlineData(res.data);
         const barData = transformBarData(res.data);
+        
         setKlineData(klineData);
+        setLegendsData(klineData[klineData.length-1])
         setBarData(barData);
       }
 
@@ -78,7 +76,7 @@ export function useKlineData() {
       setWsBarData(bar);
       dispatch(setKlineTimelyData({ ...kline }));
     };
-
+    setWsKlineData(null)
     getKlinesDataIn();
     worker.subscribe(handleWsKlineData);
     return () => worker.destroy(handleWsKlineData);
@@ -89,7 +87,8 @@ export function useKlineData() {
 
 export function useKlineChart(
   container: HTMLElement | null,
-  WsKlineData: IKlineData
+  setLegendsData: React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>,
+  resetLegendsData: ()=>void
 ) {
   const chartRef = useRef<IChartApi>(null);
   const [lineSeries, setLineSeries] =
@@ -100,17 +99,9 @@ export function useKlineChart(
     return state.symbolNameMap.uppercaseSymbol;
   });
 
-  const hasInitializedRef = useRef(false);
-  const latestWsDataRef = useRef(WsKlineData);
-
-  useEffect(() => {
-    latestWsDataRef.current = WsKlineData;
-  }, [WsKlineData]);
-
   useEffect(() => {
     // 容器資料都準備好才開始渲染
-    if (!hasInitializedRef.current && container && WsKlineData.time) {
-      hasInitializedRef.current = true; //避免Ws影響
+    if (container) {
       container.innerHTML = "";
       if (chartRef.current) {
         chartRef.current.remove();
@@ -121,45 +112,18 @@ export function useKlineChart(
       setLineSeries(candlestickSeries);
       setBarSeries(volumeSeries);
 
-      const legendContainer = document.createElement("div");
-
-      legendContainer.style.position = "absolute";
-      legendContainer.style.top = "0";
-      legendContainer.style.left = "0";
-      legendContainer.style.pointerEvents = "none";
-      legendContainer.style.zIndex = "10";
-      legendContainer.style.width = "100%";
-
-      container.appendChild(legendContainer);
-
-      const legendRoot = createRoot(legendContainer);
-
-      legendRoot.render(
-        React.createElement(Lengend, {
-          ...WsKlineData,
-        })
-      );
-
       chart.subscribeCrosshairMove((param) => {
         if (param.time) {
           const data = param.seriesData.get(candlestickSeries) as OhlcData;
-
-          legendRoot.render(
-            React.createElement(Lengend, {
-              ...data, // BarData: open, high, low, close
-            })
-          );
+          setLegendsData(data)
         } else {
-          legendRoot.render(
-            React.createElement(Lengend, {
-              ...latestWsDataRef.current,
-            })
-          );
+          // 滑鼠離開圖表返回父層重製數據
+          resetLegendsData()
         }
       });
       chartRef.current = chart;
     }
-  }, [uppercaseSymbol, container, WsKlineData]);
+  }, [uppercaseSymbol, container]);
 
   return { lineSeries, barSeries };
 }

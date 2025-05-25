@@ -1,5 +1,5 @@
 (進行中)
-將Lengend移出useKlineChart
+K縣小數點
 
 1.市場tab切換USDT, USDC...
 2.虛擬滾動判斷優化

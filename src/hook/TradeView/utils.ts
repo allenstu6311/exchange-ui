@@ -78,6 +78,14 @@ export function generateKlineChart(container: HTMLElement) {
     borderVisible: false,
     wickUpColor: "#26a69a",
     wickDownColor: "#ef5350",
+    // priceFormat: {
+    //   type: 'custom',
+    //   formatter: (price) => {
+    //     console.log('price',price);
+        
+    //     return price.toString()
+    //   }
+    // }
   });
 
   const volumeSeries = chart.addSeries(HistogramSeries, {
