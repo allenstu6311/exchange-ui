@@ -37,12 +37,12 @@ function CTable({
 }: CTableProps) {
   const tbodyRef = useRef(null);
   const trRef = useRef<HTMLTableRowElement>(null);
-  const [trHeight, setTrHeight] = useState<number>(0);
+  const [trHeight, setTrHeight] = useState<number>(30);
 
   const rowVirtualizer = useVirtualizer({
     count: rowData.length,
     getScrollElement: () => tbodyRef.current,
-    estimateSize: () => 33,
+    estimateSize: () => trHeight,
   });
 
   const renderRowData = virtualed ? rowVirtualizer.getVirtualItems() : rowData;
@@ -73,7 +73,7 @@ function CTable({
         ref={tbodyRef}
       >
         <Table variant="simple" size="sm">
-          <Tbody height={virtualed ? 33 * rowData.length + "px" : ""}>
+          <Tbody height={virtualed ? trHeight * rowData.length + "px" : ""}>
             {renderRowData.map((data, index) => {
               const item = virtualed ? rowData[data.index] : data;
               const itemIndex = virtualed ? data.index : index;

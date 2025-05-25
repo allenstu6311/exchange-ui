@@ -57,11 +57,11 @@ export default function TradingPairHeader() {
     },
     {
       title: "24h最高價",
-      content: formatNumWithComma(highPrice),
+      content: formatNumWithComma(highPrice, showPrecision),
     },
     {
       title: "24h最低價",
-      content: formatNumWithComma(lowPrice),
+      content: formatNumWithComma(lowPrice, showPrecision),
     },
     {
       title: "24h成交量",
