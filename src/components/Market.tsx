@@ -83,6 +83,7 @@ export default function Market() {
         />
       </div>
       <CTable
+        trHeight={35}
         columnData={tableHeader}
         rowData={visibleMarketData}
         trOnClick={(item: ISymbolInfoWithPrecision) => {

@@ -40,8 +40,8 @@ export interface CTableProps {
   columnData: TableColumns[];
   rowStyle?: Record<string, string>;
   trOnClick?: (item: any) => any;
-  height?: string
-  virtualed?:boolean
+  virtualed?: boolean;
+  trHeight?: number;
 }
 
 export interface DepthResponse {
@@ -194,7 +194,7 @@ export interface SymbolInfoListTypes {
 }
 export interface SymbolInfoListState {
   list: ISymbolInfoWithPrecision[];
-  currentSymbolInfo: ISymbolInfoWithPrecision
+  currentSymbolInfo: ISymbolInfoWithPrecision;
 }
 
 export interface Ticker24hrDataStatMap {
@@ -338,4 +338,3 @@ export interface IAccountInfo {
   permissions: string[];
   uid: number;
 }
-

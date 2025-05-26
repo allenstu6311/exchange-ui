@@ -32,22 +32,21 @@ function CTable({
   columnData = [],
   rowStyle = {},
   trOnClick = () => {},
-  height,
   virtualed = false,
+  trHeight = 0,
 }: CTableProps) {
   const tbodyRef = useRef(null);
   const trRef = useRef<HTMLTableRowElement>(null);
-  const [trHeight, setTrHeight] = useState<number>(30);
 
   const rowVirtualizer = useVirtualizer({
     count: rowData.length,
     getScrollElement: () => tbodyRef.current,
     estimateSize: () => trHeight,
   });
-
   const renderRowData = virtualed ? rowVirtualizer.getVirtualItems() : rowData;
-  if (trRef.current && trHeight === 0) {
-    setTrHeight(trRef.current?.clientHeight);
+
+  if (trRef.current && trHeight) {
+    trRef.current.style.height = trHeight + "px";
   }
 
   return (
