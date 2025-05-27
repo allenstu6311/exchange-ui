@@ -5,13 +5,23 @@ import CTable from "./table";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, setCurrentOrder } from "@/store";
 import { Button, Td } from "@chakra-ui/react";
-import { polling } from "@/utils";
+import { formatNumToFixed, polling } from "@/utils";
 import { IPollingController } from "@/utils/polling";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import dayjs from "dayjs";
 
 let pollingGetCurrentOrder: IPollingController | null = null;
 
 export default function OrderList() {
   const dispatch = useDispatch<AppDispatch>();
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+
+  const { showPrecision } = currSymbolInfo;
+
   const columnData = [
     {
       label: "交易對",
@@ -20,18 +30,30 @@ export default function OrderList() {
     {
       label: "方向",
       key: "side",
+      format: (content: string) => {
+        return content === "BUY" ? "買入" : "賣出";
+      },
     },
     {
       label: "類型",
       key: "type",
+      format: (content: string) => {
+        return content === "LIMIT" ? "限價" : "市價";
+      },
     },
     {
       label: "數量",
       key: "origQty",
+      format: (content: string) => {
+        return formatNumToFixed(content, showPrecision);
+      },
     },
     {
       label: "價格",
       key: "price",
+      format: (content: string) => {
+        return formatNumToFixed(content, showPrecision);
+      },
     },
     {
       label: "狀態",
@@ -40,6 +62,9 @@ export default function OrderList() {
     {
       label: "時間",
       key: "workingTime",
+      format: (content: string) => {
+        return dayjs(Number(content)).format("YYYY/MM/DD HH:mm:ss");
+      },
     },
     {
       label: "操作",
@@ -79,6 +104,7 @@ export default function OrderList() {
     if (pollingGetCurrentOrder) {
       pollingGetCurrentOrder.stop();
     }
+
     pollingGetCurrentOrder = polling(getCurrentOrderIn, 3000);
     pollingGetCurrentOrder.start();
   }, [uppercaseSymbol]);

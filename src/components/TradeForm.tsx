@@ -29,6 +29,8 @@ export default function TradeForm() {
     return state.orderMap;
   });
 
+  const currPrice = useRef<string>(lastPrice);
+
   const [tradeType, setTradeType] = useState<OrderType>("LIMIT");
   const isLimit = tradeType === "LIMIT";
   const isMarket = tradeType === "MARKET";
@@ -50,6 +52,10 @@ export default function TradeForm() {
     })
   );
 
+  useEffect(() => {
+    currPrice.current = lastPrice;
+  }, [lastPrice]);
+
   const buyFormRef = useRef<{ reset: () => void }>(null);
   const sellFormRef = useRef<{ reset: () => void }>(null);
 
@@ -58,7 +64,7 @@ export default function TradeForm() {
   const balances = accountInfo?.balances ?? [];
 
   const { maxBuyQty, quoteFree, maxSellAmount, baseFree } =
-    useTradeAvailability(balances, base, quote, lastPrice);
+    useTradeAvailability(balances, base, quote);
 
   const getAccountInfoIn = async () => {
     const res = await getAccountInfo();

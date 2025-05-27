@@ -78,24 +78,24 @@ const ExForm = forwardRef(function ExForm(
           setAmount(newAmount);
         } else if (amount && currPrice) {
           nextFormData.quantity = div(amount, currPrice);
-        }else{
-          setAmount('')
+        } else {
+          setAmount("");
         }
 
         break;
-      case "quantity":        
+      case "quantity":
         if (currPrice && value) {
           const newAmount = mul(currPrice, value);
           setAmount(newAmount);
-        }else{
-          setAmount('')
+        } else {
+          setAmount("");
         }
         break;
       case "amount":
         if (currPrice && value) {
           nextFormData.quantity = div(value, currPrice);
-        }else{
-          nextFormData.quantity = ''
+        } else {
+          nextFormData.quantity = "";
         }
         break;
 
