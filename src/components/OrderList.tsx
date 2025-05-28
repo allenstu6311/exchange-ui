@@ -1,6 +1,6 @@
 import { getCurrentOrder, cancleOrder } from "@/api/service/exchange/exchange";
 import { ICurrentOrder } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CTable from "./table";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, setCurrentOrder } from "@/store";
@@ -9,8 +9,10 @@ import { formatNumToFixed, polling } from "@/utils";
 import { IPollingController } from "@/utils/polling";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import dayjs from "dayjs";
+import CTabs, { ITabData } from "@/components/tabs/index";
+import { OrderType } from "@/utils/enum";
 
-let pollingGetCurrentOrder: IPollingController | null = null;
+// let pollingGetCurrentOrder: IPollingController | null = null;
 
 export default function OrderList() {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +23,8 @@ export default function OrderList() {
   );
 
   const { showPrecision } = currSymbolInfo;
+
+  const pollingGetCurrentOrder = useRef<IPollingController>(null);
 
   const columnData = [
     {
@@ -93,21 +97,25 @@ export default function OrderList() {
     return state.orderMap;
   });
 
-  async function getCurrentOrderIn() {
-    const res = await getCurrentOrder({
-      symbol: uppercaseSymbol,
-    });
-    dispatch(setCurrentOrder(res.data));
-  }
-
   useEffect(() => {
-    if (pollingGetCurrentOrder) {
-      pollingGetCurrentOrder.stop();
+    async function getCurrentOrderIn() {
+      const res = await getCurrentOrder({
+        symbol: uppercaseSymbol,
+      });
+      dispatch(setCurrentOrder(res.data));
     }
 
-    pollingGetCurrentOrder = polling(getCurrentOrderIn, 3000);
-    pollingGetCurrentOrder.start();
-  }, [uppercaseSymbol]);
+    if (pollingGetCurrentOrder.current) {
+      pollingGetCurrentOrder.current.stop();
+    }
+
+    pollingGetCurrentOrder.current = polling(getCurrentOrderIn, 3000);
+    pollingGetCurrentOrder.current.start();
+
+    return () => {
+      pollingGetCurrentOrder.current?.stop();
+    };
+  }, [uppercaseSymbol, dispatch]);
 
   const handleCancelOrder = async (orderInfo: ICurrentOrder) => {
     const { symbol, orderId, side } = orderInfo;
@@ -125,9 +133,34 @@ export default function OrderList() {
     }
   };
 
+  const [currTabsIndex, setCurrTabsIndex] = useState<number>(0);
+  const tabData = [
+    {
+      label: "當前訂單",
+      index: 0,
+    },
+    {
+      label: "歷史訂單",
+      index: 1,
+    },
+  ];
+
+  const tabOnChange = (currTab: ITabData) => {
+    setCurrTabsIndex(currTab.index);
+  };
+
   return (
     <div className="">
-      <CTable columnData={columnData} rowData={orderMap.current}></CTable>
+      <div className="p-5px">
+        <CTabs tabOnChange={tabOnChange} tabData={tabData}></CTabs>
+      </div>
+
+      {/* 當前訂單 */}
+      {currTabsIndex == OrderType.CURRENT && (
+        <CTable columnData={columnData} rowData={orderMap.current}></CTable>
+      )}
+      {/* 歷史訂單 */}
+      {/* {currTabsIndex === OrderType.HISTORY && <div className="">歷史訂單</div>} */}
     </div>
   );
 }

@@ -103,3 +103,13 @@ export const getAccountInfo = async () => {
     url: `account?${finalQuery}`,
   });
 };
+
+export const getHistoricalTrades = async ()=>{
+    const { query, signature } = getSignature({
+    timestamp: Date.now(),
+  });
+  const finalQuery = `${query}&signature=${signature}`;
+  return proxyHttp.get<any>({
+    url:`historicalTrades${finalQuery}`
+  })
+}
