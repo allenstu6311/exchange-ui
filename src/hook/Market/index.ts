@@ -4,7 +4,12 @@ import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
 import { handleTickerData } from "./utils";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState, setTicker24hData } from "@/store";
+import {
+  AppDispatch,
+  RootState,
+  setTicker24hData,
+  setTicker24hList,
+} from "@/store";
 
 export function useMarketData() {
   const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
@@ -32,6 +37,7 @@ export function useMarketData() {
       const res = await getTickerBy24hr();
       setMarketData(res.data.filter((item) => item.symbol.endsWith("USDT")));
       setImmediateSymbolTicker(res.data);
+      dispatch(setTicker24hList(res.data));
 
       worker.postMessage({
         type: "ticker",
@@ -45,6 +51,8 @@ export function useMarketData() {
       if (type === "ticker") {
         setMarketData((prev) => handleTickerData(data, prev));
         setImmediateSymbolTicker(data);
+        setTicker24hList(data);
+        dispatch(setTicker24hList(data));
       }
     }
 

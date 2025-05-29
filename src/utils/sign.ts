@@ -12,6 +12,7 @@ export function getSignature(param: Record<string, any>) {
 
   const query = params.toString(); // symbol=BTCUSDT&side=BUY&...
   const signature = CryptoJS.HmacSHA256(query, SECRET_KEY).toString();
+  return `${query}&signature=${signature}`;
 
-  return { query, signature }; // ✅ 產生簽名
+  // return { query, signature }; // ✅ 產生簽名
 }

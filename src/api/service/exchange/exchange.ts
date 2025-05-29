@@ -25,8 +25,8 @@ export const getTickerBy24hr = async () => {
     url: "/ticker/24hr",
     params: {},
     metas: {
-      onSuccess() { },
-      onError() { },
+      onSuccess() {},
+      onError() {},
       retry: 3,
       middleware: [
         (config: any, result: any) => {
@@ -55,8 +55,7 @@ export const getDepthData = async (params: any) => {
 };
 
 export const createOrder = async (body: OrderRequest) => {
-  const { query, signature } = getSignature(body); // ✅ 產生簽名
-  const finalQuery = `${query}&signature=${signature}`;
+  const finalQuery = getSignature(body); // ✅ 產生簽名
 
   return proxyHttp.post<OrderRequest>({
     url: `order?${finalQuery}`,
@@ -69,8 +68,7 @@ export const createOrder = async (body: OrderRequest) => {
 };
 
 export const cancleOrder = async (body: ICancelOrderRequest) => {
-  const { query, signature } = getSignature(body); // ✅ 產生簽名
-  const finalQuery = `${query}&signature=${signature}`;
+  const finalQuery = getSignature(body); // ✅ 產生簽名
 
   return proxyHttp.delete<ICancelOrderRequest>({
     url: `order?${finalQuery}`,
@@ -84,32 +82,29 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
 
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { symbol } = params;
-  const { query, signature } = getSignature({
+  const finalQuery = getSignature({
     timestamp: Date.now(),
     symbol,
   });
-  const finalQuery = `${query}&signature=${signature}`;
   return proxyHttp.get<ICurrentOrder[]>({
     url: `openOrders?${finalQuery}`,
   });
 };
 
 export const getAccountInfo = async () => {
-  const { query, signature } = getSignature({
+  const finalQuery = getSignature({
     timestamp: Date.now(),
   });
-  const finalQuery = `${query}&signature=${signature}`;
   return proxyHttp.get<IAccountInfo>({
     url: `account?${finalQuery}`,
   });
 };
 
-export const getHistoricalTrades = async ()=>{
-    const { query, signature } = getSignature({
+export const getHistoricalTrades = async () => {
+  const finalQuery = getSignature({
     timestamp: Date.now(),
   });
-  const finalQuery = `${query}&signature=${signature}`;
   return proxyHttp.get<any>({
-    url:`historicalTrades${finalQuery}`
-  })
-}
+    url: `historicalTrades${finalQuery}`,
+  });
+};

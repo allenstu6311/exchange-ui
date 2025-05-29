@@ -199,6 +199,7 @@ export interface SymbolInfoListState {
 
 export interface Ticker24hrDataStatMap {
   map: Ticker24hrStat;
+  list: Ticker24hrStat[];
 }
 
 export interface SymbolNameMapType {

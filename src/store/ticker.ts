@@ -25,6 +25,7 @@ const ticker24hrDataState: Ticker24hrDataStatMap = {
     lastId: 0, // 最後一筆成交 ID
     count: 0, // 成交筆數
   },
+  list: [],
 };
 
 export const ticker24hrData = createSlice({
@@ -33,6 +34,10 @@ export const ticker24hrData = createSlice({
   reducers: {
     setTicker24hData(state, action: PayloadAction<Ticker24hrStat>) {
       Object.assign(state.map, action.payload);
+    },
+    setTicker24hList(state, action: PayloadAction<Ticker24hrStat[]>) {
+      // state.list = action.payload;
+      Object.assign(state.list, action.payload);
     },
   },
 });
