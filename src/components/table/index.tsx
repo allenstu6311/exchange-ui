@@ -36,18 +36,12 @@ function CTable({
   trHeight = 0,
 }: CTableProps) {
   const tbodyRef = useRef(null);
-  const trRef = useRef<HTMLTableRowElement>(null);
-
   const rowVirtualizer = useVirtualizer({
     count: rowData.length,
     getScrollElement: () => tbodyRef.current,
     estimateSize: () => trHeight,
   });
   const renderRowData = virtualed ? rowVirtualizer.getVirtualItems() : rowData;
-
-  if (trRef.current && trHeight) {
-    trRef.current.style.height = trHeight + "px";
-  }
 
   return (
     <>
@@ -79,7 +73,6 @@ function CTable({
 
               return (
                 <Tr
-                  ref={trRef}
                   key={itemIndex}
                   style={rowStyle}
                   onClick={() => trOnClick(item)}

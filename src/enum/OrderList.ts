@@ -1,0 +1,14 @@
+export enum OrderType {
+  CURRENT,
+  HISTORY,
+}
+
+export enum OrderStatus {
+  NEW = "NEW",
+  PARTIALLY_FILLED = "PARTIALLY_FILLED",
+  FILLED = "FILLED",
+  CANCELED = "CANCELED",
+  REJECTED = "REJECTED",
+  EXPIRED = "EXPIRED",
+  PENDING_CANCEL = "PENDING_CANCEL",
+}

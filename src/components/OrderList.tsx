@@ -1,4 +1,8 @@
-import { getCurrentOrder, cancleOrder } from "@/api/service/exchange/exchange";
+import {
+  getCurrentOrder,
+  cancleOrder,
+  getHistoricalTrades,
+} from "@/api/service/exchange/exchange";
 import { ICurrentOrder } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import CTable from "./table";
@@ -10,9 +14,10 @@ import { IPollingController } from "@/utils/polling";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import dayjs from "dayjs";
 import CTabs, { ITabData } from "@/components/tabs/index";
-import { OrderType } from "@/utils/enum";
+import { OrderStatus, OrderType } from "@/enum/OrderList";
+import { IHistoryOrderData } from "@/hook/OrderList/types";
+import { orderStatusLabelMap } from "@/hook/OrderList/utils";
 
-// let pollingGetCurrentOrder: IPollingController | null = null;
 
 export default function OrderList() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,9 +29,11 @@ export default function OrderList() {
 
   const { showPrecision } = currSymbolInfo;
 
+  const [currTabsIndex, setCurrTabsIndex] = useState<number>(0);
+  const [historyOrder, setHistoryOrder] = useState<IHistoryOrderData[]>([]);
   const pollingGetCurrentOrder = useRef<IPollingController>(null);
 
-  const columnData = [
+  const currOrderColumn = [
     {
       label: "交易對",
       key: "symbol",
@@ -48,20 +55,17 @@ export default function OrderList() {
     {
       label: "數量",
       key: "origQty",
-      format: (content: string) => {
-        return formatNumToFixed(content, showPrecision);
-      },
+      format: (content: string) => formatNumToFixed(content, showPrecision),
     },
     {
       label: "價格",
       key: "price",
-      format: (content: string) => {
-        return formatNumToFixed(content, showPrecision);
-      },
+      format: (content: string) => formatNumToFixed(content, showPrecision),
     },
     {
       label: "狀態",
       key: "status",
+      format:(content: OrderStatus)=>orderStatusLabelMap[content]
     },
     {
       label: "時間",
@@ -89,6 +93,48 @@ export default function OrderList() {
     },
   ];
 
+  const hisOrderColumn = [
+    {
+      label: "交易對",
+      key: "symbol",
+    },
+    {
+      label: "方向",
+      key: "side",
+      format: (content: string) => {
+        return content === "BUY" ? "買入" : "賣出";
+      },
+    },
+    {
+      label: "數量",
+      key: "qty",
+      format: (content: string) => {
+        return formatNumToFixed(content, showPrecision);
+      },
+    },
+    {
+      label: "價格",
+      key: "price",
+      format: (content: string) => {
+        return formatNumToFixed(content, showPrecision);
+      },
+    },
+    {
+      label: "交易額",
+      key: "quoteQty",
+      format: (content: string) => {
+        return formatNumToFixed(content, showPrecision);
+      },
+    },
+    {
+      label: "時間",
+      key: "time",
+      format: (content: string) => {
+        return dayjs(Number(content)).format("YYYY/MM/DD HH:mm:ss");
+      },
+    },
+  ];
+
   const uppercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.uppercaseSymbol;
   });
@@ -105,17 +151,35 @@ export default function OrderList() {
       dispatch(setCurrentOrder(res.data));
     }
 
+    async function getHistoricalTradesIn() {
+      const res = await getHistoricalTrades({
+        symbol: uppercaseSymbol,
+      });
+      setHistoryOrder(res.data);
+    }
+
     if (pollingGetCurrentOrder.current) {
       pollingGetCurrentOrder.current.stop();
     }
 
-    pollingGetCurrentOrder.current = polling(getCurrentOrderIn, 3000);
+    let action;
+
+    switch (currTabsIndex) {
+      case OrderType.CURRENT:
+        action = getCurrentOrderIn;
+        break;
+      case OrderType.HISTORY:
+        action = getHistoricalTradesIn;
+        break;
+    }
+
+    pollingGetCurrentOrder.current = polling(action!, 3000);
     pollingGetCurrentOrder.current.start();
 
     return () => {
       pollingGetCurrentOrder.current?.stop();
     };
-  }, [uppercaseSymbol, dispatch]);
+  }, [uppercaseSymbol, dispatch, currTabsIndex]);
 
   const handleCancelOrder = async (orderInfo: ICurrentOrder) => {
     const { symbol, orderId, side } = orderInfo;
@@ -133,7 +197,6 @@ export default function OrderList() {
     }
   };
 
-  const [currTabsIndex, setCurrTabsIndex] = useState<number>(0);
   const tabData = [
     {
       label: "當前訂單",
@@ -150,17 +213,28 @@ export default function OrderList() {
   };
 
   return (
-    <div className="">
+    <div className="h-[calc(100%-95px)]">
       <div className="p-5px">
         <CTabs tabOnChange={tabOnChange} tabData={tabData}></CTabs>
       </div>
 
       {/* 當前訂單 */}
       {currTabsIndex == OrderType.CURRENT && (
-        <CTable columnData={columnData} rowData={orderMap.current}></CTable>
+        <CTable
+          columnData={currOrderColumn}
+          rowData={orderMap.current}
+        ></CTable>
       )}
+
       {/* 歷史訂單 */}
-      {/* {currTabsIndex === OrderType.HISTORY && <div className="">歷史訂單</div>} */}
+      {currTabsIndex == OrderType.HISTORY && (
+        <CTable
+          columnData={hisOrderColumn}
+          rowData={historyOrder}
+          trHeight={35}
+          virtualed={true}
+        ></CTable>
+      )}
     </div>
   );
 }

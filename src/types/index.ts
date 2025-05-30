@@ -308,6 +308,10 @@ export interface ICurrentOrderRequest {
   symbol: string;
 }
 
+export interface IHistoryOrderRequest {
+  symbol: string;
+}
+
 export interface IBalance {
   asset: string;
   free: string;
