@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import 'virtual:uno.css'
-import router from "@/router/index.ts"
+import router from "@/router/index.tsx"
 import { RouterProvider } from 'react-router'
 import store from '@/store/index.ts'
 import { Provider as ReduxProvider  } from 'react-redux'   
