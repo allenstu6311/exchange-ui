@@ -22,7 +22,7 @@ export const { setSymbolName } = symbolNameMap.actions;
 
 export const { setSymbolInfoList, setCurrSymbolInfo } = symbolInfoList.actions;
 
-export const { setTicker24hData, setTicker24hList } = ticker24hrData.actions;
+export const { setTicker24hData, setTicker24hList, setCacheTicker24hData } = ticker24hrData.actions;
 
 export const { setCurrentOrder } = orderMap.actions;
 

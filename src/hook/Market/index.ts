@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   AppDispatch,
   RootState,
+  setCacheTicker24hData,
   setTicker24hData,
   setTicker24hList,
 } from "@/store";
@@ -20,13 +21,17 @@ export function useMarketData() {
   const dispatch = useDispatch<AppDispatch>();
   // 設定當前幣對的即時價格
   const setImmediateSymbolTicker = useCallback(
-    (data: Ticker24hrStat[]) => {
+    (data: Ticker24hrStat[], init?:boolean) => {
       const targetSymbolTicker = data.find(
         (item: Ticker24hrStat) => item.symbol === uppercaseSymbol
       );
 
       if (targetSymbolTicker) {
         dispatch(setTicker24hData(targetSymbolTicker));
+
+        if(init){
+          dispatch(setCacheTicker24hData(targetSymbolTicker));
+        }
       }
     },
     [uppercaseSymbol, dispatch]
@@ -36,7 +41,7 @@ export function useMarketData() {
     const getTickerBy24hrIn = async () => {
       const res = await getTickerBy24hr();
       setMarketData(res.data.filter((item) => item.symbol.endsWith("USDT")));
-      setImmediateSymbolTicker(res.data);
+      setImmediateSymbolTicker(res.data, true);
       dispatch(setTicker24hList(res.data));
 
       worker.postMessage({

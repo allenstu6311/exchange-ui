@@ -12,12 +12,13 @@ export function useTradeAvailability(
     return state.symbolNameMap.uppercaseSymbol;
   });
 
-  const lastPrice = useSelector((state: RootState) => {
-    const targetSymbolTicker = state.ticker24hrData.list.find((item) => {
-      return item.symbol === uppercaseSymbol;
-    });
-    return targetSymbolTicker?.lastPrice || "";
+
+  const cacheTickerData = useSelector((state: RootState) => {
+    return state.ticker24hrData.cacheMap;
   });
+
+  const { lastPrice } = cacheTickerData
+  
   const [priceSnapshot, setPriceSnapshot] = useState<number>(0);
 
   useEffect(() => {

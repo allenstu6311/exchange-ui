@@ -14,6 +14,8 @@ import { createDefaultOrderRequest } from "@/hook/TradeForm/utils";
 import { useTradeAvailability } from "@/hook/TradeForm";
 import CTabs, { ITabData } from "@/components/tabs/index";
 import { useRef } from "react";
+import { formatNumToFixed } from "@/utils";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
 export default function TradeForm() {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,16 +23,17 @@ export default function TradeForm() {
     return state.symbolNameMap;
   });
 
-  const lastPrice = useSelector((state: RootState) => {
-    return state.ticker24hrData.map.lastPrice;
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+  const { showPrecision } = currSymbolInfo;
+
+  const cacheTickerData = useSelector((state: RootState) => {
+    return state.ticker24hrData.cacheMap;
   });
-
-  const orderMap = useSelector((state: RootState) => {
-    return state.orderMap;
-  });
-
-  const currPrice = useRef<string>(lastPrice);
-
+  const { lastPrice = "0" } = cacheTickerData;
   const [tradeType, setTradeType] = useState<OrderType>("LIMIT");
   const isLimit = tradeType === "LIMIT";
   const isMarket = tradeType === "MARKET";
@@ -53,14 +56,21 @@ export default function TradeForm() {
   );
 
   useEffect(() => {
-    currPrice.current = lastPrice;
+    const createFormContent = (side: "BUY" | "SELL") =>
+      createDefaultOrderRequest({
+        side,
+        symbol: "",
+        type: tradeType,
+        price: formatNumToFixed(lastPrice, showPrecision),
+      });
+
+    setBuyFormData(createFormContent("BUY"));
+    setSellFormData(createFormContent("SELL"));
   }, [lastPrice]);
 
   const buyFormRef = useRef<{ reset: () => void }>(null);
   const sellFormRef = useRef<{ reset: () => void }>(null);
-
   const [accountInfo, setAccountInfo] = useState<IAccountInfo>();
-
   const balances = accountInfo?.balances ?? [];
 
   const { maxBuyQty, quoteFree, maxSellAmount, baseFree } =
@@ -185,19 +195,19 @@ export default function TradeForm() {
             <div className="flex justify-between">
               <p>可用</p>
               <p>
-                {quoteFree} {quote}
+                {formatNumToFixed(quoteFree, showPrecision)} {quote}
               </p>
             </div>
             <div className="flex justify-between">
               <p>最大買入</p>
               <p>
-                {maxBuyQty} {base}
+                {formatNumToFixed(maxBuyQty, showPrecision)} {base}
               </p>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <p>預估手續費</p>
               <p>0 {quote}</p>
-            </div>
+            </div> */}
           </div>
           <Button
             colorScheme="blue"
@@ -223,19 +233,19 @@ export default function TradeForm() {
             <div className="flex justify-between">
               <p>可用</p>
               <p>
-                {baseFree} {base}
+                {formatNumToFixed(baseFree, showPrecision)} {base}
               </p>
             </div>
             <div className="flex justify-between">
               <p>最大賣出</p>
               <p>
-                {maxSellAmount} {quote}
+                {formatNumToFixed(maxSellAmount, showPrecision)} {quote}
               </p>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <p>預估手續費</p>
               <p>0 {quote}</p>
-            </div>
+            </div> */}
           </div>
           <Button
             colorScheme="red"

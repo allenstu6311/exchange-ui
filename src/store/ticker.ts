@@ -26,6 +26,7 @@ const ticker24hrDataState: Ticker24hrDataStatMap = {
     count: 0, // 成交筆數
   },
   list: [],
+  cacheMap: {} as Ticker24hrStat
 };
 
 export const ticker24hrData = createSlice({
@@ -38,6 +39,9 @@ export const ticker24hrData = createSlice({
     setTicker24hList(state, action: PayloadAction<Ticker24hrStat[]>) {
       // state.list = action.payload;
       Object.assign(state.list, action.payload);
+    },
+    setCacheTicker24hData(state, action: PayloadAction<Ticker24hrStat>) {
+      Object.assign(state.cacheMap, action.payload);
     },
   },
 });
