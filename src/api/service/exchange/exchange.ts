@@ -109,6 +109,6 @@ export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
     timestamp: Date.now(),
   });
   return proxyHttp.get<IHistoryOrderData[]>({
-    url: `myTrades?${finalQuery}`,
+    url: `myTrades?${finalQuery}`, 
   });
 };
