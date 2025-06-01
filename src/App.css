@@ -1,0 +1,20 @@
+* {
+    list-style: none;
+}
+
+#root {
+    width: 100%;
+}
+
+html,
+body {
+    background-color: #F5F5F5 !important;
+}
+
+td.css-1eyncsv {
+    text-align: center;
+}
+
+th.css-1zts0j{
+    text-align: center;
+}
