@@ -11,8 +11,6 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-console.log('__dirname',__dirname);
-
 
 // === 1. 設定靜態資源路徑 ===
 const distPath = path.resolve(__dirname, "../dist");
@@ -32,10 +30,10 @@ app.use(
     pathRewrite: {
       "^/proxy": "", // 把 /proxy 移除掉，讓它變成 /myTrades, /account
     },
-    onProxyReq: (proxyReq, req, res) => {
-      // 設定 Binance 所需 header
-      proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
-    },
+    // onProxyReq: (proxyReq, req, res) => {
+    //   // 設定 Binance 所需 header
+    //   proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
+    // },
   })
 );
 
