@@ -6,7 +6,6 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { errorToast, successToast } from "@/utils/notify";
-import { log } from "node:console";
 
 const API_KEY =
   "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
