@@ -1,5 +1,5 @@
 import { IBarData, IKlineData, IKlineWsData } from "@/hook/TradeView/types";
-import { Ticker24hrStat, TickerSocketData } from "@/types";
+import { Ticker24hrStat, TickerSocketData, WsType } from "@/types";
 import dayjs from "dayjs";
 import { CandlestickData, UTCTimestamp } from "lightweight-charts";
 
@@ -45,4 +45,26 @@ export function transformVolumFromWs(data: IKlineWsData): IBarData {
     value: parseFloat(k.v),
     color: parseFloat(k.c) >= parseFloat(k.o) ? "#26a69a" : "#ef5350", // or custom logic
   };
+}
+
+export function translfrmKlineData(data: IKlineWsData) {
+  return {
+    kline: transformKlineFromWs(data),
+    bar: transformVolumFromWs(data),
+  }
+}
+
+export function getMiddlewares(type: WsType) {
+  const middleware = [];
+  switch (type) {
+    case "ticker":
+      middleware.push(transformTickerData);
+      break;
+    case "kline":
+      middleware.push(translfrmKlineData);
+      break;
+    default:
+      break;
+  }
+  return middleware
 }

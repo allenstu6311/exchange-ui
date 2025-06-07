@@ -1,9 +1,16 @@
 import { transformTickerData } from "@/utils";
-import { transformKlineFromWs, transformVolumFromWs } from "./utils";
+import { getMiddlewares, transformKlineFromWs, transformVolumFromWs, translfrmKlineData } from "./utils";
+import { WorkerRequest, WsType } from "@/types";
+import WebSocketIn from "@/webSocket";
 
-const sockets: Record<string, WebSocket> = {};
+enum WebSocketStatus {
+  CONNECTING,
+  OPEN,
+  CLOSING,
+  CLOSED
+}
 
-const postMessage = ({ type, data, url }: any) => {
+const postMessage = ({ type, data, url }: WorkerRequest) => {
   self.postMessage({
     type,
     data,
@@ -12,41 +19,26 @@ const postMessage = ({ type, data, url }: any) => {
 };
 
 self.onmessage = async (e) => {
-  const { type, url } = e.data;
+  const { type, url }: { type: WsType, url: string } = e.data;
+  const ws = WebSocketIn.socketMap.get(type);
 
-  if (sockets[type]) {
-    sockets[type].close();
-  }
+  if (!ws || ws.getReadyState() === WebSocketStatus.CLOSED || ws.getReadyState() === WebSocketStatus.CLOSING) {
 
-  // await new Promise((res) => setTimeout(res, 100)); // 👈 留一點時間讓 TCP/WS 結束
-
-  const ws = new WebSocket(url);
-  sockets[type] = ws;
-
-  sockets[type].onopen = () => {
-    // console.log("ws已連線");
-  };
-
-  sockets[type].onmessage = (event) => {
-    let data = JSON.parse(event.data);
-
-    switch (type) {
-      case "ticker":
-        data = transformTickerData(data);
-        break;
-      case "kline":
-        data = {
-          kline: transformKlineFromWs(data),
-          bar: transformVolumFromWs(data),
-        };
-        break;
-      default:
-        break;
+    const connect = () => {
+      const middleware = getMiddlewares(type);
+      new WebSocketIn({
+        url,
+        type,
+        postMessage,
+        middleware,
+        config: {
+          retry: 3
+        },
+        onReconnect: connect
+      })
     }
-    postMessage({
-      type,
-      data,
-      url,
-    });
-  };
+    connect()
+  } else {
+    console.log(`${type}連線已存在`);
+  }
 };

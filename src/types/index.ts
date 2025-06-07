@@ -88,8 +88,11 @@ export interface TickerSocketData {
   x: string;
 }
 
+export type WsType = "depth" | "ticker" | "kline";
+
 export type WorkerRequest = {
-  type: "depth" | "ticker" | "kline";
+  type: WsType;
+  data?: any
   url: string;
 };
 
