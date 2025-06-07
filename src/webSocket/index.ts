@@ -10,7 +10,7 @@ interface IWsConfig {
 class WebSocketIn {
     private ws: WebSocket;
 
-    private isAlive: boolean = false;
+    private wsConifg: IWsConfig = {};
 
     public wsData: any;
 
@@ -21,6 +21,8 @@ class WebSocketIn {
     private lastTime: number = 0;
 
     private isMannelClose: boolean = false;
+
+    private reConnectFn: () => void
 
     static socketMap: Map<string, WebSocketIn> = new Map()
 
@@ -42,7 +44,9 @@ class WebSocketIn {
 
         this.ws = new WebSocket(url);
         WebSocketIn.socketMap.set(type, this);
-        this.wsType = type
+        this.wsType = type;
+        this.reConnectFn = onReconnect;
+        this.wsConifg = config || {};
 
         this.ws.onopen = () => {
             this.lastTime = Date.now();
@@ -71,15 +75,28 @@ class WebSocketIn {
         this.ws.onclose = () => {
             if (this.isMannelClose) return;
             console.log(`${type}即將重新連線`);
-            onReconnect()
+            this.reconnect()
         }
     }
 
-    getReadyState(){
+    getReadyState() {
         return this.ws.readyState;
     }
 
-    public mannelClose(){
+    reconnect() {
+        if (this.wsConifg.retry) {
+            this.wsConifg.retry -= 1;
+            const delay = (4 - this.wsConifg.retry) * 1000;
+            console.log(`${this.wsType}已重試`);
+            setTimeout(() => {
+                this.reConnectFn()
+            }, delay)
+        } else {
+            console.log('已無法再次重試');
+        }
+    }
+
+    public mannelClose() {
         this.isMannelClose = true;
         this.close()
     }
@@ -96,7 +113,8 @@ class WebSocketIn {
             const currTime = Date.now();
             if (currTime - this.lastTime > 5000) {
                 console.log(`心跳停止 ${this.wsType} 結束連線`);
-                this.close()
+                this.close();
+                this.reconnect()
             }
         }, 5000)
     }
