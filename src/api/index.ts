@@ -11,19 +11,11 @@ const API_KEY =
   "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
 const SECRET_KEY =
   "4mSUiEArmbdTraMjjAuQYM0g1dVL4EH44UvIhyYXaoXmZblg1ZWtlv08wW4QMk9h";
-
-interface IMetas {
-  onSuccess?: (data: any) => void;
-  onError?: (config: CustomRequestConfig, response: any) => void;
-  retry?: number;
-  middleware?: Middleware<any>[];
-}
-
-interface CustomRequestConfig extends AxiosRequestConfig {
+export interface ICustomRequestConfig extends AxiosRequestConfig {
   metas?: IMetas;
 }
 
-interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
+interface ICustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
   metas?: IMetas;
 }
 
@@ -41,24 +33,31 @@ const proxyConfig: AxiosRequestConfig = {
   },
 };
 
-export type Middleware<T> = (
-  config: CustomRequestConfig,
-  response: any
-) => Promise<T>;
+export type Middleware<T = any> = (
+  config: ICustomRequestConfig,
+  response: T
+) => Promise<T> | T;
 
 interface IAPIResponse<T = any> {
   success: boolean;
   data: T;
-  error?: CustomRequestConfig;
+  error?: ICustomRequestConfig;
+}
+
+interface IMetas<T = any> {
+  onSuccess?: (data: any) => void;
+  onError?: (config: ICustomRequestConfig, response: any) => void;
+  retry?: number;
+  middleware?: Middleware<T>[];
 }
 
 async function handleSuccessResponse<T = any>(
   response: AxiosResponse
 ): Promise<IAPIResponse<T>> {
   const { status, data, config } = response;
-  
+
   const { onSuccess } =
-    (config as CustomInternalAxiosRequestConfig).metas || {};
+    (config as ICustomInternalAxiosRequestConfig).metas || {};
   if (status === 200) {
     if (onSuccess) {
       onSuccess(data);
@@ -69,7 +68,7 @@ async function handleSuccessResponse<T = any>(
 }
 
 async function handleErrorResponse<T = any>(
-  config: CustomRequestConfig,
+  config: ICustomRequestConfig,
   response: any = {}
 ): Promise<IAPIResponse<T>> {
   const { onError } = config?.metas || {};
@@ -87,9 +86,9 @@ class HttpInstance {
   /**請求實體 */
   public axiosInstance: AxiosInstance;
 
-  private middlewares: Middleware<any>[] = [];
+  private middlewares: Middleware[] = [];
 
-  private addMiddleware(middleware: Middleware<any>[]) {
+  private addMiddleware(middleware: Middleware[]) {
     this.middlewares = [...this.middlewares, ...middleware];
   }
 
@@ -100,7 +99,10 @@ class HttpInstance {
     this.httpInterceptorsResponse();
   }
 
-  private async runMiddlewares(config: any, response: AxiosResponse) {
+  private async runMiddlewares<T = any>(
+    config: ICustomRequestConfig,
+    response: AxiosResponse
+  ) {
     let result = response;
     for (const middleware of this.middlewares) {
       result = await middleware(config, result);
@@ -111,7 +113,7 @@ class HttpInstance {
 
   private httpInterceptorsRequest() {
     this.axiosInstance.interceptors.request.use(
-      (config: CustomInternalAxiosRequestConfig) => {
+      (config: ICustomInternalAxiosRequestConfig) => {
         const middleware = config?.metas?.middleware;
         if (middleware) {
           this.addMiddleware(middleware);
@@ -145,7 +147,9 @@ class HttpInstance {
           }
         }
 
-        return Promise.reject(await handleErrorResponse(config, error.response));        
+        return Promise.reject(
+          await handleErrorResponse(config, error.response)
+        );
       }
     );
   }
@@ -159,37 +163,36 @@ function createHttpClient(instance: AxiosInstance) {
     get: async <T = any>(args: {
       url: string;
       params?: Record<string, any>;
-      metas?: IMetas;
+      metas?: IMetas<T>;
     }): Promise<IAPIResponse<T>> => {
       return instance
         .get<T>(args.url, {
           params: args.params,
           metas: args.metas,
-        } as CustomRequestConfig)
+        } as ICustomRequestConfig)
         .then((res) => handleSuccessResponse<T>(res));
     },
-
     post: async <T = any>(args: {
       url: string;
       body?: Record<string, any>;
-      metas?: IMetas;
+      metas?: IMetas<T>;
     }): Promise<IAPIResponse<T>> => {
       return instance
         .post<T>(args.url, args.body, {
           metas: args.metas,
-        } as CustomRequestConfig)
+        } as ICustomRequestConfig)
         .then((res) => handleSuccessResponse<T>(res));
     },
     delete: async <T = any>(args: {
       url: string;
       body?: Record<string, any>;
-      metas?: IMetas;
+      metas?: IMetas<T>;
     }): Promise<IAPIResponse<T>> => {
       return instance
         .delete<T>(args.url, {
           data: args.body,
           metas: args.metas,
-        } as CustomRequestConfig)
+        } as ICustomRequestConfig)
         .then((res) => handleSuccessResponse<T>(res));
     },
   };

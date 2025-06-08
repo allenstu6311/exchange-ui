@@ -1,4 +1,4 @@
-import { http, proxyHttp } from "@/api";
+import { http, ICustomRequestConfig, proxyHttp } from "@/api";
 import { IHistoryOrderData } from "@/hook/OrderList/types";
 import { IKlinesRequest } from "@/hook/TradeView/types";
 import {
@@ -27,14 +27,10 @@ export const getTickerBy24hr = async () => {
     url: "/ticker/24hr",
     params: {},
     metas: {
-      onSuccess() { },
-      onError() { },
+      onSuccess() {},
+      onError() {},
       retry: 3,
-      middleware: [
-        (config: any, result: any) => {
-          return result;
-        },
-      ],
+      middleware: [(config, result) => result],
     },
   });
 };
@@ -87,6 +83,7 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const finalQuery = getSignature({
     timestamp: Date.now(),
     symbol,
+    recvWindow: 5000,
   });
   return proxyHttp.get<ICurrentOrder[]>({
     url: `openOrders?${finalQuery}`,
@@ -96,6 +93,7 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
 export const getAccountInfo = async () => {
   const finalQuery = getSignature({
     timestamp: Date.now(),
+    recvWindow: 5000,
   });
   return proxyHttp.get<IAccountInfo>({
     url: `account?${finalQuery}`,
@@ -109,6 +107,6 @@ export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
     timestamp: Date.now(),
   });
   return proxyHttp.get<IHistoryOrderData[]>({
-    url: `myTrades?${finalQuery}`, 
+    url: `myTrades?${finalQuery}`,
   });
 };
