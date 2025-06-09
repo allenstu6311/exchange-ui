@@ -1,4 +1,5 @@
 import axios, {
+  AxiosError,
   //   AxiosError,
   AxiosInstance,
   AxiosRequestConfig,
@@ -33,22 +34,41 @@ const proxyConfig: AxiosRequestConfig = {
   },
 };
 
+type MiddlewareResult<T = any> = T | Promise<T>;
+
 export type Middleware<T = any> = (
   config: ICustomRequestConfig,
   response: T
-) => Promise<T> | T;
+) => MiddlewareResult;
 
-interface IAPIResponse<T = any> {
+export interface IAPIResponse<T = any> {
   success: boolean;
   data: T;
   error?: ICustomRequestConfig;
 }
 
 interface IMetas<T = any> {
-  onSuccess?: (data: any) => void;
-  onError?: (config: ICustomRequestConfig, response: any) => void;
+  onSuccess?: (data: T) => void;
+  onError?: (config: ICustomRequestConfig, response: AxiosResponse) => void;
   retry?: number;
   middleware?: Middleware<T>[];
+}
+
+async function runMiddlewares<T = any>(
+  config: ICustomRequestConfig,
+  response: AxiosResponse<T>,
+  middlewares: Middleware<T>[] = []
+): Promise<MiddlewareResult<T>> {
+  let result: MiddlewareResult = response;
+  for (const middleware of middlewares) {
+    try {
+      result = await middleware(config, result);
+    } catch (error) {
+      console.error("[runMiddlewares] error:", error);
+      return result;
+    }
+  }
+  return result;
 }
 
 async function handleSuccessResponse<T = any>(
@@ -56,13 +76,14 @@ async function handleSuccessResponse<T = any>(
 ): Promise<IAPIResponse<T>> {
   const { status, data, config } = response;
 
-  const { onSuccess } =
+  const { onSuccess, middleware } =
     (config as ICustomInternalAxiosRequestConfig).metas || {};
   if (status === 200) {
     if (onSuccess) {
       onSuccess(data);
     }
-    return { success: true, data };
+    const resultData = await runMiddlewares(config, response, middleware || []);
+    return { success: true, data: resultData.data };
   }
   return { success: true, data: {} as T, error: config };
 }
@@ -86,12 +107,6 @@ class HttpInstance {
   /**請求實體 */
   public axiosInstance: AxiosInstance;
 
-  private middlewares: Middleware[] = [];
-
-  private addMiddleware(middleware: Middleware[]) {
-    this.middlewares = [...this.middlewares, ...middleware];
-  }
-
   constructor(config?: AxiosRequestConfig) {
     const finalConfig = config || defaultConfig;
     this.axiosInstance = axios.create(finalConfig); // ✅ 先創建 axios instance
@@ -99,25 +114,9 @@ class HttpInstance {
     this.httpInterceptorsResponse();
   }
 
-  private async runMiddlewares<T = any>(
-    config: ICustomRequestConfig,
-    response: AxiosResponse
-  ) {
-    let result = response;
-    for (const middleware of this.middlewares) {
-      result = await middleware(config, result);
-    }
-    this.middlewares = []; // 清空中間件
-    return result;
-  }
-
   private httpInterceptorsRequest() {
     this.axiosInstance.interceptors.request.use(
       (config: ICustomInternalAxiosRequestConfig) => {
-        const middleware = config?.metas?.middleware;
-        if (middleware) {
-          this.addMiddleware(middleware);
-        }
         return config;
       },
       (error) => {
@@ -128,9 +127,7 @@ class HttpInstance {
 
   private httpInterceptorsResponse() {
     this.axiosInstance.interceptors.response.use(
-      async (response) => {
-        return this.runMiddlewares(response.config, response);
-      },
+      async (response) => response,
       async (error) => {
         const config = error.config;
         // 失敗時自動retry

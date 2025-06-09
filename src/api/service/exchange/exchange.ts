@@ -13,8 +13,14 @@ import {
   ICancelOrderRequest,
   IHistoryOrderRequest,
 } from "@/types";
-import { getSignature } from "@/utils";
+import {
+  getSafeTimestamp,
+  getSignature,
+  handleTimestampDriftRetry,
+} from "@/api/utils";
 import { successToast } from "@/utils/notify";
+
+let timeOffset = 0;
 
 export const getSymbolMetaMap = async () => {
   return http.get<ExchangeInfoResponse>({
@@ -27,8 +33,8 @@ export const getTickerBy24hr = async () => {
     url: "/ticker/24hr",
     params: {},
     metas: {
-      onSuccess() {},
-      onError() {},
+      onSuccess(data) {},
+      onError(config, result) {},
       retry: 3,
       middleware: [(config, result) => result],
     },
@@ -37,8 +43,6 @@ export const getTickerBy24hr = async () => {
 
 export async function getKlinesData(params: IKlinesRequest) {
   const data = await http.get({
-    //      url: `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=1000&startTime=1672531200000
-    // `,
     url: `https://api.binance.com/api/v3/klines`,
     params,
   });
@@ -80,33 +84,69 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
 
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { symbol } = params;
-  const finalQuery = getSignature({
-    timestamp: Date.now(),
-    symbol,
-    recvWindow: 5000,
-  });
-  return proxyHttp.get<ICurrentOrder[]>({
-    url: `openOrders?${finalQuery}`,
-  });
+  const sendRequest = async () => {
+    const finalQuery = getSignature({
+      timestamp: getSafeTimestamp(timeOffset),
+      symbol,
+    });
+    return proxyHttp.get<ICurrentOrder[]>({
+      url: `openOrders?${finalQuery}`,
+      metas: {
+        onError(config, result) {
+          return handleTimestampDriftRetry(result, sendRequest);
+        },
+      },
+    });
+  };
+
+  return sendRequest();
 };
 
 export const getAccountInfo = async () => {
-  const finalQuery = getSignature({
-    timestamp: Date.now(),
-    recvWindow: 5000,
-  });
-  return proxyHttp.get<IAccountInfo>({
-    url: `account?${finalQuery}`,
-  });
+  const sendRequest = async () => {
+    const finalQuery = getSignature({
+      timestamp: getSafeTimestamp(timeOffset),
+    });
+    return proxyHttp.get<IAccountInfo>({
+      url: `account?${finalQuery}`,
+      metas: {
+        onError(config, result) {
+          return handleTimestampDriftRetry(result, sendRequest);
+        },
+      },
+    });
+  };
+
+  return sendRequest();
 };
 
 export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
   const { symbol } = params;
-  const finalQuery = getSignature({
-    symbol,
-    timestamp: Date.now(),
-  });
-  return proxyHttp.get<IHistoryOrderData[]>({
-    url: `myTrades?${finalQuery}`,
-  });
+  const sendRequest = async () => {
+    const finalQuery = getSignature({
+      timestamp: getSafeTimestamp(timeOffset),
+      symbol,
+    });
+    return proxyHttp.get<ICurrentOrder[]>({
+      url: `myTrades?${finalQuery}`,
+      metas: {
+        onError(config, result) {
+          return handleTimestampDriftRetry(result, sendRequest);
+        },
+      },
+    });
+  };
+
+  return sendRequest();
+};
+
+export const getServerTime = async () => {
+  await http
+    .get({
+      url: "/time",
+    })
+    .then((res) => {
+      const { serverTime } = res.data;
+      timeOffset = Date.now() - serverTime;
+    });
 };

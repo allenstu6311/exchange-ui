@@ -1,5 +1,10 @@
 import { transformTickerData } from "@/utils";
-import { getMiddlewares, transformKlineFromWs, transformVolumFromWs, translfrmKlineData } from "./utils";
+import {
+  getMiddlewares,
+  transformKlineFromWs,
+  transformVolumFromWs,
+  translfrmKlineData,
+} from "./utils";
 import { WorkerRequest, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
 
@@ -7,7 +12,7 @@ enum WebSocketStatus {
   CONNECTING,
   OPEN,
   CLOSING,
-  CLOSED
+  CLOSED,
 }
 
 const postMessage = ({ type, data, url }: WorkerRequest) => {
@@ -19,11 +24,14 @@ const postMessage = ({ type, data, url }: WorkerRequest) => {
 };
 
 self.onmessage = async (e) => {
-  const { type, url }: { type: WsType, url: string } = e.data;
+  const { type, url }: { type: WsType; url: string } = e.data;
   const ws = WebSocketIn.socketMap.get(type);
 
-  if (!ws || ws.getReadyState() === WebSocketStatus.CLOSED || ws.getReadyState() === WebSocketStatus.CLOSING) {
-
+  if (
+    !ws ||
+    ws.getReadyState() === WebSocketStatus.CLOSED ||
+    ws.getReadyState() === WebSocketStatus.CLOSING
+  ) {
     const connect = () => {
       const middleware = getMiddlewares(type);
       new WebSocketIn({
@@ -32,13 +40,13 @@ self.onmessage = async (e) => {
         postMessage,
         middleware,
         config: {
-          retry: 3
+          retry: 3,
         },
-        onReconnect: connect
-      })
-    }
-    connect()
+        onReconnect: connect,
+      });
+    };
+    connect();
   } else {
-    console.log(`${type}連線已存在`);
+    // console.log(`${type}連線已存在`);
   }
 };
