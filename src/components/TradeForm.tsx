@@ -34,6 +34,7 @@ export default function TradeForm() {
     return state.ticker24hrData.cacheMap;
   });
   const { lastPrice = "0" } = cacheTickerData;
+
   const [tradeType, setTradeType] = useState<OrderType>("LIMIT");
   const isLimit = tradeType === "LIMIT";
   const isMarket = tradeType === "MARKET";
@@ -91,6 +92,7 @@ export default function TradeForm() {
 
   useEffect(() => {
     getAccountInfoIn();
+    resetForm();
   }, [base]);
 
   const resetForm = () => {

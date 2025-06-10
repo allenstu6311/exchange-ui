@@ -18,6 +18,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { IFormValidate } from "./types";
+import { validateEmpty, validateForm, validatePricePrecision } from "./utils";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 type InputKey = "amount" | "quantity" | "price" | "slider";
 
@@ -46,10 +51,17 @@ const ExForm = forwardRef(function ExForm(
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const { base, quote } = symbolMap;
-  const [validationMap, setValidationMap] = useState({
-    price: true,
-    quantity: true,
+  const [validationMap, setValidationMap] = useState<IFormValidate>({
+    ...validateForm,
   });
+
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+  const { showPrecision } = currSymbolInfo;
+  const { price: priceValidate, quantity: quantityValidate } = validationMap;
 
   // ✅ 暴露方法給父元件使用
   useImperativeHandle(ref, () => ({
@@ -61,25 +73,45 @@ const ExForm = forwardRef(function ExForm(
         price: "",
         quantity: "",
       }));
+      setValidationMap({
+        ...validateForm,
+      });
     },
     validate() {
-      return validatePrice() && validateQuantity();
+      const pricePass = validatePrice();
+      const quantityPass = validateQuantity();
+      return pricePass && quantityPass;
     },
   }));
 
   const validatePrice = () => {
-    if (!formData.price || Number(formData.price) <= 0) {
-      setValidationMap((prev) => ({ ...prev, price: false }));
-      return false;
-    }
-    return true;
+    const emptyPass = validateEmpty(formData.price);
+    const precisionPass = validatePricePrecision(formData.price, showPrecision);
+    const isVaild = emptyPass && precisionPass;
+    setValidationMap((prev) => ({
+      ...prev,
+      price: {
+        invalid: !isVaild,
+        empty: emptyPass,
+        precision: precisionPass,
+      },
+    }));
+    return isVaild;
   };
+
   const validateQuantity = () => {
-    if (!formData.quantity || Number(formData.quantity) <= 0) {
-      setValidationMap((prev) => ({ ...prev, quantity: false }));
-      return false;
-    }
-    return true;
+    const emptyPass = validateEmpty(formData.quantity);
+    // const precisionPass = validatePricePrecision(formData.quantity, showPrecision);
+    const isVaild = emptyPass;
+    setValidationMap((prev) => ({
+      ...prev,
+      quantity: {
+        invalid: !isVaild,
+        empty: emptyPass,
+        min: true,
+      },
+    }));
+    return isVaild;
   };
 
   useEffect(() => {
@@ -147,7 +179,7 @@ const ExForm = forwardRef(function ExForm(
       <form action="" className="flex flex-col gap-8px">
         <InputGroup>
           <Input
-            isInvalid={!validationMap.price}
+            isInvalid={priceValidate.invalid}
             errorBorderColor="red.500"
             type="number"
             placeholder="價格"
@@ -161,7 +193,7 @@ const ExForm = forwardRef(function ExForm(
         </InputGroup>
         <InputGroup>
           <Input
-            isInvalid={!validationMap.quantity}
+            isInvalid={quantityValidate.invalid}
             errorBorderColor="red.500"
             type="number"
             placeholder="數量"

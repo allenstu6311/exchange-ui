@@ -92,7 +92,7 @@ export type WsType = "depth" | "ticker" | "kline";
 
 export type WorkerRequest = {
   type: WsType;
-  data?: any
+  data?: any;
   url: string;
 };
 
@@ -203,7 +203,7 @@ export interface SymbolInfoListState {
 export interface Ticker24hrDataStatMap {
   map: Ticker24hrStat;
   list: Ticker24hrStat[];
-  cacheMap: Ticker24hrStat
+  cacheMap: Ticker24hrStat;
 }
 
 export interface SymbolNameMapType {
@@ -347,3 +347,5 @@ export interface IAccountInfo {
   permissions: string[];
   uid: number;
 }
+
+export type NumberString = string | number;
