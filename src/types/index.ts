@@ -218,7 +218,10 @@ export interface SymbolNameMapType {
 }
 
 // ENUM 定義（需根據實際 API 枚舉值進一步擴充）
-export type OrderSide = "BUY" | "SELL";
+export enum OrderSide {
+  BUY = "BUY",
+  SELL = "SELL",
+}
 export type OrderType =
   | "LIMIT"
   | "MARKET"

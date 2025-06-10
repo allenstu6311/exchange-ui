@@ -16,6 +16,7 @@ import CTabs, { ITabData } from "@/components/tabs/index";
 import { useRef } from "react";
 import { formatNumToFixed } from "@/utils";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import { IFormRef } from "./form/exForm/types";
 
 export default function TradeForm() {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,7 +43,7 @@ export default function TradeForm() {
   const { base, quote, uppercaseSymbol } = symbolMap;
   const [buyFormData, setBuyFormData] = useState<OrderRequest>(() =>
     createDefaultOrderRequest({
-      side: "BUY",
+      side: OrderSide.BUY,
       symbol: "",
       type: tradeType,
     })
@@ -50,33 +51,15 @@ export default function TradeForm() {
 
   const [sellFormData, setSellFormData] = useState<OrderRequest>(() =>
     createDefaultOrderRequest({
-      side: "SELL",
+      side: OrderSide.SELL,
       symbol: "",
       type: tradeType,
     })
   );
 
-  useEffect(() => {
-    const createFormContent = (side: "BUY" | "SELL") =>
-      createDefaultOrderRequest({
-        side,
-        symbol: "",
-        type: tradeType,
-        price: formatNumToFixed(lastPrice, showPrecision),
-      });
+  const buyFormRef = useRef<IFormRef>(null);
+  const sellFormRef = useRef<IFormRef>(null);
 
-    setBuyFormData(createFormContent("BUY"));
-    setSellFormData(createFormContent("SELL"));
-  }, [lastPrice]);
-
-  const buyFormRef = useRef<{
-    reset: () => void;
-    validate: () => boolean;
-  }>(null);
-  const sellFormRef = useRef<{
-    reset: () => void;
-    validate: () => boolean;
-  }>(null);
   const [accountInfo, setAccountInfo] = useState<IAccountInfo>();
   const balances = accountInfo?.balances ?? [];
 
@@ -90,6 +73,20 @@ export default function TradeForm() {
     }
   };
 
+  // 取得初始化價錢
+  useEffect(() => {
+    const createFormContent = (side: OrderSide) =>
+      createDefaultOrderRequest({
+        side,
+        symbol: "",
+        type: tradeType,
+        price: formatNumToFixed(lastPrice, showPrecision),
+      });
+
+    setBuyFormData(createFormContent(OrderSide.BUY));
+    setSellFormData(createFormContent(OrderSide.SELL));
+  }, [lastPrice, showPrecision, tradeType]);
+
   useEffect(() => {
     getAccountInfoIn();
     resetForm();
@@ -100,7 +97,7 @@ export default function TradeForm() {
     sellFormRef.current?.reset();
   };
 
-  const tradeBtnClick = async (order: OrderRequest) => {
+  const tradeBtnClick = async (order: OrderRequest, side: OrderSide) => {
     const requestData = createDefaultOrderRequest({
       ...order,
       symbol: symbolMap.uppercaseSymbol,
@@ -225,7 +222,7 @@ export default function TradeForm() {
           <Button
             colorScheme="blue"
             w="100%"
-            onClick={() => tradeBtnClick(buyFormData)}
+            onClick={() => tradeBtnClick(buyFormData, OrderSide.BUY)}
           >
             買入 {base}
           </Button>
@@ -263,7 +260,7 @@ export default function TradeForm() {
           <Button
             colorScheme="red"
             w="100%"
-            onClick={() => tradeBtnClick(sellFormData)}
+            onClick={() => tradeBtnClick(sellFormData, OrderSide.SELL)}
           >
             賣出 {base}
           </Button>

@@ -15,3 +15,8 @@ export interface IFormValidate {
   quantity: IQuanityValidate;
   invalid: boolean;
 }
+
+export interface IFormRef {
+  reset: () => void;
+  validate: () => boolean;
+}

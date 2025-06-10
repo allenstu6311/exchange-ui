@@ -3,6 +3,9 @@ import { IBalance } from "@/types";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
+/**
+ * 可用、最大買入、最大賣出計算
+ */
 export function useTradeAvailability(
   balance: IBalance[],
   baseSymbolName: string, // BTC
@@ -12,13 +15,12 @@ export function useTradeAvailability(
     return state.symbolNameMap.uppercaseSymbol;
   });
 
-
   const cacheTickerData = useSelector((state: RootState) => {
     return state.ticker24hrData.cacheMap;
   });
 
-  const { lastPrice } = cacheTickerData
-  
+  const { lastPrice } = cacheTickerData;
+
   const [priceSnapshot, setPriceSnapshot] = useState<number>(0);
 
   useEffect(() => {

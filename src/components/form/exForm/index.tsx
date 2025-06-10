@@ -18,7 +18,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { IFormValidate } from "./types";
+import { IFormRef, IFormValidate } from "./types";
 import { validateEmpty, validateForm, validatePricePrecision } from "./utils";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
@@ -42,10 +42,7 @@ const ExForm = forwardRef(function ExForm(
     assets: number; //可用 && 可賣
     lastPrice: string;
   },
-  ref: React.Ref<{
-    reset: () => void;
-    validate: () => boolean;
-  }> // 👈 暴露一個 reset 方法
+  ref: React.Ref<IFormRef>
 ) {
   const [amount, setAmount] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
