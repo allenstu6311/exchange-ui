@@ -27,11 +27,11 @@ export async function handleTimestampDriftRetry<T>(
   response: AxiosResponse,
   request: () => Promise<IAPIResponse<T>>,
   delay: number = 3000
-) {
+): Promise<void> {
   const { data } = response;
   if (data.code === -1021) {
     await new Promise((res) => setTimeout(res, delay));
     await getServerTime();
-    return request(); // ✅ 外層 now can await it
+    await request(); // ✅ 外層 now can await it
   }
 }

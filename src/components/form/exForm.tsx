@@ -37,12 +37,19 @@ const ExForm = forwardRef(function ExForm(
     assets: number; //可用 && 可賣
     lastPrice: string;
   },
-  ref: React.Ref<{ reset: () => void }> // 👈 暴露一個 reset 方法
+  ref: React.Ref<{
+    reset: () => void;
+    validate: () => boolean;
+  }> // 👈 暴露一個 reset 方法
 ) {
   const [amount, setAmount] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
   const { base, quote } = symbolMap;
+  const [validationMap, setValidationMap] = useState({
+    price: true,
+    quantity: true,
+  });
 
   // ✅ 暴露方法給父元件使用
   useImperativeHandle(ref, () => ({
@@ -55,7 +62,25 @@ const ExForm = forwardRef(function ExForm(
         quantity: "",
       }));
     },
+    validate() {
+      return validatePrice() && validateQuantity();
+    },
   }));
+
+  const validatePrice = () => {
+    if (!formData.price || Number(formData.price) <= 0) {
+      setValidationMap((prev) => ({ ...prev, price: false }));
+      return false;
+    }
+    return true;
+  };
+  const validateQuantity = () => {
+    if (!formData.quantity || Number(formData.quantity) <= 0) {
+      setValidationMap((prev) => ({ ...prev, quantity: false }));
+      return false;
+    }
+    return true;
+  };
 
   useEffect(() => {
     if (assets && !isDragging) {
@@ -122,6 +147,8 @@ const ExForm = forwardRef(function ExForm(
       <form action="" className="flex flex-col gap-8px">
         <InputGroup>
           <Input
+            isInvalid={!validationMap.price}
+            errorBorderColor="red.500"
             type="number"
             placeholder="價格"
             value={formData.price}
@@ -134,6 +161,8 @@ const ExForm = forwardRef(function ExForm(
         </InputGroup>
         <InputGroup>
           <Input
+            isInvalid={!validationMap.quantity}
+            errorBorderColor="red.500"
             type="number"
             placeholder="數量"
             value={formData.quantity}

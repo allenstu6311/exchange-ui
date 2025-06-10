@@ -68,8 +68,14 @@ export default function TradeForm() {
     setSellFormData(createFormContent("SELL"));
   }, [lastPrice]);
 
-  const buyFormRef = useRef<{ reset: () => void }>(null);
-  const sellFormRef = useRef<{ reset: () => void }>(null);
+  const buyFormRef = useRef<{
+    reset: () => void;
+    validate: () => boolean;
+  }>(null);
+  const sellFormRef = useRef<{
+    reset: () => void;
+    validate: () => boolean;
+  }>(null);
   const [accountInfo, setAccountInfo] = useState<IAccountInfo>();
   const balances = accountInfo?.balances ?? [];
 
@@ -101,6 +107,12 @@ export default function TradeForm() {
       quantity: Number(order.quantity),
     });
 
+    const actions = requestData.side === "BUY" ? buyFormRef : sellFormRef;
+
+    const validateResult = actions.current?.validate();
+
+    if (!validateResult) return;
+
     if (isMarket) {
       delete requestData.timeInForce;
       delete requestData.price;
@@ -117,7 +129,6 @@ export default function TradeForm() {
 
     // 重置form
     if (createRes) {
-      const actions = requestData.side === "BUY" ? buyFormRef : sellFormRef;
       actions.current?.reset();
     }
   };
