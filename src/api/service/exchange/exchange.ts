@@ -127,7 +127,7 @@ export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
       timestamp: getSafeTimestamp(timeOffset),
       symbol,
     });
-    return proxyHttp.get<ICurrentOrder[]>({
+    return proxyHttp.get<IHistoryOrderData[]>({
       url: `myTrades?${finalQuery}`,
       metas: {
         onError(config, result) {
