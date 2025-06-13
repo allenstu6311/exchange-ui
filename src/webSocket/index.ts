@@ -2,6 +2,8 @@ import { WorkerRequest, WsType } from "@/types";
 
 type WsMiddleware = (data: any) => any;
 
+let maxRetry = 3
+
 interface IWsConfig {
   retry?: number;
 }

@@ -31,11 +31,6 @@ export default function TradeForm() {
   );
   const { showPrecision } = currSymbolInfo;
 
-  const cacheTickerData = useSelector((state: RootState) => {
-    return state.ticker24hrData.cacheMap;
-  });
-  const { lastPrice = "0" } = cacheTickerData;
-
   const [tradeType, setTradeType] = useState<OrderType>("LIMIT");
   const isLimit = tradeType === "LIMIT";
   const isMarket = tradeType === "MARKET";
@@ -57,20 +52,6 @@ export default function TradeForm() {
       setAccountInfo(res.data);
     }
   };
-
-  // 取得初始化價錢
-  // useEffect(() => {
-  //   const createFormContent = (side: OrderSide) =>
-  //     createDefaultOrderRequest({
-  //       side,
-  //       symbol: "",
-  //       type: tradeType,
-  //       price: formatNumToFixed(lastPrice, showPrecision),
-  //     });
-
-  //   // setBuyFormData(createFormContent(OrderSide.BUY));
-  //   // setSellFormData(createFormContent(OrderSide.SELL));
-  // }, [lastPrice, showPrecision, tradeType]);
 
   useEffect(() => {
     getAccountInfoIn();

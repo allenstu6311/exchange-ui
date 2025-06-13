@@ -1,8 +1,10 @@
-import { AxiosResponse } from "axios";
 import CryptoJS from "crypto-js";
 import { IAPIResponse } from ".";
 import { getServerTime } from "./service/exchange/exchange";
-import { delay } from "framer-motion";
+
+enum ErrorCode {
+  TIME_STAMP = -1021
+}
 
 export function getSignature(param: Record<string, any>): string {
   const SECRET_KEY =
@@ -23,24 +25,10 @@ export function getSafeTimestamp(timeOffset: number): number {
   return Date.now() - timeOffset; // ✅ 套用偏移
 }
 
-export async function handleTimestampDriftRetry<T>(
-  response: any,
-  request: () => Promise<IAPIResponse<T>>,
-  delay: number = 3000
-): Promise<any> {
-  const { data } = response;
-  if (data.code === -1021) {
-    await new Promise((res) => setTimeout(res, delay));
-    await getServerTime();
-    return request(); // ✅ 外層 now can await it
-  }
-  return Promise.reject(response);
-}
-
 export async function withRetry<T>(
   request: () => Promise<IAPIResponse<T>>,
   shouldRetry: (error: any) => boolean = () => true,
-  delay: number = 3000
+  delay: number = 3000 // 可以變成config，可再多做限制retry次數功能
 ) {
   try {
     const res = await request();
@@ -50,7 +38,7 @@ export async function withRetry<T>(
     const res: IAPIResponse<T> = error?.data || {};
 
     if (shouldRetry(data)) {
-      if (data.data.code === -1021) {
+      if (data.data.code === ErrorCode.TIME_STAMP) {
         await new Promise((res) => setTimeout(res, delay));
         await getServerTime();
       }
