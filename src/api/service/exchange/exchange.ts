@@ -1,4 +1,4 @@
-import { http, ICustomRequestConfig, proxyHttp } from "@/api";
+import { http, IAPIResponse, ICustomRequestConfig, proxyHttp } from "@/api";
 import { IHistoryOrderData } from "@/hook/OrderList/types";
 import { IKlinesRequest } from "@/hook/TradeView/types";
 import {
@@ -17,8 +17,10 @@ import {
   getSafeTimestamp,
   getSignature,
   handleTimestampDriftRetry,
+  withRetry,
 } from "@/api/utils";
 import { successToast } from "@/utils/notify";
+import { Axios, AxiosResponse } from "axios";
 
 let timeOffset = 0;
 
@@ -103,21 +105,34 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
 };
 
 export const getAccountInfo = async () => {
-  const sendRequest = async () => {
+  // const sendRequest = async () => {
+  // const finalQuery = getSignature({
+  //   timestamp: getSafeTimestamp(timeOffset),
+  // });
+  //   try {
+  // const res = await proxyHttp.get<IAccountInfo>({
+  //   url: `account?${finalQuery}`,
+  // });
+  //     return res;
+  //   } catch (error: IAPIResponse<IAccountInfo> | any) {
+  //     const { data } = error;
+  //     return handleTimestampDriftRetry<IAccountInfo>(data, sendRequest);
+  //   }
+  // };
+
+  // return sendRequest();
+
+  const request = async () => {
     const finalQuery = getSignature({
       timestamp: getSafeTimestamp(timeOffset),
     });
+
     return proxyHttp.get<IAccountInfo>({
       url: `account?${finalQuery}`,
-      metas: {
-        onError(config, result) {
-          return handleTimestampDriftRetry(result, sendRequest);
-        },
-      },
     });
   };
 
-  return sendRequest();
+  return withRetry<IAccountInfo>(request, (error) => true);
 };
 
 export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {

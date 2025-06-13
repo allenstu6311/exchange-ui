@@ -1,3 +1,10 @@
+export type InputKey = "amount" | "quantity" | "price" | "slider";
+
+export interface IExForm {
+  price: string;
+  quantity: string;
+}
+
 export interface IPriceValidate {
   invalid: boolean;
   empty: boolean;
@@ -19,4 +26,5 @@ export interface IFormValidate {
 export interface IFormRef {
   reset: () => void;
   validate: () => boolean;
+  getFormData: () => IExForm;
 }

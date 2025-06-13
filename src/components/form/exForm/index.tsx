@@ -1,5 +1,5 @@
 import { OrderRequest, SymbolNameMapType } from "@/types";
-import { add, div, mul } from "@/utils";
+import { add, div, formatNumToFixed, mul } from "@/utils";
 import {
   Input,
   InputGroup,
@@ -18,36 +18,30 @@ import {
   useRef,
   useState,
 } from "react";
-import { IFormRef, IFormValidate } from "./types";
+import { IExForm, IFormRef, IFormValidate, InputKey } from "./types";
 import { validateEmpty, validateForm, validatePricePrecision } from "./utils";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 
-type InputKey = "amount" | "quantity" | "price" | "slider";
-
 const ExForm = forwardRef(function ExForm(
   {
-    symbolMap,
-    setFormData,
-    formData,
     isMarket,
     assets,
-    lastPrice,
   }: {
-    symbolMap: SymbolNameMapType;
-    setFormData: React.Dispatch<React.SetStateAction<OrderRequest>>;
-    formData: OrderRequest;
     isMarket: boolean;
     assets: number; //可用 && 可賣
-    lastPrice: string;
   },
   ref: React.Ref<IFormRef>
 ) {
   const [amount, setAmount] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
   const [sliderValue, setSliderValue] = useState(0);
-  const { base, quote } = symbolMap;
+  const [formData, setFormData] = useState<IExForm>({
+    price: "",
+    quantity: "",
+  });
+
   const [validationMap, setValidationMap] = useState<IFormValidate>({
     ...validateForm,
   });
@@ -57,6 +51,17 @@ const ExForm = forwardRef(function ExForm(
       return state.symbolInfoList.currentSymbolInfo;
     }
   );
+
+  const symbolMap = useSelector((state: RootState) => {
+    return state.symbolNameMap;
+  });
+
+  const cacheTickerData = useSelector((state: RootState) => {
+    return state.ticker24hrData.cacheMap;
+  });
+  const { lastPrice = "0" } = cacheTickerData;
+
+  const { base, quote } = symbolMap;
   const { showPrecision } = currSymbolInfo;
   const { price: priceValidate, quantity: quantityValidate } = validationMap;
 
@@ -78,6 +83,11 @@ const ExForm = forwardRef(function ExForm(
       const pricePass = validatePrice();
       const quantityPass = validateQuantity();
       return pricePass && quantityPass;
+    },
+    getFormData() {
+      return {
+        ...formData,
+      };
     },
   }));
 
@@ -118,9 +128,16 @@ const ExForm = forwardRef(function ExForm(
     }
   }, [amount]);
 
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      price: isMarket ? "" : formatNumToFixed(lastPrice, showPrecision),
+    }));
+  }, [lastPrice, isMarket, showPrecision]);
+
   const handleFormChange = (key: InputKey, value: string) => {
     setIsDragging(false);
-    const nextFormData: OrderRequest = { ...formData, [key]: value };
+    const nextFormData: IExForm = { ...formData, [key]: value };
 
     const limitPrice = nextFormData.price || "";
     const currPrice = isMarket ? lastPrice : limitPrice;

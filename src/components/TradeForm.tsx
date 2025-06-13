@@ -39,23 +39,7 @@ export default function TradeForm() {
   const [tradeType, setTradeType] = useState<OrderType>("LIMIT");
   const isLimit = tradeType === "LIMIT";
   const isMarket = tradeType === "MARKET";
-
   const { base, quote, uppercaseSymbol } = symbolMap;
-  const [buyFormData, setBuyFormData] = useState<OrderRequest>(() =>
-    createDefaultOrderRequest({
-      side: OrderSide.BUY,
-      symbol: "",
-      type: tradeType,
-    })
-  );
-
-  const [sellFormData, setSellFormData] = useState<OrderRequest>(() =>
-    createDefaultOrderRequest({
-      side: OrderSide.SELL,
-      symbol: "",
-      type: tradeType,
-    })
-  );
 
   const buyFormRef = useRef<IFormRef>(null);
   const sellFormRef = useRef<IFormRef>(null);
@@ -68,24 +52,25 @@ export default function TradeForm() {
 
   const getAccountInfoIn = async () => {
     const res = await getAccountInfo();
+    console.log("res.data", res.data);
     if (res.success) {
       setAccountInfo(res.data);
     }
   };
 
   // 取得初始化價錢
-  useEffect(() => {
-    const createFormContent = (side: OrderSide) =>
-      createDefaultOrderRequest({
-        side,
-        symbol: "",
-        type: tradeType,
-        price: formatNumToFixed(lastPrice, showPrecision),
-      });
+  // useEffect(() => {
+  //   const createFormContent = (side: OrderSide) =>
+  //     createDefaultOrderRequest({
+  //       side,
+  //       symbol: "",
+  //       type: tradeType,
+  //       price: formatNumToFixed(lastPrice, showPrecision),
+  //     });
 
-    setBuyFormData(createFormContent(OrderSide.BUY));
-    setSellFormData(createFormContent(OrderSide.SELL));
-  }, [lastPrice, showPrecision, tradeType]);
+  //   // setBuyFormData(createFormContent(OrderSide.BUY));
+  //   // setSellFormData(createFormContent(OrderSide.SELL));
+  // }, [lastPrice, showPrecision, tradeType]);
 
   useEffect(() => {
     getAccountInfoIn();
@@ -97,21 +82,19 @@ export default function TradeForm() {
     sellFormRef.current?.reset();
   };
 
-  const tradeBtnClick = async (order: OrderRequest, side: OrderSide) => {
+  const tradeBtnClick = async (side: OrderSide) => {
+    const currFormRef = side === OrderSide.BUY ? buyFormRef : sellFormRef;
+    const order = currFormRef.current?.getFormData();
+
     const requestData = createDefaultOrderRequest({
       ...order,
-      symbol: symbolMap.uppercaseSymbol,
+      side,
+      symbol: uppercaseSymbol,
       type: tradeType,
-      price: isMarket ? 0 : Number(order.price),
-      quantity: Number(order.quantity),
     });
 
-    const actions = requestData.side === "BUY" ? buyFormRef : sellFormRef;
-
-    const validateResult = actions.current?.validate();
-
+    const validateResult = currFormRef.current?.validate();
     if (!validateResult) return;
-
     if (isMarket) {
       delete requestData.timeInForce;
       delete requestData.price;
@@ -125,10 +108,9 @@ export default function TradeForm() {
     });
     dispatch(setCurrentOrder(orderData.data));
     await getAccountInfoIn();
-
     // 重置form
     if (createRes) {
-      actions.current?.reset();
+      currFormRef.current?.reset();
     }
   };
 
@@ -193,12 +175,8 @@ export default function TradeForm() {
         <div className="w-full">
           <ExForm
             ref={buyFormRef}
-            setFormData={setBuyFormData}
-            formData={buyFormData}
-            symbolMap={symbolMap}
             isMarket={isMarket}
             assets={quoteFree}
-            lastPrice={lastPrice}
           ></ExForm>
           {/* 可用 */}
           <div className=" my-8px">
@@ -222,7 +200,7 @@ export default function TradeForm() {
           <Button
             colorScheme="blue"
             w="100%"
-            onClick={() => tradeBtnClick(buyFormData, OrderSide.BUY)}
+            onClick={() => tradeBtnClick(OrderSide.BUY)}
           >
             買入 {base}
           </Button>
@@ -231,12 +209,8 @@ export default function TradeForm() {
         <div className="w-full">
           <ExForm
             ref={sellFormRef}
-            setFormData={setSellFormData}
-            formData={sellFormData}
-            symbolMap={symbolMap}
             isMarket={isMarket}
             assets={maxSellAmount}
-            lastPrice={lastPrice}
           ></ExForm>
           {/* 可用 */}
           <div className="my-8px">
@@ -260,7 +234,7 @@ export default function TradeForm() {
           <Button
             colorScheme="red"
             w="100%"
-            onClick={() => tradeBtnClick(sellFormData, OrderSide.SELL)}
+            onClick={() => tradeBtnClick(OrderSide.SELL)}
           >
             賣出 {base}
           </Button>

@@ -100,7 +100,7 @@ async function handleErrorResponse<T = any>(
     const { data } = response || {};
     errorToast("錯誤", data.msg);
   }
-  return { success: false, data: {} as T, error: config };
+  return { success: false, data: response as T, error: config };
 }
 
 class HttpInstance {

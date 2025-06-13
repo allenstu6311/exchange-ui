@@ -24,14 +24,38 @@ export function getSafeTimestamp(timeOffset: number): number {
 }
 
 export async function handleTimestampDriftRetry<T>(
-  response: AxiosResponse,
+  response: any,
   request: () => Promise<IAPIResponse<T>>,
   delay: number = 3000
-): Promise<void> {
+): Promise<any> {
   const { data } = response;
   if (data.code === -1021) {
     await new Promise((res) => setTimeout(res, delay));
     await getServerTime();
-    await request(); // ✅ 外層 now can await it
+    return request(); // ✅ 外層 now can await it
+  }
+  return Promise.reject(response);
+}
+
+export async function withRetry<T>(
+  request: () => Promise<IAPIResponse<T>>,
+  shouldRetry: (error: any) => boolean = () => true,
+  delay: number = 3000
+) {
+  try {
+    const res = await request();
+    return res;
+  } catch (error: any) {
+    const { data } = error;
+    const res: IAPIResponse<T> = error?.data || {};
+
+    if (shouldRetry(data)) {
+      if (data.data.code === -1021) {
+        await new Promise((res) => setTimeout(res, delay));
+        await getServerTime();
+      }
+      return request();
+    }
+    return res;
   }
 }
