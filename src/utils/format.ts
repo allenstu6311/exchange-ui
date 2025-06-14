@@ -1,5 +1,5 @@
-import { Ticker24hrStat, TickerSocketData } from "@/types";
-import Decimal from "decimal.js";
+import { NumberString, Ticker24hrStat, TickerSocketData } from "@/types";
+import { div } from "./calcaute";
 
 export function formatNumToFixed(
   val: number | string | null | undefined,
@@ -10,7 +10,7 @@ export function formatNumToFixed(
   return isFinite(num) ? num.toFixed(digits) : defaultVal;
 }
 
-export function thousandComma(num: number | string, digits:number): string {
+export function thousandComma(num: number | string, digits: number): string {
   return (
     Number(num)?.toLocaleString(undefined, {
       minimumFractionDigits: digits,
@@ -19,7 +19,7 @@ export function thousandComma(num: number | string, digits:number): string {
   );
 }
 
-export function formatNumWithComma(num: number | string, digits = 2): string {  
+export function formatNumWithComma(num: number | string, digits = 2): string {
   const newNum = formatNumToFixed(num, digits);
   return thousandComma(newNum, digits);
 }
@@ -45,4 +45,20 @@ export function transformTickerData(
       };
     })
     .filter((item) => item.symbol.endsWith(quote));
+}
+
+export function formatNumberAbbr(value: NumberString, precision: number): string {
+  if(typeof value === "string"){
+    value = Number(value);
+  }
+  if (!value) return ''
+
+  const K = Math.pow(10, 3);
+  const M = Math.pow(10, 6);
+  const B = Math.pow(10, 9);
+
+  if (value >= B) return div(value, B, { precision: 2 }) + "B"
+  if (value >= M) return div(value, M, { precision: 2 }) + "M"
+  if (value >= K) return div(value, K, { precision: 2 }) + "K"
+  return formatNumToFixed(value, precision)
 }

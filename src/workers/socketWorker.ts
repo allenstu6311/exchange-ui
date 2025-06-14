@@ -27,26 +27,41 @@ self.onmessage = async (e) => {
   const { type, url }: { type: WsType; url: string } = e.data;
   const ws = WebSocketIn.socketMap.get(type);
 
-  if (
-    !ws ||
-    ws.getReadyState() === WebSocketStatus.CLOSED ||
-    ws.getReadyState() === WebSocketStatus.CLOSING
-  ) {
-    const connect = () => {
-      const middleware = getMiddlewares(type);
-      new WebSocketIn({
-        url,
-        type,
-        postMessage,
-        middleware,
-        config: {
-          retry: 3,
-        },
-        onReconnect: connect,
-      });
-    };
-    connect();
-  } else {
-    // console.log(`${type}連線已存在`);
-  }
+  if (ws) ws.mannelClose()
+
+  const connect = () => {
+    const middleware = getMiddlewares(type);
+    new WebSocketIn({
+      url,
+      type,
+      postMessage,
+      middleware,
+      config: {
+        retry: 3,
+      },
+      onReconnect: connect,
+    });
+  };
+  connect();
+
+  // if (
+  //   !ws ||
+  //   ws.getReadyState() === WebSocketStatus.CLOSED ||
+  //   ws.getReadyState() === WebSocketStatus.CLOSING
+  // ) {
+  //   const connect = () => {
+  //     const middleware = getMiddlewares(type);
+  //     new WebSocketIn({
+  //       url,
+  //       type,
+  //       postMessage,
+  //       middleware,
+  //       config: {
+  //         retry: 3,
+  //       },
+  //       onReconnect: connect,
+  //     });
+  //   };
+  //   connect();
+  // }
 };

@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useDepthData, usePriceDirection } from "@/hook/Depth";
 import { AppDispatch, RootState } from "@/store";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import { formatNumberAbbr } from "@/utils/format";
 
 export default function Depth() {
   const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
@@ -14,7 +15,7 @@ export default function Depth() {
     }
   );
 
-  const { showPrecision, baseAsset, quoteAsset } = currSymbolInfo;
+  const { showPrecision, baseAsset, quoteAsset, tradePrecision } = currSymbolInfo;
 
   const asksHeader = [
     {
@@ -27,7 +28,7 @@ export default function Depth() {
     {
       label: `數量(${baseAsset})`,
       key: "volume",
-      format: (val: string) => formatNumToFixed(val, 5),
+      format: (val: string)=> formatNumberAbbr(val, tradePrecision)
     },
     {
       label: "成交額",
@@ -38,7 +39,7 @@ export default function Depth() {
       render: (content: number, item: DepthTable, columnIndex: number) => {
         return (
           <>
-            {content}
+            {formatNumberAbbr(content, tradePrecision)}
             <div
               className={`absolute bg-rise right-0 top-0 h-full opacity-40 transition-all duration-300`}
               style={{ width: `${item.ratio}%` }}
@@ -59,7 +60,7 @@ export default function Depth() {
     {
       label: "",
       key: "volume",
-      format: (val: string) => formatNumToFixed(val, 5),
+      format: (val: string) => formatNumberAbbr(val, tradePrecision),
     },
     {
       label: "",
@@ -70,7 +71,7 @@ export default function Depth() {
       render: (content: number, item: DepthTable, columnIndex: number) => {
         return (
           <>
-            {content}
+            {formatNumberAbbr(content, tradePrecision)}
             <div
               className={`absolute bg-fall right-0 top-0 h-full opacity-40 transition-all duration-300`}
               style={{ width: `${item.ratio}%` }}

@@ -51,7 +51,7 @@ class WebSocketIn {
     this.ws.onopen = () => {
       this.lastTime = Date.now();
       this.startHeartbeatCheck();
-      // console.log(`${type}已連線`);
+      console.log(`${type}已連線`);
     };
 
     this.ws.onmessage = (event) => {
@@ -114,7 +114,6 @@ class WebSocketIn {
       if (currTime - this.lastTime > 5000) {
         console.log(`心跳停止 ${this.wsType} 結束連線`);
         this.close();
-        this.reconnect();
       }
     }, 5000);
   }
