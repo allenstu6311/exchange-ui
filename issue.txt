@@ -9,6 +9,7 @@
 2.虛擬滾動判斷優化 + 測試estimateSize更好的算法
 3.endsWith("USDT")
 4.sendRequest是否可抽出
+5.WebSocket retry沒有限制次數
 6.優化Kline區域，盡量資料都拆開來
 7.loading
 8.API Key 隱藏

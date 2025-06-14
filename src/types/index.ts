@@ -177,11 +177,8 @@ export interface SymbolInfoListTypes {
   /** 是否允許修改訂單（amend） */
   amendAllowed: boolean;
 
-  /**
-   * 過濾規則清單（如 PRICE_FILTER、LOT_SIZE 等）
-   * 結構依照 filterType 不同有所變化
-   */
-  filters: any[]; // 可視需求細化為 discriminated union 型別
+  /** 過濾規則清單（如 PRICE_FILTER、LOT_SIZE 等） */
+  filters: any[]; // 若要精細可改為 discriminated union
 
   /** 權限集合（通常是 [["SPOT"]]） */
   permissionSets: string[][];
@@ -194,7 +191,11 @@ export interface SymbolInfoListTypes {
 
   /** 支援的防自成交機制列表 */
   allowedSelfTradePreventionModes: string[];
+
+  /** 報價精度（可能已被棄用） */
+  quotePrecision: number;
 }
+
 export interface SymbolInfoListState {
   list: ISymbolInfoWithPrecision[];
   currentSymbolInfo: ISymbolInfoWithPrecision;

@@ -15,6 +15,7 @@ export interface IQuanityValidate {
   invalid: boolean;
   empty: boolean;
   min: boolean;
+  max: boolean;
 }
 
 export interface IFormValidate {
@@ -28,3 +29,9 @@ export interface IFormRef {
   validate: () => boolean;
   getFormData: () => IExForm;
 }
+
+export interface IPrecisionMap {
+    showPrecision: number;
+    tradePrecision: number;
+    quoteAssetPrecision: number;
+  }

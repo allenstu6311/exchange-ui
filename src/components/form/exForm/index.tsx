@@ -18,11 +18,29 @@ import {
   useRef,
   useState,
 } from "react";
-import { IExForm, IFormRef, IFormValidate, InputKey } from "./types";
-import { validateEmpty, validateForm, validatePricePrecision } from "./utils";
+import {
+  IExForm,
+  IFormRef,
+  IFormValidate,
+  InputKey,
+  IPrecisionMap,
+} from "./types";
+import {
+  validateEmpty,
+  validateForm,
+  validatePricePrecision,
+} from "./validate";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import {
+  getCurrentPrice,
+  handleAmountInput,
+  handlePriceInput,
+  handleQuantityInput,
+  handleSilderInput,
+} from "./utils";
+import { validatePrecision } from "@/utils/general";
 
 const ExForm = forwardRef(function ExForm(
   {
@@ -62,7 +80,8 @@ const ExForm = forwardRef(function ExForm(
   const { lastPrice = "0" } = cacheTickerData;
 
   const { base, quote } = symbolMap;
-  const { showPrecision } = currSymbolInfo;
+  const { showPrecision, quotePrecision, tradePrecision, quoteAssetPrecision } =
+    currSymbolInfo;
   const { price: priceValidate, quantity: quantityValidate } = validationMap;
 
   // ✅ 暴露方法給父元件使用
@@ -110,14 +129,14 @@ const ExForm = forwardRef(function ExForm(
     const emptyPass = validateEmpty(formData.quantity);
     // const precisionPass = validatePricePrecision(formData.quantity, showPrecision);
     const isVaild = emptyPass;
-    setValidationMap((prev) => ({
-      ...prev,
-      quantity: {
-        invalid: !isVaild,
-        empty: emptyPass,
-        min: true,
-      },
-    }));
+    // setValidationMap((prev) => ({
+    //   ...prev,
+    //   quantity: {
+    //     invalid: !isVaild,
+    //     empty: emptyPass,
+    //     min: true,
+    //   },
+    // }));
     return isVaild;
   };
 
@@ -138,49 +157,58 @@ const ExForm = forwardRef(function ExForm(
   const handleFormChange = (key: InputKey, value: string) => {
     setIsDragging(false);
     const nextFormData: IExForm = { ...formData, [key]: value };
-
-    const limitPrice = nextFormData.price || "";
-    const currPrice = isMarket ? lastPrice : limitPrice;
+    const currPrice = getCurrentPrice(nextFormData, lastPrice, isMarket);
+    const precisionMap: IPrecisionMap = {
+      showPrecision,
+      tradePrecision,
+      quoteAssetPrecision,
+    };
 
     switch (key) {
       case "price":
-        if (currPrice && nextFormData.quantity) {
-          const newAmount = mul(currPrice, nextFormData.quantity);
-          setAmount(newAmount);
-        } else if (amount && currPrice) {
-          nextFormData.quantity = div(amount, currPrice);
-        } else {
-          setAmount("");
-        }
-
+        if (!validatePrecision(showPrecision, value)) return;
+        handlePriceInput({
+          currPrice,
+          value,
+          amount,
+          formData: nextFormData,
+          precisionMap,
+          setAmount,
+        });
         break;
       case "quantity":
-        if (currPrice && value) {
-          const newAmount = mul(currPrice, value);
-          setAmount(newAmount);
-        } else {
-          setAmount("");
-        }
+        if (!validatePrecision(tradePrecision, value)) return;
+        handleQuantityInput({
+          currPrice,
+          value,
+          formData: nextFormData,
+          precisionMap,
+          setAmount,
+        });
         break;
       case "amount":
-        if (currPrice && value) {
-          nextFormData.quantity = div(value, currPrice);
-        } else {
-          nextFormData.quantity = "";
-        }
+        if (!validatePrecision(quoteAssetPrecision, value)) return;
+        handleAmountInput({
+          currPrice,
+          value,
+          formData: nextFormData,
+          precisionMap,
+          setAmount,
+        });
         break;
 
       case "slider":
         if (assets) {
           setIsDragging(true);
-          const newAmount = div(mul(assets, value || 1), 100);
-          setAmount(newAmount);
-
-          if (currPrice) {
-            nextFormData.quantity = div(newAmount, currPrice);
-          }
+          handleSilderInput({
+            currPrice,
+            value,
+            assets,
+            formData: nextFormData,
+            precisionMap,
+            setAmount
+          })
         }
-
         break;
       default:
         break;
@@ -256,7 +284,6 @@ const ExForm = forwardRef(function ExForm(
             placeholder="成交額"
             value={amount}
             onChange={(e) => {
-              setAmount(e.target.value);
               handleFormChange("amount", e.target.value);
             }}
           />
