@@ -116,8 +116,7 @@ export function useKlineChart(
       return state.symbolInfoList.currentSymbolInfo;
     }
   );
-  const { showPrecision } = currSymbolInfo;
-
+  const { showPrecision, tickSize } = currSymbolInfo;
   const resetLegendsDataRef = useRef<() => void>(resetLegendsData);
   const setLegendsDataRef =
     useRef<React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>>(
@@ -136,7 +135,7 @@ export function useKlineChart(
         {
           priceFormat: {
             precision: showPrecision,
-            minMove: 0.0001,
+            minMove: tickSize,
           },
         }
       );

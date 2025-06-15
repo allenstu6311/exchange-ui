@@ -58,9 +58,9 @@ class WebSocketIn {
       this.lastTime = Date.now();
       let data = JSON.parse(event.data);
 
-      if (type === "kline") {
-        console.log("data", data);
-      }
+      // if (type === "kline") {
+      //   console.log("data", data);
+      // }
 
       if (middleware?.length) {
         data = middleware.reduce((acc, fn) => fn(acc), data);
@@ -119,7 +119,7 @@ class WebSocketIn {
         console.log(`心跳停止 ${this.wsType} 結束連線`);
         this.close();
       }
-    }, 5000);
+    }, 30 * 1000);
   }
 }
 
