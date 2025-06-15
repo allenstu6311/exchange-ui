@@ -28,7 +28,6 @@ export function transformTickerData(
 
 export function transformKlineFromWs(data: IKlineWsData): IKlineData {
   const { k } = data;
-
   return {
     time: Math.floor(k.t / 1000) as UTCTimestamp, // ✅ 轉成秒
     open: parseFloat(k.o),
@@ -51,7 +50,7 @@ export function translfrmKlineData(data: IKlineWsData) {
   return {
     kline: transformKlineFromWs(data),
     bar: transformVolumFromWs(data),
-  }
+  };
 }
 
 export function getMiddlewares(type: WsType) {
@@ -66,5 +65,5 @@ export function getMiddlewares(type: WsType) {
     default:
       break;
   }
-  return middleware
+  return middleware;
 }

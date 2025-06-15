@@ -27,8 +27,7 @@ self.onmessage = async (e) => {
   const { type, url }: { type: WsType; url: string } = e.data;
   const ws = WebSocketIn.socketMap.get(type);
 
-  if (ws) ws.mannelClose()
-
+  if (ws) ws.mannelClose();
   const connect = () => {
     const middleware = getMiddlewares(type);
     new WebSocketIn({

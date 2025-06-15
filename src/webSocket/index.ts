@@ -2,7 +2,7 @@ import { WorkerRequest, WsType } from "@/types";
 
 type WsMiddleware = (data: any) => any;
 
-let maxRetry = 3
+// let maxRetry = 3;
 
 interface IWsConfig {
   retry?: number;
@@ -58,6 +58,10 @@ class WebSocketIn {
       this.lastTime = Date.now();
       let data = JSON.parse(event.data);
 
+      if (type === "kline") {
+        console.log("data", data);
+      }
+
       if (middleware?.length) {
         data = middleware.reduce((acc, fn) => fn(acc), data);
       }
@@ -74,7 +78,7 @@ class WebSocketIn {
 
     this.ws.onclose = () => {
       if (this.isMannelClose) return;
-      // console.log(`${type}即將重新連線`);
+      console.log(`${type}即將重新連線`, this.isMannelClose);
       this.reconnect();
     };
   }

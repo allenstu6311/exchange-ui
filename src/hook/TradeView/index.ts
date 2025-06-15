@@ -136,6 +136,7 @@ export function useKlineChart(
         {
           priceFormat: {
             precision: showPrecision,
+            minMove: 0.0001,
           },
         }
       );

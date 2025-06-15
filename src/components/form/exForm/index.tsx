@@ -1,4 +1,3 @@
-import { OrderRequest, SymbolNameMapType } from "@/types";
 import { add, div, formatNumToFixed, mul } from "@/utils";
 import {
   Input,
@@ -116,7 +115,12 @@ const ExForm = forwardRef(function ExForm(
         maxVolume,
         setValidationMap,
       });
-      return pricePass && quantityPass;
+      const validateResult = pricePass && quantityPass;
+      setValidationMap((prev) => ({
+        ...prev,
+        invalid: validateResult,
+      }));
+      return validateResult;
     },
     getFormData() {
       return {
