@@ -1,7 +1,9 @@
 import { RootState } from "@/store";
 import { IBalance } from "@/types";
+import { div, mul } from "@/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { ITradeAvailability } from "./types";
 
 /**
  * 可用、最大買入、最大賣出計算
@@ -10,44 +12,28 @@ export function useTradeAvailability(
   balance: IBalance[],
   baseSymbolName: string, // BTC
   quoteSymbolName: string // USDT
-) {
-  const uppercaseSymbol = useSelector((state: RootState) => {
-    return state.symbolNameMap.uppercaseSymbol;
-  });
+): ITradeAvailability {
 
   const cacheTickerData = useSelector((state: RootState) => {
     return state.ticker24hrData.cacheMap;
   });
-
-  const { lastPrice } = cacheTickerData;
-
-  const [priceSnapshot, setPriceSnapshot] = useState<number>(0);
-
-  useEffect(() => {
-    setPriceSnapshot(0);
-  }, [uppercaseSymbol]);
-
-  useEffect(() => {
-    if (!priceSnapshot) {
-      setPriceSnapshot(parseFloat(lastPrice) || 0);
-    }
-  }, [lastPrice, priceSnapshot]);
+  const { lastPrice = "0" } = cacheTickerData;
 
   return useMemo(() => {
     const baseAmount = balance.find((item) => item.asset === baseSymbolName);
     const quoteAmount = balance.find((item) => item.asset === quoteSymbolName);
-
-    const baseFree = parseFloat(baseAmount?.free ?? "0");
+    
+    const baseFree = parseFloat(baseAmount?.free ?? "0"); //擁有的數量
     const quoteFree = parseFloat(quoteAmount?.free ?? "0");
-
-    const maxBuyQty = priceSnapshot > 0 ? quoteFree / priceSnapshot : 0; // quote 用來買 base
-    const maxSellAmount = baseFree * priceSnapshot; // base 拿來賣
+    
+    const maxBuyQuantity = div<number>(quoteFree, lastPrice, { returnNumber: true })
+    const maxSellAmount = mul<number>(baseFree, lastPrice, { returnNumber: true });
 
     return {
-      maxBuyQty, // 最多可買入 baseAsset 的數量
-      maxSellAmount, // 最多可賣出 baseAsset 的數量
-      quoteFree, // 當前 quote 可用資金
+      maxBuyQuantity,
+      maxSellAmount,
+      quoteFree,
       baseFree,
     };
-  }, [balance, baseSymbolName, quoteSymbolName, priceSnapshot]);
+  }, [balance, baseSymbolName, quoteSymbolName, lastPrice]);
 }

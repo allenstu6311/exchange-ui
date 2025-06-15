@@ -34,4 +34,11 @@ export interface IPrecisionMap {
     showPrecision: number;
     tradePrecision: number;
     quoteAssetPrecision: number;
-  }
+}
+
+export enum ExFormEnum {
+  PRICE = "price",
+  QUANITY = "quantity",
+  AMOUNT = "amount",
+  SLIDER = "slider"
+}

@@ -17,6 +17,7 @@ import { useRef } from "react";
 import { formatNumToFixed } from "@/utils";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { IFormRef } from "./form/exForm/types";
+import { TabsType } from "@/hook/TradeForm/types";
 
 export default function TradeForm() {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,12 +43,11 @@ export default function TradeForm() {
   const [accountInfo, setAccountInfo] = useState<IAccountInfo>();
   const balances = accountInfo?.balances ?? [];
 
-  const { maxBuyQty, quoteFree, maxSellAmount, baseFree } =
+  const { maxBuyQuantity, quoteFree, maxSellAmount, baseFree } =
     useTradeAvailability(balances, base, quote);
 
   const getAccountInfoIn = async () => {
     const res = await getAccountInfo();
-    console.log("res.data", res.data);
     if (res.success) {
       setAccountInfo(res.data);
     }
@@ -95,11 +95,6 @@ export default function TradeForm() {
     }
   };
 
-  enum TabsType {
-    SPOT = 0,
-    CROSS = 1,
-  }
-
   const [currTabsIndex, setCurrTabsIndex] = useState<number>(0);
 
   const tabData = [
@@ -107,10 +102,10 @@ export default function TradeForm() {
       label: "現貨",
       index: 0,
     },
-    {
-      label: "全倉",
-      index: 1,
-    },
+    // {
+    //   label: "全倉",
+    //   index: 1,
+    // },
   ];
 
   const tabOnChange = (currTab: ITabData) => {
@@ -170,7 +165,7 @@ export default function TradeForm() {
             <div className="flex justify-between">
               <p>最大買入</p>
               <p>
-                {formatNumToFixed(maxBuyQty, showPrecision)} {base}
+                {formatNumToFixed(maxBuyQuantity, showPrecision)} {base}
               </p>
             </div>
             {/* <div className="flex justify-between">

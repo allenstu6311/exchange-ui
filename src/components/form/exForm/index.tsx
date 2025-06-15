@@ -19,6 +19,7 @@ import {
   useState,
 } from "react";
 import {
+  ExFormEnum,
   IExForm,
   IFormRef,
   IFormValidate,
@@ -165,7 +166,7 @@ const ExForm = forwardRef(function ExForm(
     };
 
     switch (key) {
-      case "price":
+      case ExFormEnum.PRICE:
         if (!validatePrecision(showPrecision, value)) return;
         handlePriceInput({
           currPrice,
@@ -176,7 +177,7 @@ const ExForm = forwardRef(function ExForm(
           setAmount,
         });
         break;
-      case "quantity":
+      case ExFormEnum.QUANITY:
         if (!validatePrecision(tradePrecision, value)) return;
         handleQuantityInput({
           currPrice,
@@ -186,7 +187,7 @@ const ExForm = forwardRef(function ExForm(
           setAmount,
         });
         break;
-      case "amount":
+      case ExFormEnum.AMOUNT:
         if (!validatePrecision(quoteAssetPrecision, value)) return;
         handleAmountInput({
           currPrice,
@@ -197,7 +198,7 @@ const ExForm = forwardRef(function ExForm(
         });
         break;
 
-      case "slider":
+      case ExFormEnum.SLIDER:
         if (assets) {
           setIsDragging(true);
           handleSilderInput({
@@ -226,7 +227,7 @@ const ExForm = forwardRef(function ExForm(
             type="number"
             placeholder="價格"
             value={formData.price}
-            onChange={(e) => handleFormChange("price", e.target.value)}
+            onChange={(e) => handleFormChange(ExFormEnum.PRICE, e.target.value)}
             disabled={isMarket}
           />
           <InputRightElement width="4.5rem">
@@ -240,7 +241,7 @@ const ExForm = forwardRef(function ExForm(
             type="number"
             placeholder="數量"
             value={formData.quantity}
-            onChange={(e) => handleFormChange("quantity", e.target.value)}
+            onChange={(e) => handleFormChange(ExFormEnum.QUANITY, e.target.value)}
           />
           <InputRightElement width="4.5rem">
             <p>{base}</p>
@@ -255,7 +256,7 @@ const ExForm = forwardRef(function ExForm(
             value={sliderValue}
             onChange={(val) => {
               setSliderValue(val);
-              handleFormChange("slider", val.toString());
+              handleFormChange(ExFormEnum.SLIDER, val.toString());
             }}
             focusThumbOnChange={false}
           >
@@ -284,7 +285,7 @@ const ExForm = forwardRef(function ExForm(
             placeholder="成交額"
             value={amount}
             onChange={(e) => {
-              handleFormChange("amount", e.target.value);
+              handleFormChange(ExFormEnum.AMOUNT, e.target.value);
             }}
           />
           <InputRightElement width="4.5rem">

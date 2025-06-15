@@ -68,13 +68,13 @@ class WebSocketIn {
       });
     };
 
-    this.ws.onerror = () => {
-      console.log(`${type}出現錯誤`);
+    this.ws.onerror = (error) => {
+      // console.log(`${type}出現錯誤`);
     };
 
     this.ws.onclose = () => {
       if (this.isMannelClose) return;
-      console.log(`${type}即將重新連線`);
+      // console.log(`${type}即將重新連線`);
       this.reconnect();
     };
   }
@@ -105,7 +105,7 @@ class WebSocketIn {
     this.ws.close();
     WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
-    console.log(`${this.wsType} 已關閉`);
+    // console.log(`${this.wsType} 已關閉`);
   }
 
   startHeartbeatCheck() {
