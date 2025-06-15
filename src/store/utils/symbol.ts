@@ -27,8 +27,8 @@ export const handleFilters = (symbolInfoList: SymbolInfoListTypes[]):ISymbolInfo
     let tradePrecision = 0;
 
     if(filters.length){
-      showPrecision = getDecimalPrecision(filters[0].tickSize);
-      tradePrecision = getDecimalPrecision(filters[1].stepSize)
+      showPrecision = getDecimalPrecision(filters[0].tickSize); // PRICE_FILTER
+      tradePrecision = getDecimalPrecision(filters[1].stepSize); //LOT_SIZE
     }
     return {
       ...item,

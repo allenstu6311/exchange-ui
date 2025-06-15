@@ -14,11 +14,10 @@ export interface IPriceValidate {
 export interface IQuanityValidate {
   invalid: boolean;
   empty: boolean;
-  min: boolean;
   max: boolean;
 }
 
-export interface IFormValidate {
+export interface IExFormValidate {
   price: IPriceValidate;
   quantity: IQuanityValidate;
   invalid: boolean;
@@ -31,10 +30,12 @@ export interface IFormRef {
 }
 
 export interface IPrecisionMap {
-    showPrecision: number;
-    tradePrecision: number;
-    quoteAssetPrecision: number;
+  showPrecision: number;
+  tradePrecision: number;
+  quoteAssetPrecision: number;
 }
+
+export type ValidateInputType = IQuanityValidate | IPriceValidate
 
 export enum ExFormEnum {
   PRICE = "price",

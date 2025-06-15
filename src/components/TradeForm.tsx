@@ -153,6 +153,7 @@ export default function TradeForm() {
             ref={buyFormRef}
             isMarket={isMarket}
             assets={quoteFree}
+            maxVolume={maxBuyQuantity}
           ></ExForm>
           {/* 可用 */}
           <div className=" my-8px">
@@ -187,6 +188,7 @@ export default function TradeForm() {
             ref={sellFormRef}
             isMarket={isMarket}
             assets={maxSellAmount}
+            maxVolume={baseFree}
           ></ExForm>
           {/* 可用 */}
           <div className="my-8px">

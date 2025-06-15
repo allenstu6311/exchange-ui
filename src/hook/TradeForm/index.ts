@@ -23,7 +23,7 @@ export function useTradeAvailability(
     const baseAmount = balance.find((item) => item.asset === baseSymbolName);
     const quoteAmount = balance.find((item) => item.asset === quoteSymbolName);
     
-    const baseFree = parseFloat(baseAmount?.free ?? "0"); //擁有的數量
+    const baseFree = parseFloat(baseAmount?.free ?? "0");
     const quoteFree = parseFloat(quoteAmount?.free ?? "0");
     
     const maxBuyQuantity = div<number>(quoteFree, lastPrice, { returnNumber: true })

@@ -22,14 +22,16 @@ import {
   ExFormEnum,
   IExForm,
   IFormRef,
-  IFormValidate,
+  IExFormValidate,
   InputKey,
   IPrecisionMap,
+  IQuanityValidate,
 } from "./types";
 import {
-  validateEmpty,
+  getErrorMsg,
   validateForm,
-  validatePricePrecision,
+  validatePriceInput,
+  validateQuantityInput,
 } from "./validate";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
@@ -47,9 +49,11 @@ const ExForm = forwardRef(function ExForm(
   {
     isMarket,
     assets,
+    maxVolume,
   }: {
     isMarket: boolean;
     assets: number; //可用 && 可賣
+    maxVolume: number;
   },
   ref: React.Ref<IFormRef>
 ) {
@@ -61,7 +65,7 @@ const ExForm = forwardRef(function ExForm(
     quantity: "",
   });
 
-  const [validationMap, setValidationMap] = useState<IFormValidate>({
+  const [validationMap, setValidationMap] = useState<IExFormValidate>({
     ...validateForm,
   });
 
@@ -83,6 +87,7 @@ const ExForm = forwardRef(function ExForm(
   const { base, quote } = symbolMap;
   const { showPrecision, quotePrecision, tradePrecision, quoteAssetPrecision } =
     currSymbolInfo;
+
   const { price: priceValidate, quantity: quantityValidate } = validationMap;
 
   // ✅ 暴露方法給父元件使用
@@ -100,8 +105,17 @@ const ExForm = forwardRef(function ExForm(
       });
     },
     validate() {
-      const pricePass = validatePrice();
-      const quantityPass = validateQuantity();
+      const pricePass = validatePriceInput({
+        formData,
+        precision: showPrecision,
+        setValidationMap,
+      });
+      const quantityPass = validateQuantityInput({
+        formData,
+        precision: tradePrecision,
+        maxVolume,
+        setValidationMap,
+      });
       return pricePass && quantityPass;
     },
     getFormData() {
@@ -110,36 +124,6 @@ const ExForm = forwardRef(function ExForm(
       };
     },
   }));
-
-  const validatePrice = () => {
-    const emptyPass = validateEmpty(formData.price);
-    const precisionPass = validatePricePrecision(formData.price, showPrecision);
-    const isVaild = emptyPass && precisionPass;
-    setValidationMap((prev) => ({
-      ...prev,
-      price: {
-        invalid: !isVaild,
-        empty: emptyPass,
-        precision: precisionPass,
-      },
-    }));
-    return isVaild;
-  };
-
-  const validateQuantity = () => {
-    const emptyPass = validateEmpty(formData.quantity);
-    // const precisionPass = validatePricePrecision(formData.quantity, showPrecision);
-    const isVaild = emptyPass;
-    // setValidationMap((prev) => ({
-    //   ...prev,
-    //   quantity: {
-    //     invalid: !isVaild,
-    //     empty: emptyPass,
-    //     min: true,
-    //   },
-    // }));
-    return isVaild;
-  };
 
   useEffect(() => {
     if (assets && !isDragging) {
@@ -207,8 +191,8 @@ const ExForm = forwardRef(function ExForm(
             assets,
             formData: nextFormData,
             precisionMap,
-            setAmount
-          })
+            setAmount,
+          });
         }
         break;
       default:
@@ -234,6 +218,9 @@ const ExForm = forwardRef(function ExForm(
             <p>{quote}</p>
           </InputRightElement>
         </InputGroup>
+        <div className="text-red text-14px">
+          {getErrorMsg(ExFormEnum.PRICE, priceValidate)}
+        </div>
         <InputGroup>
           <Input
             isInvalid={quantityValidate.invalid}
@@ -241,14 +228,21 @@ const ExForm = forwardRef(function ExForm(
             type="number"
             placeholder="數量"
             value={formData.quantity}
-            onChange={(e) => handleFormChange(ExFormEnum.QUANITY, e.target.value)}
+            onChange={(e) => {
+              const rawValue = e.target.value;
+              const sanitized = rawValue ? String(Number(rawValue)) : ""; // 0111 → 111
+              handleFormChange(ExFormEnum.QUANITY, sanitized);
+            }}
           />
           <InputRightElement width="4.5rem">
             <p>{base}</p>
           </InputRightElement>
         </InputGroup>
+        <div className="text-red text-14px">
+          {getErrorMsg(ExFormEnum.QUANITY, quantityValidate)}
+        </div>
 
-        <InputGroup className="my-8px px-8px">
+        <InputGroup className="px-8px">
           <Slider
             aria-label="slider-ex-1"
             defaultValue={0}
@@ -269,8 +263,6 @@ const ExForm = forwardRef(function ExForm(
               textAlign="center"
               bg="blue.500"
               color="white"
-              mt="-10"
-              ml="-5"
               w="12"
               className="hidden peer-hover:block peer-active:block!"
             >
