@@ -45,6 +45,7 @@ function CTable({
 
   return (
     <>
+      {/* pr={virtualed ? "21px" : ""} */}
       <TableContainer>
         <Table>
           <Thead>

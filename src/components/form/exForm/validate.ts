@@ -6,6 +6,7 @@ import {
   IPriceValidate,
   IQuanityValidate,
 } from "./types";
+import { mul } from "@/utils";
 
 export const validateEmpty = (value?: NumberString) => {
   if (!value) return false;
@@ -13,7 +14,7 @@ export const validateEmpty = (value?: NumberString) => {
 };
 
 export const validatePrecision = (value?: NumberString, precision?: number) => {
-  if (!value || !precision) return false;
+  if (!value || !precision) return true;
   if (typeof value === "number") {
     value = value.toString();
   }
@@ -23,13 +24,19 @@ export const validatePrecision = (value?: NumberString, precision?: number) => {
   return valueLength - lastDotIndex - 1 <= precision;
 };
 
-export const validateMinQuantity = () => {};
+export const validateMinQuantity = (
+  price: string,
+  quantity: string,
+  min: number
+) => {
+  if (!price || !quantity || !min) return true;
+  const currPrice = mul<number>(price, quantity, { returnNumber: true });
+  return currPrice >= min;
+};
 
 export const validateMaxQuantity = (value: string, max: number): boolean => {
   if (!value || !max) return true;
   const numVal = Number(value);
-  console.log("numVal", numVal, "max", max, "result", numVal <= max);
-
   return numVal <= max;
 };
 
@@ -62,24 +69,28 @@ export const validateQuantityInput = ({
   formData,
   precision,
   maxVolume,
+  minNotional,
   setValidationMap,
 }: {
   formData: IExForm;
   precision: number;
   maxVolume: number;
+  minNotional: number;
   setValidationMap: React.Dispatch<React.SetStateAction<IExFormValidate>>;
 }) => {
-  const emptyPass = validateEmpty(formData.quantity);
-  const precisionPass = validatePrecision(formData.quantity, precision);
-  const maxVolumePass = validateMaxQuantity(formData.quantity, maxVolume);
-
-  const isVaild = emptyPass && precisionPass && maxVolumePass;
+  const { price, quantity } = formData;
+  const emptyPass = validateEmpty(quantity);
+  // const precisionPass = validatePrecision(quantity, precision);
+  const minPicePass = validateMinQuantity(price, quantity, minNotional);
+  const maxVolumePass = validateMaxQuantity(quantity, maxVolume);
+  const isVaild = emptyPass && maxVolumePass && minPicePass;
   setValidationMap((prev) => ({
     ...prev,
     quantity: {
       invalid: !isVaild,
       empty: emptyPass,
       max: maxVolumePass,
+      min: minPicePass,
     },
   }));
   return isVaild;
@@ -97,7 +108,10 @@ export function getErrorMsg(type: ExFormEnum, validateResult: any): string {
 
     case ExFormEnum.QUANITY: {
       const result = validateResult as IQuanityValidate;
+      console.log("result", result);
+
       if (!result.max) return `超出最多購買數量`;
+      if (!result.min) return `尚未滿足最少購買數量`;
       if (!result.empty) return `尚未填數量`;
       else return "";
     }
@@ -117,5 +131,6 @@ export const validateForm: IExFormValidate = {
     invalid: false,
     empty: false,
     max: false,
+    min: false,
   },
 } as const;

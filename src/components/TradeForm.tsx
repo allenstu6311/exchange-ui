@@ -114,7 +114,7 @@ export default function TradeForm() {
 
   return (
     <div className="p-16px">
-      <div className="mb-20px">
+      <div className="mb-14px">
         <CTabs tabOnChange={tabOnChange} tabData={tabData} />
       </div>
       {/* tab */}

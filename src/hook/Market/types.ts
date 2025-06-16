@@ -4,4 +4,5 @@ export interface ISymbolInfoWithPrecision extends SymbolInfoListTypes {
   showPrecision: number;
   tradePrecision: number;
   tickSize: number;
+  minNotional: number;
 }

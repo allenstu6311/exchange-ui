@@ -9,14 +9,7 @@ import {
   SliderThumb,
   SliderTrack,
 } from "@chakra-ui/react";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import {
   ExFormEnum,
   IExForm,
@@ -74,6 +67,8 @@ const ExForm = forwardRef(function ExForm(
     }
   );
 
+  // console.log("currSymbolInfo", currSymbolInfo);
+
   const symbolMap = useSelector((state: RootState) => {
     return state.symbolNameMap;
   });
@@ -84,9 +79,8 @@ const ExForm = forwardRef(function ExForm(
   const { lastPrice = "0" } = cacheTickerData;
 
   const { base, quote } = symbolMap;
-  const { showPrecision, quotePrecision, tradePrecision, quoteAssetPrecision } =
+  const { showPrecision, tradePrecision, quoteAssetPrecision, minNotional } =
     currSymbolInfo;
-
   const { price: priceValidate, quantity: quantityValidate } = validationMap;
 
   // ✅ 暴露方法給父元件使用
@@ -113,6 +107,7 @@ const ExForm = forwardRef(function ExForm(
         formData,
         precision: tradePrecision,
         maxVolume,
+        minNotional,
         setValidationMap,
       });
       const validateResult = pricePass && quantityPass;
@@ -164,6 +159,12 @@ const ExForm = forwardRef(function ExForm(
           precisionMap,
           setAmount,
         });
+
+        validatePriceInput({
+          formData: nextFormData,
+          precision: showPrecision,
+          setValidationMap,
+        });
         break;
       case ExFormEnum.QUANITY:
         if (!validatePrecision(tradePrecision, value)) return;
@@ -173,6 +174,13 @@ const ExForm = forwardRef(function ExForm(
           formData: nextFormData,
           precisionMap,
           setAmount,
+        });
+        validateQuantityInput({
+          formData: nextFormData,
+          precision: tradePrecision,
+          maxVolume,
+          minNotional,
+          setValidationMap,
         });
         break;
       case ExFormEnum.AMOUNT:
@@ -234,7 +242,12 @@ const ExForm = forwardRef(function ExForm(
             value={formData.quantity}
             onChange={(e) => {
               const rawValue = e.target.value;
-              const sanitized = rawValue ? String(Number(rawValue)) : ""; // 0111 → 111
+              const sanitized =
+                rawValue === ""
+                  ? ""
+                  : /^0\d+$/.test(rawValue)
+                  ? rawValue.replace(/^0+/, "")
+                  : rawValue;
               handleFormChange(ExFormEnum.QUANITY, sanitized);
             }}
           />

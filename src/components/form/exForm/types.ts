@@ -15,6 +15,7 @@ export interface IQuanityValidate {
   invalid: boolean;
   empty: boolean;
   max: boolean;
+  min: boolean;
 }
 
 export interface IExFormValidate {
@@ -35,11 +36,11 @@ export interface IPrecisionMap {
   quoteAssetPrecision: number;
 }
 
-export type ValidateInputType = IQuanityValidate | IPriceValidate
+export type ValidateInputType = IQuanityValidate | IPriceValidate;
 
 export enum ExFormEnum {
   PRICE = "price",
   QUANITY = "quantity",
   AMOUNT = "amount",
-  SLIDER = "slider"
+  SLIDER = "slider",
 }
