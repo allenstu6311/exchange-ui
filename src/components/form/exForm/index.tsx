@@ -36,16 +36,19 @@ import {
   handleSilderInput,
 } from "./utils";
 import { validatePrecision } from "@/utils/general";
+import { OrderSide } from "@/types";
 
 const ExForm = forwardRef(function ExForm(
   {
     isMarket,
     assets,
     maxVolume,
+    side,
   }: {
     isMarket: boolean;
     assets: number; //可用 && 可賣
     maxVolume: number;
+    side: OrderSide;
   },
   ref: React.Ref<IFormRef>
 ) {
@@ -66,8 +69,6 @@ const ExForm = forwardRef(function ExForm(
       return state.symbolInfoList.currentSymbolInfo;
     }
   );
-
-  // console.log("currSymbolInfo", currSymbolInfo);
 
   const symbolMap = useSelector((state: RootState) => {
     return state.symbolNameMap;
@@ -105,7 +106,6 @@ const ExForm = forwardRef(function ExForm(
       });
       const quantityPass = validateQuantityInput({
         formData,
-        precision: tradePrecision,
         maxVolume,
         minNotional,
         setValidationMap,
@@ -113,7 +113,7 @@ const ExForm = forwardRef(function ExForm(
       const validateResult = pricePass && quantityPass;
       setValidationMap((prev) => ({
         ...prev,
-        invalid: validateResult,
+        invalid: !validateResult,
       }));
       return validateResult;
     },
@@ -177,7 +177,6 @@ const ExForm = forwardRef(function ExForm(
         });
         validateQuantityInput({
           formData: nextFormData,
-          precision: tradePrecision,
           maxVolume,
           minNotional,
           setValidationMap,
@@ -256,7 +255,13 @@ const ExForm = forwardRef(function ExForm(
           </InputRightElement>
         </InputGroup>
         <div className="text-red text-14px">
-          {getErrorMsg(ExFormEnum.QUANITY, quantityValidate)}
+          {getErrorMsg(ExFormEnum.QUANITY, quantityValidate, {
+            maxVolume,
+            minNotional,
+            quote,
+            side,
+            assets,
+          })}
         </div>
 
         <InputGroup className="px-8px">

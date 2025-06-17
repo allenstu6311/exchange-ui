@@ -1,5 +1,5 @@
 (進行中)
-onChange也要觸發驗證
+1.模組化validateQuantityInput validatePriceInput(不好做直接進到8.)
 
 (Fetures)
 1.市場tab切換USDT, USDC...

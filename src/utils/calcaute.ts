@@ -26,7 +26,9 @@ function formartResult<T>(
   config: ICalculateConfig | undefined
 ): T {
   const { precision = result.decimalPlaces(), returnNumber } = config || {};
-  const value = returnNumber ? result.toNumber() : result.toFixed(precision);
+  const value = returnNumber
+    ? result.toDecimalPlaces(precision).toNumber()
+    : result.toFixed(precision);
   return value as T;
 }
 
@@ -109,10 +111,10 @@ function mul<T extends string | number = string>(
 }
 
 function getDecimalPrecision(num: string | number): number {
-  if(!num) return 0
-  const str = typeof num === 'number' ? num.toString() : num;
-  const [, decimal = ''] = str.split('.');
-  return decimal.replace(/0+$/, '').length;
+  if (!num) return 0;
+  const str = typeof num === "number" ? num.toString() : num;
+  const [, decimal = ""] = str.split(".");
+  return decimal.replace(/0+$/, "").length;
 }
 
 export { isNumberVaild, add, sub, div, mul, getDecimalPrecision };

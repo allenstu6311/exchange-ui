@@ -1,10 +1,11 @@
-import { NumberString } from "@/types";
+import { NumberString, OrderSide } from "@/types";
 import {
   ExFormEnum,
   IExForm,
   IExFormValidate,
   IPriceValidate,
   IQuanityValidate,
+  ValidateExFormItem,
 } from "./types";
 import { mul } from "@/utils";
 
@@ -67,20 +68,17 @@ export const validatePriceInput = ({
 // 驗證數量
 export const validateQuantityInput = ({
   formData,
-  precision,
   maxVolume,
   minNotional,
   setValidationMap,
 }: {
   formData: IExForm;
-  precision: number;
   maxVolume: number;
   minNotional: number;
   setValidationMap: React.Dispatch<React.SetStateAction<IExFormValidate>>;
 }) => {
   const { price, quantity } = formData;
   const emptyPass = validateEmpty(quantity);
-  // const precisionPass = validatePrecision(quantity, precision);
   const minPicePass = validateMinQuantity(price, quantity, minNotional);
   const maxVolumePass = validateMaxQuantity(quantity, maxVolume);
   const isVaild = emptyPass && maxVolumePass && minPicePass;
@@ -96,7 +94,11 @@ export const validateQuantityInput = ({
   return isVaild;
 };
 
-export function getErrorMsg(type: ExFormEnum, validateResult: any): string {
+export function getErrorMsg(
+  type: ExFormEnum,
+  validateResult: ValidateExFormItem,
+  meta: Record<string, string | number> = {}
+): string {
   if (!validateResult.invalid) return "";
 
   switch (type) {
@@ -108,10 +110,14 @@ export function getErrorMsg(type: ExFormEnum, validateResult: any): string {
 
     case ExFormEnum.QUANITY: {
       const result = validateResult as IQuanityValidate;
-      console.log("result", result);
+      const { maxVolume, minNotional, quote, side, assets } = meta;
+      const isBuy = side === OrderSide.BUY;
+      const isSell = side === OrderSide.SELL;
 
-      if (!result.max) return `超出最多購買數量`;
-      if (!result.min) return `尚未滿足最少購買數量`;
+      if (isBuy && !result.max) return `最多購買${maxVolume}`;
+      if (isBuy && !result.min) return `最少須購買${minNotional} ${quote}`;
+      if (isSell && !result.max) return `最多賣出${assets} ${quote}`;
+      if (isSell && !result.min) return `最少須賣出${minNotional} ${quote}`;
       if (!result.empty) return `尚未填數量`;
       else return "";
     }

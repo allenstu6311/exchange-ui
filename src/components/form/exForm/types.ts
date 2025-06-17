@@ -44,3 +44,5 @@ export enum ExFormEnum {
   AMOUNT = "amount",
   SLIDER = "slider",
 }
+
+export type ValidateExFormItem = IPriceValidate | IQuanityValidate

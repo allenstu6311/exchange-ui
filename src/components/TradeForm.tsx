@@ -154,6 +154,7 @@ export default function TradeForm() {
             isMarket={isMarket}
             assets={quoteFree}
             maxVolume={maxBuyQuantity}
+            side={OrderSide.BUY}
           ></ExForm>
           {/* 可用 */}
           <div className=" my-8px">
@@ -189,6 +190,7 @@ export default function TradeForm() {
             isMarket={isMarket}
             assets={maxSellAmount}
             maxVolume={baseFree}
+            side={OrderSide.SELL}
           ></ExForm>
           {/* 可用 */}
           <div className="my-8px">
