@@ -15,7 +15,13 @@ export default function Depth() {
     }
   );
 
-  const { showPrecision, baseAsset, quoteAsset, tradePrecision } = currSymbolInfo;
+  const {
+    showPrecision,
+    baseAsset,
+    quoteAsset,
+    tradePrecision,
+    quoteAssetPrecision,
+  } = currSymbolInfo;
 
   const asksHeader = [
     {
@@ -28,20 +34,20 @@ export default function Depth() {
     {
       label: `數量(${baseAsset})`,
       key: "volume",
-      format: (val: string)=> formatNumberAbbr(val, tradePrecision)
+      format: (val: string) => formatNumberAbbr(val, tradePrecision),
     },
     {
       label: "成交額",
       key: "amount",
       format: (val: string) => {
-        return val?.slice(0, 9);
+        return val;
       },
       render: (content: number, item: DepthTable, columnIndex: number) => {
         return (
           <>
             {formatNumberAbbr(content, tradePrecision)}
             <div
-              className={`absolute bg-rise right-0 top-0 h-full opacity-40 transition-all duration-300`}
+              className={`absolute bg-rise right-0 top-0 h-full opacity-40 transition-all duration-500`}
               style={{ width: `${item.ratio}%` }}
             ></div>
           </>
@@ -66,14 +72,14 @@ export default function Depth() {
       label: "",
       key: "amount",
       format: (val: string) => {
-        return val?.slice(0, 9);
+        return val;
       },
       render: (content: number, item: DepthTable, columnIndex: number) => {
         return (
           <>
             {formatNumberAbbr(content, tradePrecision)}
             <div
-              className={`absolute bg-fall right-0 top-0 h-full opacity-40 transition-all duration-300`}
+              className={`absolute bg-fall right-0 top-0 h-full opacity-40 transition-all duration-500`}
               style={{ width: `${item.ratio}%` }}
             ></div>
           </>

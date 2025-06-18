@@ -1,5 +1,6 @@
 (進行中)
-1.模組化validateQuantityInput validatePriceInput(不好做直接進到8.)
+1.URL顯示幣別(存到cookie)
+
 
 (Fetures)
 1.市場tab切換USDT, USDC...
@@ -11,6 +12,10 @@
 8.API Key 隱藏
 9.ExSlider封裝成Hook
 10.URL攜帶幣種，重整要能保留(初始化就要呼叫API取得curretSymbolInfo)
+11.模組化validateQuantityInput validatePriceInput
+12.無限滾動
+13.輪旬完整
+
 
 (BUG)
 1.點很快時會產生多個websocket實體

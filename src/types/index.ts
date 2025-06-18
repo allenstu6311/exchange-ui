@@ -42,6 +42,7 @@ export interface CTableProps {
   trOnClick?: (item: any) => any;
   virtualed?: boolean;
   trHeight?: number;
+  isHover?: boolean;
 }
 
 export interface DepthResponse {

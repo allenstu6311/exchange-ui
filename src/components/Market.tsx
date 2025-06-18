@@ -1,7 +1,7 @@
 import CTable from "@/components/table";
 import { formatNumToFixed } from "@/utils";
 import { useMarketData } from "@/hook/Market";
-import { Input } from "@chakra-ui/react";
+import { background, Input } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, setCurrSymbolInfo } from "@/store";
 import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
@@ -9,8 +9,10 @@ import { setSymbolName } from "@/store";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 import { useEffect, useRef, useState } from "react";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import { useNavigate } from "react-router";
 
 export default function Market() {
+  const navigate = useNavigate();
   const symbolInfoList: ISymbolInfoWithPrecision[] = useSelector(
     (state: RootState) => {
       return state.symbolInfoList.list;
@@ -53,6 +55,7 @@ export default function Market() {
   const [visibleMarketData, setVisibleMarketData] =
     useState<Ticker24hrStat[]>(marketData);
   const [filtering, setfiltering] = useState(false);
+  const [hover, setHover] = useState(false);
 
   useEffect(() => {
     if (!filtering) {
@@ -92,11 +95,15 @@ export default function Market() {
             symbolInfoList
           );
           if (currSymbolInfo) {
-            dispatch(setSymbolName(currSymbolInfo));
-            dispatch(setCurrSymbolInfo(currSymbolInfo));
+            // dispatch(setSymbolName(currSymbolInfo));
+            // dispatch(setCurrSymbolInfo(currSymbolInfo));
+            navigate(`/${item.symbol}`); // HOME.tsx會自動追蹤URL
           }
         }}
-        rowStyle={{ cursor: "pointer" }}
+        rowStyle={{
+          cursor: "pointer",
+        }}
+        isHover={true}
         virtualed={true}
       />
     </div>

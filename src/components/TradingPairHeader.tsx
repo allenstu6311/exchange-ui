@@ -15,9 +15,11 @@ export default function TradingPairHeader() {
     return state.ticker24hrData.map;
   });
 
-  const currSymbolInfo:ISymbolInfoWithPrecision = useSelector((state:RootState)=>{
-    return state.symbolInfoList.currentSymbolInfo
-  })
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
 
   const { showPrecision } = currSymbolInfo;
 
@@ -29,7 +31,7 @@ export default function TradingPairHeader() {
     volume,
     priceChangePercent,
   } = currentMarketData;
-  
+
   const isRise = Number(priceChangePercent) > 0;
   const direction = usePriceDirection(lastPrice);
 

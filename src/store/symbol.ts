@@ -7,12 +7,19 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { handleFilters, handleSymbolName } from "./utils/symbol";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
+// const symbolNameMapState: SymbolNameMapType = {
+//   base: "BTC",
+//   quote: "USDT",
+//   lowercaseSymbol: "btcusdt",
+//   uppercaseSymbol: "BTCUSDT",
+//   slashSymbol: "BTC/USDT",
+// };
 const symbolNameMapState: SymbolNameMapType = {
-  base: "BTC",
-  quote: "USDT",
-  lowercaseSymbol: "btcusdt",
-  uppercaseSymbol: "BTCUSDT",
-  slashSymbol: "BTC/USDT",
+  base: "",
+  quote: "",
+  lowercaseSymbol: "",
+  uppercaseSymbol: "",
+  slashSymbol: "",
 };
 
 export const symbolNameMap = createSlice({
@@ -35,7 +42,7 @@ export const symbolNameMap = createSlice({
 
 const symbolInfoListStatge: SymbolInfoListState = {
   list: [],
-  currentSymbolInfo: {} as ISymbolInfoWithPrecision
+  currentSymbolInfo: {} as ISymbolInfoWithPrecision,
 };
 
 export const symbolInfoList = createSlice({
@@ -45,8 +52,8 @@ export const symbolInfoList = createSlice({
     setSymbolInfoList(state, action: PayloadAction<SymbolInfoListTypes[]>) {
       state.list = handleFilters(action.payload);
     },
-    setCurrSymbolInfo(state, action:PayloadAction<ISymbolInfoWithPrecision>){
-      state.currentSymbolInfo = action.payload
-    }
+    setCurrSymbolInfo(state, action: PayloadAction<ISymbolInfoWithPrecision>) {
+      state.currentSymbolInfo = action.payload;
+    },
   },
 });

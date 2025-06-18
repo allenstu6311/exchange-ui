@@ -15,6 +15,7 @@ import { tableAnatomy } from "@chakra-ui/anatomy";
 import { createMultiStyleConfigHelpers } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
+import "./style.css";
 
 const { definePartsStyle, defineMultiStyleConfig } =
   createMultiStyleConfigHelpers(tableAnatomy.keys);
@@ -34,12 +35,13 @@ function CTable({
   trOnClick = () => {},
   virtualed = false,
   trHeight = 0,
+  isHover = false,
 }: CTableProps) {
   const tbodyRef = useRef(null);
   const rowVirtualizer = useVirtualizer({
     count: rowData.length,
     getScrollElement: () => tbodyRef.current,
-    estimateSize: () => trHeight,
+    estimateSize: () => trHeight || 30,
   });
   const renderRowData = virtualed ? rowVirtualizer.getVirtualItems() : rowData;
 
@@ -79,7 +81,9 @@ function CTable({
                   onClick={() => trOnClick(item)}
                   position={virtualed ? "absolute" : "static"}
                   top={virtualed ? trHeight * itemIndex + "px" : ""}
-                  className="w-full flex justify-between items-center gap-0"
+                  className={`${
+                    isHover && "tr-hover-style"
+                  } w-full flex justify-between items-center gap-0`}
                 >
                   {columnData.map((column, columnIndex) => {
                     // 欄位值
