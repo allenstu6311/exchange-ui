@@ -37,6 +37,10 @@ app.use(
   })
 );
 
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(distPath, "index.html"));
+});
+
 // === 3. 啟動伺服器 ===
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
