@@ -4,11 +4,8 @@ import path, { resolve } from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import proxyMiddleware from "http-proxy-middleware";
 import { getSignature } from "./util";
 import bodyParser from "body-parser";
-import getRawBody from "raw-body";
-import crypto from "crypto";
 
 // === 模擬 __dirname（ES Module 沒有）===
 const __filename = fileURLToPath(import.meta.url);
