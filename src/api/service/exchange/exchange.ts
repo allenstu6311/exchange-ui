@@ -13,7 +13,7 @@ import {
   ICancelOrderRequest,
   IHistoryOrderRequest,
 } from "@/types";
-import { getSafeTimestamp, getSignature, withRetry } from "@/api/utils";
+import { getSafeTimestamp, withRetry } from "@/api/utils";
 import { successToast } from "@/utils/notify";
 
 let timeOffset = 0;

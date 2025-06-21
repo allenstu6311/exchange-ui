@@ -8,8 +8,6 @@ import axios, {
 } from "axios";
 import { errorToast, successToast } from "@/utils/notify";
 
-const SECRET_KEY =
-  "4mSUiEArmbdTraMjjAuQYM0g1dVL4EH44UvIhyYXaoXmZblg1ZWtlv08wW4QMk9h";
 export interface ICustomRequestConfig extends AxiosRequestConfig {
   metas?: IMetas;
 }
