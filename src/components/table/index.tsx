@@ -70,7 +70,7 @@ function CTable({
       >
         <Table variant="simple" size="sm">
           <Tbody height={virtualed ? trHeight * rowData.length + "px" : ""}>
-            {renderRowData.map((data, index) => {
+            {renderRowData?.map((data, index) => {
               const item = virtualed ? rowData[data.index] : data;
               const itemIndex = virtualed ? data.index : index;
 

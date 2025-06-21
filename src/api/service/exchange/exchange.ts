@@ -1,4 +1,4 @@
-import { http, proxyHttp } from "@/api";
+import { proxyHttp, http } from "@/api";
 import { IHistoryOrderData } from "@/hook/OrderList/types";
 import { IKlinesRequest } from "@/hook/TradeView/types";
 import {
@@ -13,11 +13,7 @@ import {
   ICancelOrderRequest,
   IHistoryOrderRequest,
 } from "@/types";
-import {
-  getSafeTimestamp,
-  getSignature,
-  withRetry,
-} from "@/api/utils";
+import { getSafeTimestamp, getSignature, withRetry } from "@/api/utils";
 import { successToast } from "@/utils/notify";
 
 let timeOffset = 0;
@@ -57,10 +53,9 @@ export const getDepthData = async (params: any) => {
 };
 
 export const createOrder = async (body: OrderRequest) => {
-  const finalQuery = getSignature(body); // ✅ 產生簽名
-
   return proxyHttp.post<OrderRequest>({
-    url: `order?${finalQuery}`,
+    url: "order",
+    body,
     metas: {
       onSuccess() {
         successToast("成功", "訂單已成功建立！");
@@ -70,10 +65,9 @@ export const createOrder = async (body: OrderRequest) => {
 };
 
 export const cancleOrder = async (body: ICancelOrderRequest) => {
-  const finalQuery = getSignature(body); // ✅ 產生簽名
-
   return proxyHttp.delete<ICancelOrderRequest>({
-    url: `order?${finalQuery}`,
+    url: `order`,
+    body,
     metas: {
       onSuccess() {
         successToast("成功", "訂單已取消！");
@@ -85,12 +79,12 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { symbol } = params;
   const request = async () => {
-    const finalQuery = getSignature({
-      timestamp: getSafeTimestamp(timeOffset),
-      symbol,
-    });
     return proxyHttp.get<ICurrentOrder[]>({
-      url: `openOrders?${finalQuery}`,
+      url: `openOrders`,
+      params: {
+        timestamp: getSafeTimestamp(timeOffset),
+        symbol,
+      },
     });
   };
   return withRetry<ICurrentOrder[]>(request, (error) => true);
@@ -98,11 +92,11 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
 
 export const getAccountInfo = async () => {
   const request = async () => {
-    const finalQuery = getSignature({
-      timestamp: getSafeTimestamp(timeOffset),
-    });
     return proxyHttp.get<IAccountInfo>({
-      url: `account?${finalQuery}`,
+      url: `account`,
+      params: {
+        timestamp: getSafeTimestamp(timeOffset),
+      },
     });
   };
   return withRetry<IAccountInfo>(request, (error) => true);
@@ -111,12 +105,12 @@ export const getAccountInfo = async () => {
 export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
   const { symbol } = params;
   const request = async () => {
-    const finalQuery = getSignature({
-      timestamp: getSafeTimestamp(timeOffset),
-      symbol,
-    });
     return proxyHttp.get<IHistoryOrderData[]>({
-      url: `myTrades?${finalQuery}`,
+      url: `myTrades`,
+      params: {
+        timestamp: getSafeTimestamp(timeOffset),
+        symbol,
+      },
     });
   };
   return withRetry<IHistoryOrderData[]>(request, (error) => true);

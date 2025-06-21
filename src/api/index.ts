@@ -8,8 +8,6 @@ import axios, {
 } from "axios";
 import { errorToast, successToast } from "@/utils/notify";
 
-const API_KEY =
-  "UTj7iVVEx6nMyhJQiUyyIYW6GxUDXlGMcvVnzhOmlR3mktMBA5N2qk2B4EoIfSfn";
 const SECRET_KEY =
   "4mSUiEArmbdTraMjjAuQYM0g1dVL4EH44UvIhyYXaoXmZblg1ZWtlv08wW4QMk9h";
 export interface ICustomRequestConfig extends AxiosRequestConfig {
@@ -29,7 +27,6 @@ const proxyConfig: AxiosRequestConfig = {
   baseURL: "/proxy",
   timeout: 10000,
   headers: {
-    "X-MBX-APIKEY": API_KEY,
     "Content-Type": "application/x-www-form-urlencoded",
   },
 };

@@ -1,5 +1,5 @@
 (進行中)
-1.URL顯示幣別(存到cookie)
+8.API Key 隱藏
 
 
 (Fetures)
@@ -9,12 +9,13 @@
 5.WebSocket retry沒有限制次數
 6.優化Kline區域，盡量資料都拆開來
 7.loading
-8.API Key 隱藏
+
 9.ExSlider封裝成Hook
 10.URL攜帶幣種，重整要能保留(初始化就要呼叫API取得curretSymbolInfo)
 11.模組化validateQuantityInput validatePriceInput
 12.無限滾動
 13.輪旬完整
+14.URL顯示幣別(存到cookie)
 
 
 (BUG)
