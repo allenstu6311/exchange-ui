@@ -7,6 +7,7 @@ import { useDepthData, usePriceDirection } from "@/hook/Depth";
 import { AppDispatch, RootState } from "@/store";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { formatNumberAbbr } from "@/utils/format";
+import { ArrowDownIcon, ArrowUpIcon } from "@chakra-ui/icons";
 
 export default function Depth() {
   const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
@@ -103,7 +104,14 @@ export default function Depth() {
   const [rowStyle, setRowStyle] = useState({});
 
   const direction = usePriceDirection(currentMarketData.lastPrice);
-  const arrow = direction === "up" ? "▲" : direction === "down" ? "▼" : "-";
+  const arrow =
+    direction === "up" ? (
+      <ArrowUpIcon />
+    ) : direction === "down" ? (
+      <ArrowDownIcon />
+    ) : (
+      "-"
+    );
   const lasPriceStyle = direction === "up" ? "color-rise" : "text-fall";
 
   useEffect(() => {

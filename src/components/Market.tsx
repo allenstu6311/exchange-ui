@@ -1,15 +1,20 @@
 import CTable from "@/components/table";
 import { formatNumToFixed } from "@/utils";
 import { useMarketData } from "@/hook/Market";
-import { background, Input } from "@chakra-ui/react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState, setCurrSymbolInfo } from "@/store";
-import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
-import { setSymbolName } from "@/store";
+import {
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+} from "@chakra-ui/react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { Ticker24hrStat } from "@/types";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useNavigate } from "react-router";
+import { SmallCloseIcon, SearchIcon } from "@chakra-ui/icons";
 
 export default function Market() {
   const navigate = useNavigate();
@@ -50,40 +55,35 @@ export default function Market() {
       },
     },
   ];
-  const dispatch = useDispatch<AppDispatch>();
 
-  const [visibleMarketData, setVisibleMarketData] =
-    useState<Ticker24hrStat[]>(marketData);
-  const [filtering, setfiltering] = useState(false);
-  const [hover, setHover] = useState(false);
-
-  useEffect(() => {
-    if (!filtering) {
-      setVisibleMarketData(marketData);
-    }
-  }, [marketData]);
-
-  const filterMarketData = (value: string) => {
-    if (value) {
-      setfiltering(true);
-      setVisibleMarketData(
-        visibleMarketData.filter((item) => item.symbol.includes(value))
-      );
-    } else {
-      setfiltering(false);
-      setVisibleMarketData(marketData);
-    }
-  };
+  const [searchStr, setsearchStr] = useState("");
+  const visibleMarketData: Ticker24hrStat[] = useMemo(() => {
+    return searchStr
+      ? marketData.filter((item) => item.symbol.includes(searchStr))
+      : marketData;
+  }, [marketData, searchStr]);
 
   return (
     <div className="h-[calc(100%-95px)]">
       <div className="p-8px">
-        <Input
-          placeholder="請輸入幣對名稱"
-          onInput={(e) =>
-            filterMarketData((e.target as HTMLInputElement).value)
-          }
-        />
+        <InputGroup>
+          <InputLeftElement>
+            <SearchIcon />
+          </InputLeftElement>
+          <Input
+            value={searchStr}
+            placeholder="請輸入幣對名稱"
+            onInput={(e) => setsearchStr((e.target as HTMLInputElement).value)}
+          />
+          {searchStr && (
+            <InputRightElement>
+              <SmallCloseIcon
+                className="cursor-pointer"
+                onClick={() => setsearchStr("")}
+              />
+            </InputRightElement>
+          )}
+        </InputGroup>
       </div>
       <CTable
         trHeight={35}
@@ -94,6 +94,11 @@ export default function Market() {
             item.symbol,
             symbolInfoList
           );
+
+          /**
+           * 維護性會降低，因為是利用URL變更的副作用
+           * 可以再思考有無更好的做法
+           */
           if (currSymbolInfo) {
             // dispatch(setSymbolName(currSymbolInfo));
             // dispatch(setCurrSymbolInfo(currSymbolInfo));

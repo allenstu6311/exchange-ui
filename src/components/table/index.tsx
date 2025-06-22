@@ -11,21 +11,9 @@ import {
   background,
 } from "@chakra-ui/react";
 import { CTableProps } from "@/types";
-import { tableAnatomy } from "@chakra-ui/anatomy";
-import { createMultiStyleConfigHelpers } from "@chakra-ui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./style.css";
-
-const { definePartsStyle, defineMultiStyleConfig } =
-  createMultiStyleConfigHelpers(tableAnatomy.keys);
-
-const baseStyle = definePartsStyle({
-  table: {
-    tableLayout: "fixed",
-  },
-});
-export const tableTheme = defineMultiStyleConfig({ baseStyle });
 
 function CTable({
   loading = false,
