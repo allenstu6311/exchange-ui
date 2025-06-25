@@ -25,7 +25,7 @@ if (!fs.existsSync(distPath)) {
 app.use(express.static(distPath));
 // app.use(express.json());
 // app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/proxy", async (req, res, next) => {
   const { query, method, body } = req;
@@ -44,13 +44,17 @@ app.use(
     pathRewrite: {
       "^/proxy": "", // 把 /proxy 移除掉，讓它變成 /myTrades, /account
     },
-    selfHandleResponse: false,
+    // selfHandleResponse: false,
     on: {
       proxyReq: async (proxyReq, req: any, res) => {
         const { method, body } = req;
         proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
         if (method === "POST" || method === "DELETE") {
           const signature = getSignature(body);
+          /**
+           * 不知為何一定要在前端設置Header才有用
+           * 但是用服務器就有效果
+           */
           proxyReq.setHeader(
             "Content-Type",
             "application/x-www-form-urlencoded"

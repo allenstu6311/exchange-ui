@@ -18,9 +18,9 @@ export default defineConfig({
         target: "http://localhost:3000/proxy",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/proxy/, ""),
-        headers: {
-          "X-MBX-APIKEY": process.env.API_KEY || "",
-        },
+        // headers: {
+        //   "X-MBX-APIKEY": process.env.API_KEY || "",
+        // },
       },
     },
   },

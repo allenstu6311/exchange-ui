@@ -91,7 +91,7 @@ const ExForm = forwardRef(function ExForm(
       setSliderValue(0);
       setFormData((prev) => ({
         ...prev,
-        price: "",
+        // price: "",
         quantity: "",
       }));
       setValidationMap({

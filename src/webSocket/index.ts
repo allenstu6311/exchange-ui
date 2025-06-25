@@ -2,20 +2,18 @@ import { WorkerRequest, WsType } from "@/types";
 
 type WsMiddleware = (data: any) => any;
 
-// let maxRetry = 3;
-
 interface IWsConfig {
   retry?: number;
 }
 
 class WebSocketIn {
-  private ws: WebSocket;
+  private ws: WebSocket | null = null;
 
   private wsConifg: IWsConfig = {};
 
   public wsData: any;
 
-  public wsType: string = "";
+  public wsType: WsType;
 
   private heartbeatTimer: any;
 
@@ -23,7 +21,11 @@ class WebSocketIn {
 
   private isMannelClose: boolean = false;
 
-  private reConnectFn: () => void;
+  private requestURL: string;
+
+  private middleware?: WsMiddleware[];
+
+  private postMessage: (param: WorkerRequest) => void;
 
   static socketMap: Map<string, WebSocketIn> = new Map();
 
@@ -33,40 +35,39 @@ class WebSocketIn {
     postMessage,
     middleware,
     config,
-    onReconnect,
   }: {
     url: string;
     type: WsType;
     postMessage: (param: WorkerRequest) => void;
     middleware?: WsMiddleware[];
     config?: IWsConfig;
-    onReconnect: () => void;
   }) {
-    this.ws = new WebSocket(url);
     WebSocketIn.socketMap.set(type, this);
     this.wsType = type;
-    this.reConnectFn = onReconnect;
+    this.setupWebSocket(url);
     this.wsConifg = config || {};
+    this.requestURL = url;
+    this.middleware = middleware;
+    this.postMessage = postMessage;
+  }
 
+  setupWebSocket(url: string) {
+    this.ws = new WebSocket(url);
     this.ws.onopen = () => {
       this.lastTime = Date.now();
       this.startHeartbeatCheck();
-      console.log(`${type}已連線`);
+      console.log(`${this.wsType}已連線`);
     };
 
     this.ws.onmessage = (event) => {
       this.lastTime = Date.now();
       let data = JSON.parse(event.data);
 
-      // if (type === "kline") {
-      //   console.log("data", data);
-      // }
-
-      if (middleware?.length) {
-        data = middleware.reduce((acc, fn) => fn(acc), data);
+      if (this.middleware?.length) {
+        data = this.middleware.reduce((acc, fn) => fn(acc), data);
       }
-      postMessage({
-        type,
+      this.postMessage({
+        type: this.wsType,
         data,
         url,
       });
@@ -78,13 +79,9 @@ class WebSocketIn {
 
     this.ws.onclose = () => {
       if (this.isMannelClose) return;
-      console.log(`${type}即將重新連線`, this.isMannelClose);
+      console.log(`${this.wsType}即將重新連線`, this.isMannelClose);
       this.reconnect();
     };
-  }
-
-  getReadyState() {
-    return this.ws.readyState;
   }
 
   reconnect() {
@@ -93,7 +90,7 @@ class WebSocketIn {
       const delay = (4 - this.wsConifg.retry) * 1000;
       console.log(`${this.wsType}已重試`);
       setTimeout(() => {
-        this.reConnectFn();
+        this.setupWebSocket(this.requestURL);
       }, delay);
     } else {
       console.log("已無法再次重試");
@@ -106,7 +103,7 @@ class WebSocketIn {
   }
 
   close() {
-    this.ws.close();
+    this.ws?.close();
     WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
     // console.log(`${this.wsType} 已關閉`);

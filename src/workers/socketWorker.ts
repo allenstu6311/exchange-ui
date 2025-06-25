@@ -38,29 +38,7 @@ self.onmessage = async (e) => {
       config: {
         retry: 3,
       },
-      onReconnect: connect,
     });
   };
   connect();
-
-  // if (
-  //   !ws ||
-  //   ws.getReadyState() === WebSocketStatus.CLOSED ||
-  //   ws.getReadyState() === WebSocketStatus.CLOSING
-  // ) {
-  //   const connect = () => {
-  //     const middleware = getMiddlewares(type);
-  //     new WebSocketIn({
-  //       url,
-  //       type,
-  //       postMessage,
-  //       middleware,
-  //       config: {
-  //         retry: 3,
-  //       },
-  //       onReconnect: connect,
-  //     });
-  //   };
-  //   connect();
-  // }
 };
