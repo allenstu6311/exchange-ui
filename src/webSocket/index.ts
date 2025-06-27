@@ -1,6 +1,6 @@
 import { WorkerRequest, WsType } from "@/types";
 
-type WsMiddleware = (data: any) => any;
+type WsMiddleware<T = any> = (data: T) => T;
 
 interface IWsConfig {
   retry?: number;
@@ -19,7 +19,7 @@ class WebSocketIn {
 
   private lastTime: number = 0;
 
-  private isMannelClose: boolean = false;
+  private isManualClose: boolean = false;
 
   private requestURL: string;
 
@@ -48,7 +48,7 @@ class WebSocketIn {
   }) {
     WebSocketIn.socketMap.set(type, this);
     this.wsType = type;
-    this.setupWebSocket(url);
+    this.setupWebSocket();
     this.wsConfig = config || {};
     this.requestURL = url;
     this.middleware = middleware;
@@ -56,8 +56,7 @@ class WebSocketIn {
     this.wsParam = param;
   }
 
-  setupWebSocket(url: string) {
-    // this.ws = new WebSocket(url);
+  setupWebSocket() {
     this.ws = new WebSocket("wss://stream.binance.com:9443/stream");
 
     this.ws.onopen = () => {
@@ -83,10 +82,6 @@ class WebSocketIn {
         return; // 不處理這類非資料型的回應
       }
 
-      // if (this.wsType === "depth") {
-      //   console.log("wsData", wsData);
-      // }
-
       if (this.middleware?.length) {
         wsData = this.middleware.reduce((acc, fn) => fn(acc), wsData);
       }
@@ -94,17 +89,17 @@ class WebSocketIn {
       this.postMessage({
         type: this.wsType,
         data: wsData,
-        url,
+        url: this.requestURL,
       });
     };
 
     this.ws.onerror = (error) => {
-      // console.log(`${type}出現錯誤`);
+      console.log(`${this.wsType}出現錯誤`);
     };
 
     this.ws.onclose = () => {
-      if (this.isMannelClose) return;
-      console.log(`${this.wsType}即將重新連線`, this.isMannelClose);
+      if (this.isManualClose) return;
+      console.log(`${this.wsType}即將重新連線`, this.isManualClose);
       this.reconnect();
     };
   }
@@ -127,10 +122,10 @@ class WebSocketIn {
   reconnect() {
     if (this.wsConfig.retry) {
       this.wsConfig.retry -= 1;
-      const delay = (4 - this.wsConfig.retry) * 1000;
+      const delay = 3000;
       console.log(`${this.wsType}已重試`);
       setTimeout(() => {
-        this.setupWebSocket(this.requestURL);
+        this.setupWebSocket();
       }, delay);
     } else {
       console.log(`${this.wsType}已無法再次重試`);
@@ -138,11 +133,19 @@ class WebSocketIn {
   }
 
   public mannelClose() {
-    this.isMannelClose = true;
+    this.isManualClose = true;
     this.close();
   }
 
   close() {
+    // 取消訂閱
+    this.sendMessage(
+      JSON.stringify({
+        method: "UNSUBSCRIBE",
+        params: this.wsParam,
+        id: Date.now(),
+      })
+    );
     this.ws?.close();
     WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
