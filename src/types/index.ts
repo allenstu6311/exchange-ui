@@ -94,7 +94,8 @@ export type WsType = "depth" | "ticker" | "kline";
 export type WorkerRequest = {
   type: WsType;
   data?: any;
-  url: string;
+  url?: string;
+  param?: any;
 };
 
 /**

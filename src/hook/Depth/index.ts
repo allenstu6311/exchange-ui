@@ -22,18 +22,19 @@ export function useDepthData({
 
       worker.postMessage({
         type: "depth",
-        url: `wss://stream.binance.com:9443/ws/${symbol}@depth${deep}@1000ms`,
+        // url: `wss://stream.binance.com:9443/ws/${symbol}@depth${deep}@1000ms`,
+        param: [`${symbol}@depth${deep}@1000ms`],
       });
     };
 
     function handleWsDepth(response: MessageEvent) {
       if (response.data.type !== "depth") return;
-      const { asks, bids } = response.data?.data || {};
+      const { asks, bids } = response.data?.data?.data || {};
 
       if (asks) {
         setAskData(handleDepthData(asks).reverse());
       }
-      if (asks) {
+      if (bids) {
         setBidsData(handleDepthData(bids));
       }
     }

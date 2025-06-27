@@ -67,7 +67,8 @@ export function useKlineData(
 
       worker.postMessage({
         type: "kline",
-        url: `wss://stream.binance.com:9443/ws/${lowercaseSymbol}@kline_1d`,
+        // url: `wss://stream.binance.com:9443/ws/${lowercaseSymbol}@kline_1d`,
+        param: [`${lowercaseSymbol}@kline_1d`],
       });
 
       return res.success ? transformKlineData(res.data) : [];

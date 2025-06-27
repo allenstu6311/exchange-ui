@@ -3,11 +3,21 @@ import { Ticker24hrStat, TickerSocketData, WsType } from "@/types";
 import dayjs from "dayjs";
 import { CandlestickData, UTCTimestamp } from "lightweight-charts";
 
+interface ITickerSocketDataRaw {
+  data: TickerSocketData[];
+}
+
+interface IKlineWsDataRaw {
+  data: IKlineWsData;
+}
+
 export function transformTickerData(
-  raw: TickerSocketData[],
+  raw: ITickerSocketDataRaw,
   quote: string = "USDT"
 ): Partial<Ticker24hrStat>[] {
-  return raw
+  if (!raw || !raw.data) return [];
+
+  return raw.data
     .map((item: TickerSocketData) => {
       return {
         symbol: item.s,
@@ -46,10 +56,15 @@ export function transformVolumFromWs(data: IKlineWsData): IBarData {
   };
 }
 
-export function translfrmKlineData(data: IKlineWsData) {
+export function translfrmKlineData(raw: IKlineWsDataRaw) {
+  if (!raw || !raw.data)
+    return {
+      kline: [],
+      bar: [],
+    };
   return {
-    kline: transformKlineFromWs(data),
-    bar: transformVolumFromWs(data),
+    kline: transformKlineFromWs(raw.data),
+    bar: transformVolumFromWs(raw.data),
   };
 }
 

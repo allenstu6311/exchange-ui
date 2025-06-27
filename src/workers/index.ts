@@ -10,10 +10,11 @@ class WorkerClient {
     );
   }
 
-  postMessage({ type, url }: WorkerRequest) {
+  postMessage({ type, url, param }: WorkerRequest) {
     this.worker.postMessage({
       type: type,
       url: url,
+      param,
     });
   }
 

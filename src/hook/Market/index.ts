@@ -21,7 +21,7 @@ export function useMarketData() {
   const dispatch = useDispatch<AppDispatch>();
   // 設定當前幣對的即時價格
   const setImmediateSymbolTicker = useCallback(
-    (data: Ticker24hrStat[], init?:boolean) => {
+    (data: Ticker24hrStat[], init?: boolean) => {
       const targetSymbolTicker = data.find(
         (item: Ticker24hrStat) => item.symbol === uppercaseSymbol
       );
@@ -29,7 +29,7 @@ export function useMarketData() {
       if (targetSymbolTicker) {
         dispatch(setTicker24hData(targetSymbolTicker));
 
-        if(init){
+        if (init) {
           dispatch(setCacheTicker24hData(targetSymbolTicker));
         }
       }
@@ -46,14 +46,16 @@ export function useMarketData() {
 
       worker.postMessage({
         type: "ticker",
-        url: "wss://stream.binance.com:9443/ws/!ticker@arr",
+        // url: "wss://stream.binance.com:9443/ws/!ticker@arr",
+        param: ["!ticker@arr"],
       });
     };
 
     function handleWsTicker(response: MessageEvent) {
       const { type, data } = response.data;
+      // console.log("data", data);
 
-      if (type === "ticker") {
+      if (type === "ticker" && data) {
         setMarketData((prev) => handleTickerData(data, prev));
         setImmediateSymbolTicker(data);
         setTicker24hList(data);

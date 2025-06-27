@@ -24,21 +24,44 @@ const postMessage = ({ type, data, url }: WorkerRequest) => {
 };
 
 self.onmessage = async (e) => {
-  const { type, url }: { type: WsType; url: string } = e.data;
+  const { type, url, param }: { type: WsType; url: string; param: any } =
+    e.data;
   const ws = WebSocketIn.socketMap.get(type);
 
-  if (ws) ws.mannelClose();
-  const connect = () => {
-    const middleware = getMiddlewares(type);
-    new WebSocketIn({
-      url,
-      type,
-      postMessage,
-      middleware,
-      config: {
-        retry: 3,
-      },
-    });
-  };
-  connect();
+  if (ws && ws.getWsState() !== WebSocketStatus.CONNECTING) {
+    const prevParam = ws.getPrevParam();
+
+    // 取消訂閱
+    ws.sendMessage(
+      JSON.stringify({
+        method: "UNSUBSCRIBE",
+        params: prevParam,
+        id: Date.now(),
+      })
+    );
+
+    // 重新訂閱
+    ws.sendMessage(
+      JSON.stringify({
+        method: "SUBSCRIBE",
+        params: param,
+        id: Date.now(),
+      })
+    );
+  } else if (!ws) {
+    const connect = () => {
+      const middleware = getMiddlewares(type);
+      new WebSocketIn({
+        url,
+        type,
+        postMessage,
+        middleware,
+        config: {
+          retry: 3,
+        },
+        param,
+      });
+    };
+    connect();
+  }
 };

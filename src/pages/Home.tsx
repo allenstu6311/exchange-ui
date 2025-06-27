@@ -44,7 +44,6 @@ function Home() {
   // 設定幣種的資訊
   useEffect(() => {
     const currSymbolInfo = getCurrentSymbolInfo(symbol, symbolInfoList);
-
     if (currSymbolInfo) {
       dispatch(setSymbolName(currSymbolInfo));
       dispatch(setCurrSymbolInfo(currSymbolInfo));
