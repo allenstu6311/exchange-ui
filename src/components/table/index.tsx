@@ -14,24 +14,32 @@ import { CTableProps } from "@/types";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./style.css";
+import { useVirtualScroll } from "./hook";
 
 function CTable({
   loading = false,
   rowData = [],
   columnData = [],
   rowStyle = {},
-  trOnClick = () => {},
+  trOnClick = () => { },
   virtualed = false,
   trHeight = 0,
   isHover = false,
 }: CTableProps) {
   const tbodyRef = useRef(null);
-  const rowVirtualizer = useVirtualizer({
+
+  const { virtualItems, totalHeight } = useVirtualScroll({
+    rowHeight: trHeight,
+    ref: tbodyRef,
     count: rowData.length,
-    getScrollElement: () => tbodyRef.current,
-    estimateSize: () => trHeight || 30,
-  });
-  const renderRowData = virtualed ? rowVirtualizer.getVirtualItems() : rowData;
+  })
+  const renderRowData = virtualed ? virtualItems : rowData;
+
+  const getItem = (data: any, index: number) => virtualed ? rowData[data.index] : data;
+  const getItemIndex = (data: any, index: number) => virtualed ? data.index : index;
+  const getRowPosition = (itemIndex: number): React.CSSProperties =>
+    virtualed ? { position: "absolute", top: trHeight * itemIndex + "px" } : {};
+  const getTbodyHeight = () => virtualed ? trHeight * rowData.length + "px" : "";
 
   return (
     <>
@@ -57,21 +65,18 @@ function CTable({
         ref={tbodyRef}
       >
         <Table variant="simple" size="sm">
-          <Tbody height={virtualed ? trHeight * rowData.length + "px" : ""}>
+          <Tbody height={getTbodyHeight()}>
             {renderRowData?.map((data, index) => {
-              const item = virtualed ? rowData[data.index] : data;
-              const itemIndex = virtualed ? data.index : index;
+              const item = getItem(data, index);
+              const itemIndex = getItemIndex(data, index);
 
               return (
                 <Tr
                   key={itemIndex}
-                  style={rowStyle}
-                  onClick={() => trOnClick(item)}
-                  position={virtualed ? "absolute" : "static"}
-                  top={virtualed ? trHeight * itemIndex + "px" : ""}
-                  className={`${
-                    isHover && "tr-hover-style"
-                  } w-full flex justify-between items-center gap-0`}
+                  style={{...rowStyle, ...getRowPosition(itemIndex)}}
+                  className={`${isHover && "tr-hover-style"
+                    } w-full flex justify-between items-center gap-0`}
+                  onClick={()=>trOnClick(item)}
                 >
                   {columnData.map((column, columnIndex) => {
                     // 欄位值
