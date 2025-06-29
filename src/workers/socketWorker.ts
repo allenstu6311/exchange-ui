@@ -8,12 +8,6 @@ import {
 import { WorkerRequest, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
 
-enum WebSocketStatus {
-  CONNECTING,
-  OPEN,
-  CLOSING,
-  CLOSED,
-}
 
 const postMessage = ({ type, data, url }: WorkerRequest) => {
   self.postMessage({
@@ -28,7 +22,7 @@ self.onmessage = async (e) => {
     e.data;
   const ws = WebSocketIn.socketMap.get(type);
 
-  if (ws && ws.getWsState() !== WebSocketStatus.CONNECTING) {
+  if (ws && ws.getWsState() !== WebSocket.CONNECTING) {
     const prevParam = ws.getPrevParam();
 
     // 取消訂閱

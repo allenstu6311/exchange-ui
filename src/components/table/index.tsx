@@ -15,6 +15,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./style.css";
 import { useVirtualScroll } from "./hook";
+import { getElementScrollbarWidth } from "./utils";
 
 function CTable({
   loading = false,
@@ -26,7 +27,8 @@ function CTable({
   trHeight = 0,
   isHover = false,
 }: CTableProps) {
-  const tbodyRef = useRef(null);
+  const tbodyRef = useRef<HTMLDivElement>(null);
+  const scrollbarWidth = getElementScrollbarWidth(tbodyRef.current)
 
   const { virtualItems, totalHeight } = useVirtualScroll({
     rowHeight: trHeight,
@@ -43,8 +45,7 @@ function CTable({
 
   return (
     <>
-      {/* pr={virtualed ? "21px" : ""} */}
-      <TableContainer>
+      <TableContainer pr={`${scrollbarWidth}px`}>
         <Table>
           <Thead>
             <Tr>
@@ -73,10 +74,10 @@ function CTable({
               return (
                 <Tr
                   key={itemIndex}
-                  style={{...rowStyle, ...getRowPosition(itemIndex)}}
+                  style={{ ...rowStyle, ...getRowPosition(itemIndex) }}
                   className={`${isHover && "tr-hover-style"
                     } w-full flex justify-between items-center gap-0`}
-                  onClick={()=>trOnClick(item)}
+                  onClick={() => trOnClick(item)}
                 >
                   {columnData.map((column, columnIndex) => {
                     // 欄位值

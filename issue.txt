@@ -1,14 +1,12 @@
 (進行中)
-7.table loading
-
+模組化table組件
 
 (Fetures)
 1.市場tab切換USDT, USDC...
 2.虛擬滾動判斷優化 + 測試estimateSize更好的算法
 3.endsWith("USDT")
-4.Maket thead 沒有對齊body
+5.table loading
 6.優化Kline區域，盡量資料都拆開來
-7.研究是否有ping
 8.最新成交
 9.ExSlider封裝成Hook
 11.模組化validateQuantityInput validatePriceInput
