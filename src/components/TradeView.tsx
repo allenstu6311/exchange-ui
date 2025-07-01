@@ -1,79 +1,112 @@
-// TradingViewWidget.jsx
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useKlineData, useKlineChart } from "@/hook/TradeView";
+import { IKlineData } from "@/hook/TradeView/types";
+import { OhlcData, UTCTimestamp } from "lightweight-charts";
+import dayjs from "dayjs";
+import { formatNumToFixed } from "@/utils";
 import { RootState } from "@/store";
-import React, { useEffect, useRef, memo, useState } from "react";
+import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
 
-function TradingViewWidget() {
-  const slashSymbol = useSelector((state: RootState) => {
-    return state.symbolNameMap.slashSymbol;
-  });
-  const [key, setKey] = useState(0); // 這裡用 key 來強制讓 div 重掛載
+export default function TradeView() {
+  const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
+  const [legendsData, setLegendsData] = useState<OhlcData>();
+  const { KlineData, WsKlineData, barData, WsBarData } =
+    useKlineData(setLegendsData);
 
-  const container = useRef<HTMLDivElement>(null);
+  const latestKlineDataRef = useRef<any>(null);
+
+  const { lineSeries, barSeries } = useKlineChart(
+    chartContainerRef?.current,
+    setLegendsData,
+    resetLegendsData
+  );
+
+  function resetLegendsData() {
+    setLegendsData(latestKlineDataRef.current);
+  }
 
   useEffect(() => {
-    const createTradeView = () => {
-      if (!container.current) return;
-
-      /**
-       * 會導致Cannot read properties of null (reading 'querySelector')
-       * 到時會使用自製圖表解決該問題
-       */
-      container.current.innerHTML = "";
-
-      const script = document.createElement("script");
-      script.src =
-        "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-      script.type = "text/javascript";
-      script.async = true;
-      script.innerHTML = `
-            {
-              "autosize": true,
-              "symbol": "${slashSymbol}",
-              "interval": "D",
-              "timezone": "Etc/UTC",
-              "theme": "light",
-              "style": "1",
-              "locale": "en",
-              "allow_symbol_change": true,
-              "support_host": "https://www.tradingview.com"
-            }`;
-
-      container.current.appendChild(script);
-    };
-
-    if (slashSymbol) {
-      createTradeView();
+    if (KlineData.length) {
+      lineSeries?.setData(KlineData);
+      latestKlineDataRef.current = KlineData[KlineData.length - 1];
     }
-  }, [slashSymbol, key]);
+  }, [KlineData, lineSeries]);
 
   useEffect(() => {
-    // slashSymbol 每變一次，強制 key +1，讓 container 重新掛載
-    setKey((prev) => prev + 1);
-  }, [slashSymbol]);
+    if (barData.length) {
+      barSeries?.setData(barData);
+    }
+  }, [barData, barSeries]);
+
+  useEffect(() => {
+    if (WsKlineData?.time) {
+      lineSeries?.update(WsKlineData);
+      setLegendsData(WsKlineData);
+      latestKlineDataRef.current = WsKlineData;
+    }
+  }, [WsKlineData, lineSeries]);
+
+  useEffect(() => {
+    if (WsBarData.time) {
+      barSeries?.update(WsBarData);
+    }
+  }, [WsBarData, barSeries]);
 
   return (
-    <div
-      className="tradingview-widget-container"
-      ref={container}
-      style={{ height: "100%", width: "100%" }}
-    >
-      <div
-        className="tradingview-widget-container__widget"
-        style={{ height: "calc(100% - 32px)", width: "100%" }}
-      ></div>
-      <div className="tradingview-widget-copyright"></div>
-      {/* <div className="tradingview-widget-copyright">
-        <a
-          href="https://www.tradingview.com/"
-          rel="noopener nofollow"
-          target="_blank"
-        >
-          <span className="blue-text">Track all markets on TradingView</span>
-        </a>
-      </div> */}
-    </div>
+    <>
+      <div className="w-full h-full relative">
+        <div className="w-full h-full" ref={chartContainerRef}></div>
+        <Legends data={legendsData} />
+      </div>
+    </>
   );
 }
 
-export default memo(TradingViewWidget);
+export function Legends({ data }: { data: OhlcData | undefined }) {
+  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+  const { showPrecision } = currSymbolInfo;
+
+  if (!data) return;
+
+  const LegendsData = [
+    {
+      label: "開盤價",
+      value: data?.open,
+    },
+    {
+      label: "最高價",
+      value: data?.high,
+    },
+    {
+      label: "最低價",
+      value: data?.low,
+    },
+    {
+      label: "收盤價",
+      value: data?.close,
+    },
+  ];
+
+  return (
+    <div className="absolute top-5px left-10px z-10 flex gap-5px text-14px  font-mono">
+      <div className="">
+        <p>{dayjs(new Date()).format("YYYY/MM/DD")}</p>
+      </div>
+      {LegendsData.map((item, index) => {
+        return (
+          <div className="flex ga-3px" key={index}>
+            <p>{item.label}: </p>
+            <p className="text-rise  min-w-[80px]">
+              {formatNumToFixed(item.value, showPrecision)}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

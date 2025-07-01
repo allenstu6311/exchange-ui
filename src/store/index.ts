@@ -3,7 +3,7 @@ import { symbolInfoList, symbolNameMap } from "@/store/symbol";
 import { ticker24hrData } from "./ticker";
 import { orderMap } from "./order";
 import { klineTimelyData } from "./kline";
-import { loading } from "./common";
+import { common } from "./common";
 
 // 讓state可以獲取slice的內容
 const store = configureStore({
@@ -13,7 +13,7 @@ const store = configureStore({
     ticker24hrData: ticker24hrData.reducer,
     orderMap: orderMap.reducer,
     klineTimelyData: klineTimelyData.reducer,
-    loading: loading.reducer,
+    common: common.reducer,
   },
 });
 
@@ -30,6 +30,6 @@ export const { setCurrentOrder } = orderMap.actions;
 
 export const { setKlineTimelyData } = klineTimelyData.actions;
 
-export const { setIsLoading } = loading.actions;
+export const { setIsLoading } = common.actions;
 
 export default store;

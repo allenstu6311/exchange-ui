@@ -1,6 +1,5 @@
 import axios, {
   AxiosError,
-  //   AxiosError,
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
@@ -139,6 +138,10 @@ class HttpInstance {
         return response;
       },
       async (error) => {
+        requestCount--;
+        if (requestCount === 0) {
+          store.dispatch(setIsLoading(false))
+        }
         const config = error.config;
         // 失敗時自動retry
         const { retry: maxRetryCount } = config.metas || {};

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-export const loading = createSlice({
+export const common = createSlice({
     name: 'loading',
     initialState: {
         isLoading: false

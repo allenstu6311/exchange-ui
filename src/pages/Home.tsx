@@ -1,8 +1,7 @@
 import { Grid, GridItem, Spinner } from "@chakra-ui/react";
 import TradingPairHeader from "@/components/TradingPairHeader";
 import Depth from "@/components/Depth";
-// import TradeView from "@/components/TradeView";
-import TradeView from "@/components/_TradeView";
+import TradeView from "@/components/TradeView";
 import TradeForm from "@/components/TradeForm";
 import "@/App.css";
 import Market from "@/components/Market";
@@ -28,11 +27,9 @@ function Home() {
   });
 
   const isLoading = useSelector((state: RootState) => {
-    return state.loading.isLoading;
+    return state.common.isLoading;
   });
-
   const { symbol = "BTCUSDT" } = useParams<{ symbol: string }>();
-  const [render, setRender] = useState<boolean>(false);
 
   useEffect(() => {
     const getSymbolMetaMapIn = async () => {
@@ -52,7 +49,6 @@ function Home() {
     if (currSymbolInfo) {
       dispatch(setSymbolName(currSymbolInfo));
       dispatch(setCurrSymbolInfo(currSymbolInfo));
-      setRender(true);
     }else if(symbolInfoList.length){
       errorToast('錯誤',`找不到此幣種: ${symbol}`)
     }
