@@ -19,11 +19,16 @@ import {
 import OrderList from "@/components/OrderList";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 import { useParams } from "react-router-dom";
+import { errorToast } from "@/utils/notify";
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>();
   const symbolInfoList = useSelector((state: RootState) => {
     return state.symbolInfoList.list;
+  });
+
+  const isLoading = useSelector((state: RootState) => {
+    return state.loading.isLoading;
   });
 
   const { symbol = "BTCUSDT" } = useParams<{ symbol: string }>();
@@ -48,79 +53,85 @@ function Home() {
       dispatch(setSymbolName(currSymbolInfo));
       dispatch(setCurrSymbolInfo(currSymbolInfo));
       setRender(true);
+    }else if(symbolInfoList.length){
+      errorToast('錯誤',`找不到此幣種: ${symbol}`)
     }
   }, [symbolInfoList, dispatch, symbol]);
 
   return (
     <>
-      {render ? (
-        <div className="w-full max-w-1600px mx-auto">
-          <Grid
-            templateAreas={`
+    { isLoading && <div className="w-full h-100% flex items-center justify-center absolute left-0 top-0 z-100 bg-#FFF opacity-50"></div>}
+    { isLoading &&
+      <div className={`w-full h-100vh flex items-center justify-center absolute left-0 top-0`}>
+        <Spinner
+          thickness="4px"
+          speed="0.65s"
+          emptyColor="gray.200"
+          color="blue.500"
+          size="xl"
+          className="z-100"
+        />
+      </div>
+    }
+    {/* 主要畫面內容 */}
+      <div className="w-full max-w-1600px mx-auto">
+        <Grid
+          templateAreas={`
           "left header header Market right"
           "left Depth TradeView Market right"
           "left Depth TradeForm Market right"
           "left OrderList OrderList OrderList right"
           "footer footer footer footer footer "
           `}
-            gridTemplateColumns={`
+          gridTemplateColumns={`
             1fr 
             minmax(253px, 320px)
             minmax(510px, 1080px) 
-            minmax(253px, 320px) 
+            minmax(253px, 310px) 
             1fr
           `}
-            gridTemplateRows={`    
+          gridTemplateRows={`    
             56px 
             minmax(500px, 1fr) 
             minmax(320px, 440px) 
             320px
             24px`}
-            gap="1"
-            color="blackAlpha.700"
-            fontWeight="bold"
-            w="100%"
-            maxH="1610px"
+          gap="1"
+          color="blackAlpha.700"
+          fontWeight="bold"
+          w="100%"
+          maxH="1610px"
+        >
+          <GridItem area={"header"} className="bg-#FFFF rd-10px">
+            <TradingPairHeader />
+          </GridItem>
+          <GridItem
+            area={"Depth"}
+            className="bg-#FFFF rd-10px"
+            overflowY={"auto"}
           >
-            <GridItem area={"header"} className="bg-#FFFF rd-10px">
-              <TradingPairHeader />
-            </GridItem>
-            <GridItem
-              area={"Depth"}
-              className="bg-#FFFF rd-10px"
-              overflowY={"auto"}
-            >
-              <Depth />
-            </GridItem>
-            <GridItem area={"TradeView"} className="bg-#FFFF rd-10px">
-              <TradeView />
-            </GridItem>
-            <GridItem area={"TradeForm"} className="bg-#FFFF rd-10px">
-              <TradeForm />
-            </GridItem>
-            <GridItem area={"OrderList"} className="bg-#FFFF rd-10px">
-              <OrderList />
-            </GridItem>
-            <GridItem
-              area={"Market"}
-              // overflowY={"auto"}
-              className="bg-#FFFF rd-10px"
-            >
-              <Market />
-            </GridItem>
-          </Grid>
-        </div>
-      ) : (
-        <div className="w-full h-100vh flex items-center justify-center">
-          <Spinner
-            thickness="4px"
-            speed="0.65s"
-            emptyColor="gray.200"
-            color="blue.500"
-            size="xl"
-          />
-        </div>
-      )}
+            <Depth />
+          </GridItem>
+          <GridItem area={"TradeView"} className="bg-#FFFF rd-10px">
+            <TradeView />
+          </GridItem>
+          <GridItem area={"TradeForm"} className="bg-#FFFF rd-10px">
+            <TradeForm />
+          </GridItem>
+          <GridItem area={"OrderList"} className="bg-#FFFF rd-10px">
+            <OrderList />
+          </GridItem>
+          <GridItem
+            area={"Market"}
+            // overflowY={"auto"}
+            className="bg-#FFFF rd-10px"
+          >
+            <Market />
+          </GridItem>
+        </Grid>
+      </div>
+
+
     </>
   );
 }

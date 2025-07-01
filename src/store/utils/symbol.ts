@@ -2,14 +2,14 @@ import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { SymbolInfoListTypes, SymbolNameMapType } from "@/types";
 import { getDecimalPrecision } from "@/utils/calcaute";
 
-const makePrettySymbol = (base: string, quote: string) => {
+export const makePrettySymbol = (base: string, quote: string) => {
   return `${base}/${quote}`;
 };
 
 export const handleSymbolName = (
   currentSymbol: SymbolInfoListTypes
 ): SymbolNameMapType => {
-  const { baseAsset, quoteAsset, symbol } = currentSymbol;
+  const { baseAsset, quoteAsset = "USDT", symbol } = currentSymbol;
   return {
     base: baseAsset,
     quote: quoteAsset,

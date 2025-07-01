@@ -7,6 +7,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { errorToast, successToast } from "@/utils/notify";
+import store, { AppDispatch, setIsLoading } from "@/store";
 
 export interface ICustomRequestConfig extends AxiosRequestConfig {
   metas?: IMetas;
@@ -98,6 +99,8 @@ async function handleErrorResponse<T = any>(
   return { success: false, data: response as T, error: config };
 }
 
+let requestCount = 0;
+const whiteList = ['openOrders'] // 不觸發loading樣式
 class HttpInstance {
   /**請求實體 */
   public axiosInstance: AxiosInstance;
@@ -110,8 +113,13 @@ class HttpInstance {
   }
 
   private httpInterceptorsRequest() {
+
     this.axiosInstance.interceptors.request.use(
       (config: ICustomInternalAxiosRequestConfig) => {
+        requestCount++;
+        if(!whiteList.includes(config.url || '')){
+          store.dispatch(setIsLoading(true))
+        }
         return config;
       },
       (error) => {
@@ -122,7 +130,14 @@ class HttpInstance {
 
   private httpInterceptorsResponse() {
     this.axiosInstance.interceptors.response.use(
-      async (response) => response,
+      async (response) => {
+        requestCount--;
+
+        if (requestCount === 0) {
+          store.dispatch(setIsLoading(false))
+        }
+        return response;
+      },
       async (error) => {
         const config = error.config;
         // 失敗時自動retry

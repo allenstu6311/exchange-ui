@@ -4,23 +4,21 @@ import {
   SymbolNameMapType,
 } from "./../types/index";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { handleFilters, handleSymbolName } from "./utils/symbol";
+import { handleFilters, handleSymbolName, makePrettySymbol } from "./utils/symbol";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
-// const symbolNameMapState: SymbolNameMapType = {
-//   base: "BTC",
-//   quote: "USDT",
-//   lowercaseSymbol: "btcusdt",
-//   uppercaseSymbol: "BTCUSDT",
-//   slashSymbol: "BTC/USDT",
-// };
+const { pathname } = window.location;
+const symbolName = pathname.replace('/','')
+const DEFAULT_QUOTE = 'USDT'
+
 const symbolNameMapState: SymbolNameMapType = {
-  base: "",
-  quote: "",
-  lowercaseSymbol: "",
-  uppercaseSymbol: "",
-  slashSymbol: "",
+  base: symbolName,
+  quote: DEFAULT_QUOTE,
+  lowercaseSymbol: symbolName.toLocaleLowerCase(),
+  uppercaseSymbol: symbolName,
+  slashSymbol: makePrettySymbol(symbolName, DEFAULT_QUOTE),
 };
+
 
 export const symbolNameMap = createSlice({
   name: "symbolNameMap",

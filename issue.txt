@@ -1,12 +1,11 @@
 (進行中)
-模組化table組件
+4.優化SUBSCRIBE事件
 
 (Fetures)
-1.市場tab切換USDT, USDC...
-2.虛擬滾動判斷優化 + 測試estimateSize更好的算法
-3.endsWith("USDT")
+1.攔截器取得reduex設定loading
 5.table loading
 6.優化Kline區域，盡量資料都拆開來
+7.模組化table組件
 8.最新成交
 9.ExSlider封裝成Hook
 11.模組化validateQuantityInput validatePriceInput
