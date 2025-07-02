@@ -12,6 +12,7 @@ import {
   AppDispatch,
   RootState,
   setCurrSymbolInfo,
+  setIsLoading,
   setSymbolInfoList,
   setSymbolName,
 } from "@/store";

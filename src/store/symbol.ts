@@ -8,7 +8,7 @@ import { handleFilters, handleSymbolName, makePrettySymbol } from "./utils/symbo
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 
 const { pathname } = window.location;
-const symbolName = pathname.replace('/','')
+const symbolName = pathname.replace('/','') || 'BTCUSDT'
 const DEFAULT_QUOTE = 'USDT'
 
 const symbolNameMapState: SymbolNameMapType = {
@@ -18,7 +18,6 @@ const symbolNameMapState: SymbolNameMapType = {
   uppercaseSymbol: symbolName,
   slashSymbol: makePrettySymbol(symbolName, DEFAULT_QUOTE),
 };
-
 
 export const symbolNameMap = createSlice({
   name: "symbolNameMap",

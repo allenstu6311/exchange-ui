@@ -11,8 +11,7 @@ import {
   background,
 } from "@chakra-ui/react";
 import { CTableProps } from "@/types";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef } from "react";
 import "./style.css";
 import { useVirtualScroll } from "./hook";
 import { getElementScrollbarWidth } from "./utils";

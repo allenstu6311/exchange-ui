@@ -7,6 +7,8 @@ import axios, {
 } from "axios";
 import { errorToast, successToast } from "@/utils/notify";
 import store, { AppDispatch, setIsLoading } from "@/store";
+import { ErrorCode } from "./enum";
+import { getServerTime } from "./service/exchange/exchange";
 
 export interface ICustomRequestConfig extends AxiosRequestConfig {
   metas?: IMetas;
@@ -100,6 +102,10 @@ async function handleErrorResponse<T = any>(
 
 let requestCount = 0;
 const whiteList = ['openOrders'] // 不觸發loading樣式
+
+// 使用 Map 存儲 retryCount，key 為請求的唯一標識
+const retryCountMap = new Map<string, number>();
+
 class HttpInstance {
   /**請求實體 */
   public axiosInstance: AxiosInstance;
@@ -116,7 +122,7 @@ class HttpInstance {
     this.axiosInstance.interceptors.request.use(
       (config: ICustomInternalAxiosRequestConfig) => {
         requestCount++;
-        if(!whiteList.includes(config.url || '')){
+        if (!whiteList.includes(config.url || '')) {
           store.dispatch(setIsLoading(true))
         }
         return config;
@@ -142,26 +148,50 @@ class HttpInstance {
         if (requestCount === 0) {
           store.dispatch(setIsLoading(false))
         }
+
         const config = error.config;
-        // 失敗時自動retry
         const { retry: maxRetryCount } = config.metas || {};
 
-        if (maxRetryCount > 0) {
-          config.retryCount = config.retryCount ?? 0;
-
-          if (config.retryCount < maxRetryCount) {
-            config.retryCount++;
-            // 請求延遲避免炸server
-            await new Promise((res) => setTimeout(res, 1500));
-            return this.axiosInstance.request(error.config);
-          }
+        // 如果沒有設定重試，直接返回錯誤
+        if (!maxRetryCount || maxRetryCount <= 0) {
+          return Promise.reject(
+            await handleErrorResponse(config, error.response)
+          );
         }
 
-        return Promise.reject(
-          await handleErrorResponse(config, error.response)
-        );
+        // 檢查重試次數
+        const requestKey = config.url;
+        const currentRetryCount = retryCountMap.get(requestKey) || 0;
+
+        if (currentRetryCount >= maxRetryCount) {
+          // 重試次數用完，清理 Map 並返回錯誤
+          retryCountMap.delete(requestKey);
+          return Promise.reject(
+            await handleErrorResponse(config, error.response)
+          );
+        }
+
+        // 處理重試邏輯
+        await this.handleRetry(error, requestKey, currentRetryCount);
+        return this.axiosInstance.request(error.config);
       }
     );
+  }
+
+  private async handleRetry(error: any, requestKey: string, currentRetryCount: number) {
+    // 統一延遲，避免炸server
+    await new Promise((res) => setTimeout(res, 1500));
+    const { code } = error.response?.data || {};
+
+    switch (code) {
+      case ErrorCode.TIME_STAMP:
+        // 處理時間戳錯誤：同步服務器時間
+        await getServerTime();
+        break;
+    }
+
+    // 更新重試次數
+    retryCountMap.set(requestKey, currentRetryCount + 1);
   }
 }
 

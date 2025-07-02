@@ -13,7 +13,7 @@ import {
   ICancelOrderRequest,
   IHistoryOrderRequest,
 } from "@/types";
-import { getSafeTimestamp, withRetry } from "@/api/utils";
+import { getSafeTimestamp } from "@/api/utils";
 import { successToast } from "@/utils/notify";
 
 let timeOffset = 0;
@@ -49,6 +49,9 @@ export const getDepthData = async (params: any) => {
   const { symbol } = params;
   return http.get<DepthResponse>({
     url: `depth?symbol=${symbol}`,
+    metas: {
+      retry: 3
+    }
   });
 };
 
@@ -78,42 +81,36 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
 
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { symbol } = params;
-  const request = async () => {
-    return proxyHttp.get<ICurrentOrder[]>({
-      url: `openOrders`,
-      params: {
-        timestamp: getSafeTimestamp(timeOffset),
-        symbol,
-      },
-    });
-  };
-  return withRetry<ICurrentOrder[]>(request, (error) => true);
+  return proxyHttp.get<ICurrentOrder[]>({
+    url: `openOrders`,
+    params: {
+      timestamp: getSafeTimestamp(timeOffset),
+      symbol,
+    },
+    metas:{
+      retry: 3,
+    }
+  });
 };
 
 export const getAccountInfo = async () => {
-  const request = async () => {
-    return proxyHttp.get<IAccountInfo>({
-      url: `account`,
-      params: {
-        timestamp: getSafeTimestamp(timeOffset),
-      },
-    });
-  };
-  return withRetry<IAccountInfo>(request, (error) => true);
+  return proxyHttp.get<IAccountInfo>({
+    url: `account`,
+    params: {
+      timestamp: getSafeTimestamp(timeOffset),
+    },
+  });
 };
 
 export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
   const { symbol } = params;
-  const request = async () => {
-    return proxyHttp.get<IHistoryOrderData[]>({
-      url: `myTrades`,
-      params: {
-        timestamp: getSafeTimestamp(timeOffset),
-        symbol,
-      },
-    });
-  };
-  return withRetry<IHistoryOrderData[]>(request, (error) => true);
+  return proxyHttp.get<IHistoryOrderData[]>({
+    url: `myTrades`,
+    params: {
+      timestamp: getSafeTimestamp(timeOffset),
+      symbol,
+    },
+  });
 };
 
 export const getServerTime = async () => {
