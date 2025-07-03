@@ -25,7 +25,7 @@ self.onmessage = async (e) => {
     const prevParam = ws.getPrevParam();
     // 取消訂閱
     sendUnsubscribeMessage(ws, prevParam);
-    await delay(1000);
+    // await delay(1000);
     // 重新訂閱
     sendSubscribeMessage(ws, param);
   } else if (!ws) {

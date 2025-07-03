@@ -1,5 +1,7 @@
 (進行中)
 8.最新成交
+GET /api/v3/trades
+wss://stream.binance.com:9443/ws/tusdusdt@trade
 
 (Fetures)
 1.圖表hover資訊補充
