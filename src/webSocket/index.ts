@@ -47,14 +47,28 @@ class WebSocketIn {
     config?: IWsConfig;
     param: any;
   }) {
+    this.closeExistingConnection(type);
+    
     WebSocketIn.socketMap.set(type, this);
     this.wsType = type;
-    this.setupWebSocket();
     this.wsConfig = config || {};
     this.requestURL = url;
     this.middleware = middleware;
     this.postMessage = postMessage;
     this.wsParam = param;
+    
+    this.setupWebSocket();
+  }
+
+  private closeExistingConnection(type: WsType) {
+    const existingConnection = WebSocketIn.socketMap.get(type);
+    if (existingConnection) {
+      console.log(`⚠️ 發現 ${type} 已有連接，立即關閉舊連接`);
+      existingConnection.mannelClose();
+      setTimeout(() => {
+        console.log(`✅ ${type} 舊連接已清理完成`);
+      }, 100);
+    }
   }
 
   setupWebSocket() {
@@ -63,7 +77,7 @@ class WebSocketIn {
     this.ws.onopen = () => {
       this.lastTime = Date.now();
       this.startHeartbeatCheck();
-      console.log(`${this.wsType}已連線`);
+      console.log(`✅ ${this.wsType} 已連線`);
 
       this.ws?.send(
         JSON.stringify({
@@ -79,8 +93,7 @@ class WebSocketIn {
       let wsData = JSON.parse(event.data);
 
       if (wsData.result === null && typeof wsData.id === "number") {
-        // console.log(`[WS] 操作成功：id=${wsData.id}`);
-        return; // 不處理這類非資料型的回應
+        return;
       }
 
       if (this.middleware?.length) {
@@ -95,12 +108,12 @@ class WebSocketIn {
     };
 
     this.ws.onerror = (error) => {
-      console.log(`${this.wsType}出現錯誤`);
+      console.log(`❌ ${this.wsType} 出現錯誤`);
     };
 
     this.ws.onclose = () => {
       if (this.isManualClose) return;
-      console.log(`${this.wsType}即將重新連線`, this.isManualClose);
+      console.log(`🔄 ${this.wsType} 即將重新連線`);
       this.reconnect();
     };
   }
@@ -114,20 +127,26 @@ class WebSocketIn {
   }
 
   public sendMessage(data: string) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn(`⚠️ ${this.wsType} 連接未就緒，無法發送消息`);
+      return;
+    }
+    
     this.wsParam = JSON.parse(data).params;
     this.ws?.send(data);
   }
 
   reconnect() {
-    if (this.wsConfig.retry) {
+    if (this.wsConfig.retry && this.wsConfig.retry > 0) {
       this.wsConfig.retry -= 1;
       const delay = 3000;
-      console.log(`${this.wsType}已重試`);
+      console.log(`🔄 ${this.wsType} 重試中，剩餘次數: ${this.wsConfig.retry}`);
       setTimeout(() => {
         this.setupWebSocket();
       }, delay);
     } else {
-      console.log(`${this.wsType}已無法再次重試`);
+      console.log(`❌ ${this.wsType} 重試次數已用完`);
+      this.cleanup();
     }
   }
 
@@ -137,22 +156,32 @@ class WebSocketIn {
   }
 
   close() {
-    // 取消訂閱
-    sendUnsubscribeMessage(this.ws, this.wsParam);
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      sendUnsubscribeMessage(this.ws, this.wsParam);
+    }
     this.ws?.close();
+    this.cleanup();
+  }
+
+  private cleanup() {
     WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
-    // console.log(`${this.wsType} 已關閉`);
   }
 
   startHeartbeatCheck() {
     this.heartbeatTimer = setInterval(() => {
       const currTime = Date.now();
       if (currTime - this.lastTime > 5000) {
-        console.log(`心跳停止 ${this.wsType} 結束連線`);
+        console.log(`💔 心跳停止 ${this.wsType} 結束連線`);
         this.close();
       }
     }, 30 * 1000);
+  }
+
+  isConnectionHealthy(): boolean {
+    return this.ws !== null && 
+           this.ws.readyState === WebSocket.OPEN && 
+           !this.isManualClose;
   }
 }
 
