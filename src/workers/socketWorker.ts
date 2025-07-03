@@ -1,11 +1,10 @@
-import { transformTickerData } from "@/utils";
 import {
   getMiddlewares,
-  transformKlineFromWs,
-  transformVolumFromWs,
-  translfrmKlineData,
+  sendUnsubscribeMessage,
+  sendSubscribeMessage,
 } from "./utils";
 import { WorkerRequest, WsType } from "@/types";
+import { delay } from "@/utils";
 import WebSocketIn from "@/webSocket";
 
 
@@ -24,24 +23,11 @@ self.onmessage = async (e) => {
 
   if (ws && ws.getWsState() !== WebSocket.CONNECTING) {
     const prevParam = ws.getPrevParam();
-
     // 取消訂閱
-    ws.sendMessage(
-      JSON.stringify({
-        method: "UNSUBSCRIBE",
-        params: prevParam,
-        id: Date.now(),
-      })
-    );
-
+    sendUnsubscribeMessage(ws, prevParam);
+    await delay(1000);
     // 重新訂閱
-    ws.sendMessage(
-      JSON.stringify({
-        method: "SUBSCRIBE",
-        params: param,
-        id: Date.now(),
-      })
-    );
+    sendSubscribeMessage(ws, param);
   } else if (!ws) {
     const connect = () => {
       const middleware = getMiddlewares(type);

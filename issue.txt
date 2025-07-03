@@ -1,12 +1,11 @@
 (進行中)
-4.優化SUBSCRIBE事件
+8.最新成交
 
 (Fetures)
-1.攔截器取得reduex設定loading
+1.圖表hover資訊補充
 5.table loading
 6.優化Kline區域，盡量資料都拆開來
-7.模組化table組件
-8.最新成交
+7.模組化table組件(拆分thead, tbody)
 9.ExSlider封裝成Hook
 11.模組化validateQuantityInput validatePriceInput
 12.無限滾動

@@ -82,3 +82,30 @@ export function getMiddlewares(type: WsType) {
   }
   return middleware;
 }
+
+// WebSocket 消息發送模組化函數
+export function createUnsubscribeMessage(params: any): string {
+  return JSON.stringify({
+    method: "UNSUBSCRIBE",
+    params,
+    id: Date.now(),
+  });
+}
+
+export function createSubscribeMessage(params: any): string {
+  return JSON.stringify({
+    method: "SUBSCRIBE",
+    params,
+    id: Date.now(),
+  });
+}
+
+export function sendUnsubscribeMessage(ws: any, params: any): void {
+  const message = createUnsubscribeMessage(params);
+  ws.sendMessage(message);
+}
+
+export function sendSubscribeMessage(ws: any, params: any): void {
+  const message = createSubscribeMessage(params);
+  ws.sendMessage(message);
+}

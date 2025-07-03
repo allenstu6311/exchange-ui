@@ -6,7 +6,7 @@ import {
 } from "./format";
 import { isNumber } from "./general";
 import { add, sub, div, mul } from "./calcaute";
-import { polling } from "./polling";
+import { polling, delay } from "./polling";
 
 export {
   formatNumToFixed,
@@ -19,4 +19,5 @@ export {
   mul,
   polling,
   transformTickerData,
+  delay,
 };

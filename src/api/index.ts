@@ -101,7 +101,7 @@ async function handleErrorResponse<T = any>(
 }
 
 let requestCount = 0;
-const whiteList = ['openOrders'] // 不觸發loading樣式
+const whiteList = ['openOrders', 'myTrades'] // 不觸發loading樣式
 
 // 使用 Map 存儲 retryCount，key 為請求的唯一標識
 const retryCountMap = new Map<string, number>();

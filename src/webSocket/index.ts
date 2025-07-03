@@ -1,4 +1,5 @@
 import { WorkerRequest, WsType } from "@/types";
+import { sendUnsubscribeMessage } from "@/workers/utils";
 
 type WsMiddleware<T = any> = (data: T) => T;
 
@@ -114,8 +115,6 @@ class WebSocketIn {
 
   public sendMessage(data: string) {
     this.wsParam = JSON.parse(data).params;
-    // console.log("this.wsParam", this.wsParam);
-
     this.ws?.send(data);
   }
 
@@ -139,13 +138,7 @@ class WebSocketIn {
 
   close() {
     // 取消訂閱
-    this.sendMessage(
-      JSON.stringify({
-        method: "UNSUBSCRIBE",
-        params: this.wsParam,
-        id: Date.now(),
-      })
-    );
+    sendUnsubscribeMessage(this.ws, this.wsParam);
     this.ws?.close();
     WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
