@@ -1,5 +1,5 @@
 import { WorkerRequest, WsType } from "@/types";
-import { sendUnsubscribeMessage } from "@/workers/utils";
+import { createSubscribeMessage, createUnsubscribeMessage, sendUnsubscribeMessage } from "@/workers/utils";
 
 type WsMiddleware<T = any> = (data: T) => T;
 
@@ -48,15 +48,14 @@ class WebSocketIn {
     param: any;
   }) {
     this.closeExistingConnection(type);
-    
-    
+
     this.wsType = type;
     this.wsConfig = config || {};
     this.requestURL = url;
     this.middleware = middleware;
     this.postMessage = postMessage;
     this.wsParam = param;
-    
+    WebSocketIn.socketMap.set(this.wsType, this);
     this.setupWebSocket();
   }
 
@@ -79,20 +78,13 @@ class WebSocketIn {
       if(!this.heartbeatTimer){
         this.startHeartbeatCheck();
       }
-      
-      WebSocketIn.socketMap.set(this.wsType, this);
       console.log(`✅ ${this.wsType} 已連線`);
-    
-      this.ws?.send(
-        JSON.stringify({
-          method: "SUBSCRIBE",
-          params: this.wsParam,
-          id: Date.now(),
-        })
-      );
+      this.ws?.send(createSubscribeMessage(this.wsParam));
+
     };
 
     this.ws.onmessage = (event) => {
+      // console.log("onmessage",WebSocketIn.socketMap);
       this.lastTime = Date.now();
       let wsData = JSON.parse(event.data);
       if (wsData.result === null && typeof wsData.id === "number") {
@@ -116,7 +108,10 @@ class WebSocketIn {
     };
 
     this.ws.onclose = () => {
-      if (this.isManualClose) return;
+      if (this.isManualClose) {
+        this.isManualClose = false;
+        return
+      };
       console.log(`🔄 ${this.wsType} 即將重新連線`);
       this.reconnect();
     };
@@ -135,8 +130,7 @@ class WebSocketIn {
       console.warn(`⚠️ ${this.wsType} 連接未就緒，無法發送消息`);
       return;
     }
-    
-    this.wsParam = JSON.parse(data).params;
+    this.wsParam  = JSON.parse(data).params;
     this.ws?.send(data);
   }
 
@@ -157,19 +151,11 @@ class WebSocketIn {
   public mannelClose() {
     this.isManualClose = true;
     this.close();
-    this.isManualClose = false;
   }
 
   close() {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      // sendUnsubscribeMessage(this.ws, this.wsParam);
-      this.sendMessage(
-        JSON.stringify({
-          method: "UNSUBSCRIBE",
-          params: this.wsParam,
-          id: Date.now(),
-        })
-      );
+      this.ws?.send(createUnsubscribeMessage(this.wsParam));
     }
     this.cleanup();
     this.ws?.close();
@@ -189,7 +175,7 @@ class WebSocketIn {
         console.log(`💔 心跳停止 ${this.wsType} 結束連線`);
         this.close();
       }
-    }, 10 * 1000);
+    }, 30 * 1000);
   }
 
   isConnectionHealthy(): boolean {

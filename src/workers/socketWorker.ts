@@ -2,6 +2,8 @@ import {
   getMiddlewares,
   sendUnsubscribeMessage,
   sendSubscribeMessage,
+  createUnsubscribeMessage,
+  createSubscribeMessage,
 } from "./utils";
 import { WorkerRequest, WsType } from "@/types";
 import { delay } from "@/utils";
@@ -46,11 +48,10 @@ self.onmessage = async (e) => {
   const { type, url, param }: { type: WsType; url: string; param: any } =
     e.data;
   const ws = WebSocketIn.socketMap.get(type);
-
+  
   // 簡單的檢查機制：如果狀態不對，立即關閉
   if (ws) {
     const wsState = ws.getWsState();
-    
     // 檢查連接狀態是否正常
     if (wsState === WebSocket.OPEN) {
       // 連接正常，檢查參數是否需要更新
@@ -59,35 +60,11 @@ self.onmessage = async (e) => {
       
       if (paramChanged) {
         console.log(`🔄 ${type} 參數變更，更新訂閱`);
-        // sendUnsubscribeMessage(ws, prevParam);
-        // await delay(500);
-        // console.log("sendSubscribeMessage");
-        // sendSubscribeMessage(ws, param);
-
-        ws.sendMessage(
-          JSON.stringify({
-            method: "UNSUBSCRIBE",
-            params: prevParam,
-            id: Date.now(),
-          })
-        );
-
-        ws.sendMessage(
-          JSON.stringify({
-            method: "SUBSCRIBE",
-            params: param,
-            id: Date.now(),
-          })
-        );
+        ws.sendMessage(createUnsubscribeMessage(prevParam));
+        ws.sendMessage(createSubscribeMessage(param));
       }
-    } else {
-      // 狀態不對，關閉舊連接
-      console.log(`⚠️ ${type} 狀態異常 (${wsState})，關閉舊連接`);
-      ws.mannelClose();
-      // 不立即創建新連接，讓系統自然處理
-      return;
-    }
-  } else {
+    } 
+  } else{
     // 沒有連接，創建新連接
     createNewConnection({
       type,

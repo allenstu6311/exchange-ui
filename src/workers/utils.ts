@@ -103,12 +103,10 @@ export function createSubscribeMessage(params: any): string {
 
 export function sendUnsubscribeMessage(ws: WebSocketIn , params: any): void {
   const message = createUnsubscribeMessage(params);
-  console.log("UNSUBSCRIBE", ws?.sendMessage);
   ws?.sendMessage(message);
 }
 
 export function sendSubscribeMessage(ws: WebSocketIn , params: any): void {
   const message = createSubscribeMessage(params);
-  console.log("SUBSCRIBE", ws);
   ws?.sendMessage(message);
 }
