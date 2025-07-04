@@ -28,7 +28,7 @@ function createNewConnection({
   param: any;
   postMessage: (param: WorkerRequest) => void;
 }) {
-  console.log(`✅ 創建 ${type} 新連接`);
+  console.log(`🚀 創建 ${type} 新連接`);
   const middleware = getMiddlewares(type);
   new WebSocketIn({
     url,
@@ -59,9 +59,26 @@ self.onmessage = async (e) => {
       
       if (paramChanged) {
         console.log(`🔄 ${type} 參數變更，更新訂閱`);
-        sendUnsubscribeMessage(ws, prevParam);
-        await delay(500);
-        sendSubscribeMessage(ws, param);
+        // sendUnsubscribeMessage(ws, prevParam);
+        // await delay(500);
+        // console.log("sendSubscribeMessage");
+        // sendSubscribeMessage(ws, param);
+
+        ws.sendMessage(
+          JSON.stringify({
+            method: "UNSUBSCRIBE",
+            params: prevParam,
+            id: Date.now(),
+          })
+        );
+
+        ws.sendMessage(
+          JSON.stringify({
+            method: "SUBSCRIBE",
+            params: param,
+            id: Date.now(),
+          })
+        );
       }
     } else {
       // 狀態不對，關閉舊連接

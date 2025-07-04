@@ -1,5 +1,6 @@
 import { IBarData, IKlineData, IKlineWsData } from "@/hook/TradeView/types";
 import { Ticker24hrStat, TickerSocketData, WsType } from "@/types";
+import WebSocketIn from "@/webSocket";
 import dayjs from "dayjs";
 import { CandlestickData, UTCTimestamp } from "lightweight-charts";
 
@@ -100,12 +101,14 @@ export function createSubscribeMessage(params: any): string {
   });
 }
 
-export function sendUnsubscribeMessage(ws: any, params: any): void {
+export function sendUnsubscribeMessage(ws: WebSocketIn , params: any): void {
   const message = createUnsubscribeMessage(params);
-  ws.sendMessage(message);
+  console.log("UNSUBSCRIBE", ws?.sendMessage);
+  ws?.sendMessage(message);
 }
 
-export function sendSubscribeMessage(ws: any, params: any): void {
+export function sendSubscribeMessage(ws: WebSocketIn , params: any): void {
   const message = createSubscribeMessage(params);
-  ws.sendMessage(message);
+  console.log("SUBSCRIBE", ws);
+  ws?.sendMessage(message);
 }

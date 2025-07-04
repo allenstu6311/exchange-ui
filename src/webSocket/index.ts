@@ -49,7 +49,7 @@ class WebSocketIn {
   }) {
     this.closeExistingConnection(type);
     
-    WebSocketIn.socketMap.set(type, this);
+    
     this.wsType = type;
     this.wsConfig = config || {};
     this.requestURL = url;
@@ -76,9 +76,13 @@ class WebSocketIn {
 
     this.ws.onopen = () => {
       this.lastTime = Date.now();
-      this.startHeartbeatCheck();
+      if(!this.heartbeatTimer){
+        this.startHeartbeatCheck();
+      }
+      
+      WebSocketIn.socketMap.set(this.wsType, this);
       console.log(`✅ ${this.wsType} 已連線`);
-
+    
       this.ws?.send(
         JSON.stringify({
           method: "SUBSCRIBE",
@@ -91,7 +95,6 @@ class WebSocketIn {
     this.ws.onmessage = (event) => {
       this.lastTime = Date.now();
       let wsData = JSON.parse(event.data);
-
       if (wsData.result === null && typeof wsData.id === "number") {
         return;
       }
@@ -99,7 +102,7 @@ class WebSocketIn {
       if (this.middleware?.length) {
         wsData = this.middleware.reduce((acc, fn) => fn(acc), wsData);
       }
-
+    
       this.postMessage({
         type: this.wsType,
         data: wsData,
@@ -109,6 +112,7 @@ class WebSocketIn {
 
     this.ws.onerror = (error) => {
       console.log(`❌ ${this.wsType} 出現錯誤`);
+      this.reconnect()
     };
 
     this.ws.onclose = () => {
@@ -153,19 +157,29 @@ class WebSocketIn {
   public mannelClose() {
     this.isManualClose = true;
     this.close();
+    this.isManualClose = false;
   }
 
   close() {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      sendUnsubscribeMessage(this.ws, this.wsParam);
+      // sendUnsubscribeMessage(this.ws, this.wsParam);
+      this.sendMessage(
+        JSON.stringify({
+          method: "UNSUBSCRIBE",
+          params: this.wsParam,
+          id: Date.now(),
+        })
+      );
     }
-    this.ws?.close();
     this.cleanup();
+    this.ws?.close();
+
   }
 
   private cleanup() {
     WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
+    this.heartbeatTimer = null;
   }
 
   startHeartbeatCheck() {
@@ -175,7 +189,7 @@ class WebSocketIn {
         console.log(`💔 心跳停止 ${this.wsType} 結束連線`);
         this.close();
       }
-    }, 30 * 1000);
+    }, 10 * 1000);
   }
 
   isConnectionHealthy(): boolean {
