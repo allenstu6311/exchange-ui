@@ -1,5 +1,5 @@
 import { WorkerRequest, WsType } from "@/types";
-import { createSubscribeMessage, createUnsubscribeMessage, sendUnsubscribeMessage } from "@/workers/utils";
+import { createSubscribeMessage, createUnsubscribeMessage } from "@/workers/utils";
 
 type WsMiddleware<T = any> = (data: T) => T;
 

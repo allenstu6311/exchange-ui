@@ -100,13 +100,3 @@ export function createSubscribeMessage(params: any): string {
     id: Date.now(),
   });
 }
-
-export function sendUnsubscribeMessage(ws: WebSocketIn , params: any): void {
-  const message = createUnsubscribeMessage(params);
-  ws?.sendMessage(message);
-}
-
-export function sendSubscribeMessage(ws: WebSocketIn , params: any): void {
-  const message = createSubscribeMessage(params);
-  ws?.sendMessage(message);
-}
