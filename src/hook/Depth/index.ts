@@ -1,19 +1,22 @@
-import { DepthTable, UseDepthDataParam } from "@/types";
+import { DepthTable } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import { getDepthData } from "@/api/service/exchange/exchange";
 import { handleDepthData } from "./utils";
 import worker from "@/workers";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
-export function useDepthData({
-  symbol = "btcusdt",
-  deep = 20,
-}: UseDepthDataParam) {
+export function useDepthData(deep = 20) {
   const [askData, setAskData] = useState<DepthTable[]>([]);
   const [bidsData, setBidsData] = useState<DepthTable[]>([]);
 
+  const { lowercaseSymbol, uppercaseSymbol } = useSelector((state: RootState) => {
+    return state.symbolNameMap;
+  });
+
   useEffect(() => {
     const getDepthDataIn = async () => {
-      const res = await getDepthData({ symbol: symbol.toUpperCase() });
+      const res = await getDepthData({ symbol: uppercaseSymbol });
       const askData = handleDepthData(res.data.asks.reverse());
       const bidsData = handleDepthData(res.data.bids);
 
@@ -23,7 +26,7 @@ export function useDepthData({
       worker.postMessage({
         type: "depth",
         // url: `wss://stream.binance.com:9443/ws/${symbol}@depth${deep}@1000ms`,
-        param: [`${symbol}@depth${deep}@1000ms`],
+        param: [`${lowercaseSymbol}@depth${deep}@1000ms`],
       });
     };
 
@@ -43,7 +46,7 @@ export function useDepthData({
     worker.subscribe(handleWsDepth);
 
     return () => worker.destroy(handleWsDepth);
-  }, [symbol, deep]);
+  }, [lowercaseSymbol, uppercaseSymbol, deep]);
 
   return {
     askData,

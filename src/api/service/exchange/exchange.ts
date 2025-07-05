@@ -15,6 +15,8 @@ import {
 } from "@/types";
 import { getSafeTimestamp } from "@/api/utils";
 import { successToast } from "@/utils/notify";
+import { IRecentTradesRequest } from "./requestTypes";
+import { IRecentTradesResponse } from "./responseTypes";
 
 let timeOffset = 0;
 
@@ -112,6 +114,17 @@ export const getHistoricalTrades = async (params: IHistoryOrderRequest) => {
     },
   });
 };
+
+export const getRecentTrades = async (params: IRecentTradesRequest) => {
+  const { symbol, limit = 500 } = params;
+  return http.get<IRecentTradesResponse[]>({
+    url: `trades`,
+    params: {
+      symbol,
+      limit,
+    },
+  });
+}
 
 export const getServerTime = async () => {
   await http

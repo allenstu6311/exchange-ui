@@ -44,6 +44,7 @@ function CTable({
 
   return (
     <>
+      {/* thead */}
       <TableContainer pr={`${scrollbarWidth}px`}>
         <Table>
           <Thead>
@@ -59,6 +60,7 @@ function CTable({
           </Thead>
         </Table>
       </TableContainer>
+      {/* tbody */}
       <TableContainer
         className="h-full relative"
         overflowY="auto"

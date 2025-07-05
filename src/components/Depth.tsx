@@ -89,18 +89,11 @@ export default function Depth() {
     },
   ];
 
-  const lowercaseSymbol = useSelector((state: RootState) => {
-    return state.symbolNameMap.lowercaseSymbol;
-  });
-
   const currentMarketData = useSelector((state: RootState) => {
     return state.ticker24hrData.map;
   });
 
-  const { askData, bidsData } = useDepthData({
-    symbol: lowercaseSymbol,
-    deep: 20,
-  });
+  const { askData, bidsData } = useDepthData();
   const [rowStyle, setRowStyle] = useState({});
 
   const direction = usePriceDirection(currentMarketData.lastPrice);

@@ -57,12 +57,6 @@ export interface DepthTable {
   amount: number;
   ratio: number;
 }
-
-export interface UseDepthDataParam {
-  symbol: string;
-  deep: number;
-}
-
 export interface TickerSocketData {
   A: string;
   B: string;
@@ -89,7 +83,7 @@ export interface TickerSocketData {
   x: string;
 }
 
-export type WsType = "depth" | "ticker" | "kline" | "ticker24hr";
+export type WsType = "depth" | "ticker" | "kline" | "ticker24hr" | "trades";
 
 export type WorkerRequest = {
   type: WsType;

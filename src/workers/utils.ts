@@ -1,6 +1,7 @@
 import { IBarData, IKlineData, IKlineWsData } from "@/hook/TradeView/types";
 import { Ticker24hrStat, TickerSocketData, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
+import { IWsRecentTradesResponse } from "@/webSocket/responseType";
 import dayjs from "dayjs";
 import { CandlestickData, UTCTimestamp } from "lightweight-charts";
 
@@ -69,6 +70,16 @@ export function translfrmKlineData(raw: IKlineWsDataRaw) {
   };
 }
 
+export function transformRecentTradesData(raw: IWsRecentTradesResponse) {
+  const { p, q, T, m } = raw.data;
+  return {
+    price: p,
+    qty: q,
+    time: T,
+    isBuyerMaker: m,
+  };
+}
+
 export function getMiddlewares(type: WsType) {
   const middleware = [];
   switch (type) {
@@ -77,6 +88,9 @@ export function getMiddlewares(type: WsType) {
       break;
     case "kline":
       middleware.push(translfrmKlineData);
+      break;
+    case "trades":
+      middleware.push(transformRecentTradesData);
       break;
     default:
       break;

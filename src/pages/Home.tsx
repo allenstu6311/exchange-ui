@@ -20,6 +20,7 @@ import OrderList from "@/components/OrderList";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 import { useParams } from "react-router-dom";
 import { errorToast } from "@/utils/notify";
+import RecentTrades from "@/components/RecentTrades";
 
 function Home() {
   const dispatch = useDispatch<AppDispatch>();
@@ -76,7 +77,7 @@ function Home() {
           templateAreas={`
           "left header header Market right"
           "left Depth TradeView Market right"
-          "left Depth TradeForm Market right"
+          "left Depth TradeForm RecentTrades right"
           "left OrderList OrderList OrderList right"
           "footer footer footer footer footer "
           `}
@@ -120,10 +121,13 @@ function Home() {
           </GridItem>
           <GridItem
             area={"Market"}
-            // overflowY={"auto"}
-            className="bg-#FFFF rd-10px"
-          >
+            className="bg-#FFFF rd-10px">
             <Market />
+          </GridItem>
+          <GridItem
+            area={"RecentTrades"}
+            className="bg-#FFFF rd-10px">
+            <RecentTrades />
           </GridItem>
         </Grid>
       </div>
