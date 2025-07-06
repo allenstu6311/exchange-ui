@@ -1,17 +1,21 @@
 import {
-  SymbolInfoListTypes,
-  SymbolInfoListState,
-  SymbolNameMapType,
-} from "./../types/index";
+  ISymbolInfoListTypes,
+} from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { handleFilters, handleSymbolName, makePrettySymbol } from "./utils/symbol";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
+import { ISymbolNameMapType } from "./utils/symbol";
+
+interface SymbolInfoListState {
+  list: ISymbolInfoWithPrecision[];
+  currentSymbolInfo: ISymbolInfoWithPrecision;
+}
 
 const { pathname } = window.location;
 const symbolName = pathname.replace('/','') || 'BTCUSDT'
 const DEFAULT_QUOTE = 'USDT'
 
-const symbolNameMapState: SymbolNameMapType = {
+const symbolNameMapState: ISymbolNameMapType = {
   base: symbolName,
   quote: DEFAULT_QUOTE,
   lowercaseSymbol: symbolName.toLocaleLowerCase(),
@@ -25,7 +29,7 @@ export const symbolNameMap = createSlice({
   reducers: {
     setSymbolName(
       state,
-      action: PayloadAction<SymbolInfoListTypes | undefined>
+      action: PayloadAction<ISymbolInfoListTypes | undefined>
     ) {
       if (!action.payload) {
         console.error("symbolName與symbolInfoList名稱不匹配");
@@ -46,7 +50,7 @@ export const symbolInfoList = createSlice({
   name: "symbolInfoList",
   initialState: symbolInfoListStatge,
   reducers: {
-    setSymbolInfoList(state, action: PayloadAction<SymbolInfoListTypes[]>) {
+    setSymbolInfoList(state, action: PayloadAction<ISymbolInfoListTypes[]>) {
       state.list = handleFilters(action.payload);
     },
     setCurrSymbolInfo(state, action: PayloadAction<ISymbolInfoWithPrecision>) {

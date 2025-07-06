@@ -1,6 +1,6 @@
-import { DepthTable } from "@/types";
+import { IDepthTable } from "@/hook/Depth/types";
 
-export function handleDepthData(depthData: string[][]): DepthTable[] {
+export function handleDepthData(depthData: string[][]): IDepthTable[] {
   // 先計算所有 amount
   const rowsWithAmount = depthData.map((item) => {
     const price = Number(item[0]);

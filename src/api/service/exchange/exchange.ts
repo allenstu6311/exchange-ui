@@ -2,14 +2,14 @@ import { proxyHttp, http } from "@/api";
 import { IHistoryOrderData } from "@/hook/OrderList/types";
 import { IKlinesRequest } from "@/hook/TradeView/types";
 import {
-  DepthResponse,
-  ExchangeInfoResponse,
-  SymbolInfoListTypes,
-  Ticker24hrStat,
-  OrderRequest,
-  ICurrentOrder,
+  IDepthResponse,
+  IExchangeInfoResponse,
+  ISymbolInfoListTypes,
+  ITicker24hrStatResponse,
+  IOrderRequest,
+  ICurrentOrderResponse,
   ICurrentOrderRequest,
-  IAccountInfo,
+  IAccountInfoResponse,
   ICancelOrderRequest,
   IHistoryOrderRequest,
   IRecentTradesResponse
@@ -21,13 +21,13 @@ import { IRecentTradesRequest } from "./requestTypes";
 let timeOffset = 0;
 
 export const getSymbolMetaMap = async () => {
-  return http.get<ExchangeInfoResponse>({
+  return http.get<IExchangeInfoResponse>({
     url: "/exchangeInfo",
   });
 };
 
 export const getTickerBy24hr = async () => {
-  return http.get<Ticker24hrStat[]>({
+  return http.get<ITicker24hrStatResponse[]>({
     url: "/ticker/24hr",
     params: {},
     metas: {
@@ -49,7 +49,7 @@ export async function getKlinesData(params: IKlinesRequest) {
 
 export const getDepthData = async (params: any) => {
   const { symbol } = params;
-  return http.get<DepthResponse>({
+  return http.get<IDepthResponse>({
     url: `depth?symbol=${symbol}`,
     metas: {
       retry: 3
@@ -57,8 +57,8 @@ export const getDepthData = async (params: any) => {
   });
 };
 
-export const createOrder = async (body: OrderRequest) => {
-  return proxyHttp.post<OrderRequest>({
+export const createOrder = async (body: IOrderRequest) => {
+  return proxyHttp.post<IOrderRequest>({
     url: "order",
     body,
     metas: {
@@ -83,7 +83,7 @@ export const cancleOrder = async (body: ICancelOrderRequest) => {
 
 export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
   const { symbol } = params;
-  return proxyHttp.get<ICurrentOrder[]>({
+  return proxyHttp.get<ICurrentOrderResponse[]>({
     url: `openOrders`,
     params: {
       timestamp: getSafeTimestamp(timeOffset),
@@ -96,7 +96,7 @@ export const getCurrentOrder = async (params: ICurrentOrderRequest) => {
 };
 
 export const getAccountInfo = async () => {
-  return proxyHttp.get<IAccountInfo>({
+  return proxyHttp.get<IAccountInfoResponse>({
     url: `account`,
     params: {
       timestamp: getSafeTimestamp(timeOffset),

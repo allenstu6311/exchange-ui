@@ -1,8 +1,8 @@
-import { ICurrentOrder } from "@/types";
+import { ICurrentOrderResponse } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const orderMapState = {
-    current: [] as ICurrentOrder[],
+    current: [] as ICurrentOrderResponse[],
     history: []
 }
 
@@ -12,7 +12,7 @@ export const orderMap = createSlice({
     reducers:{
         setCurrentOrder(
             state,
-            action: PayloadAction<ICurrentOrder[]>
+            action: PayloadAction<ICurrentOrderResponse[]>
         ){
             state.current = action.payload
         }

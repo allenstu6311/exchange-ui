@@ -3,7 +3,7 @@ import {
   getAccountInfo,
   getCurrentOrder,
 } from "@/api/service/exchange/exchange";
-import { IAccountInfo, OrderRequest, OrderSide, OrderType } from "@/types";
+import { IAccountInfoResponse, IOrderRequest, OrderSide, OrderType } from "@/types";
 import { useEffect, useState } from "react";
 import classNames from "classnames";
 import ExForm from "@/components/form/exForm";
@@ -40,7 +40,7 @@ export default function TradeForm() {
   const buyFormRef = useRef<IFormRef>(null);
   const sellFormRef = useRef<IFormRef>(null);
 
-  const [accountInfo, setAccountInfo] = useState<IAccountInfo>();
+  const [accountInfo, setAccountInfo] = useState<IAccountInfoResponse>();
   const balances = accountInfo?.balances ?? [];
 
   const { maxBuyQuantity, quoteFree, maxSellAmount, baseFree } =

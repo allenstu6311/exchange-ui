@@ -10,11 +10,11 @@ import {
   TableContainer,
   background,
 } from "@chakra-ui/react";
-import { CTableProps } from "@/types";
 import { useRef } from "react";
 import "./style.css";
 import { useVirtualScroll } from "./hook";
 import { getElementScrollbarWidth } from "./utils";
+import { TableColumns } from "./types";
 
 function CTable({
   loading = false,
@@ -25,7 +25,16 @@ function CTable({
   virtualed = false,
   trHeight = 0,
   isHover = false,
-}: CTableProps) {
+}: {
+  loading?: boolean;
+  rowData: any[];
+  columnData: TableColumns[];
+  rowStyle?: Record<string, string>;
+  trOnClick?: (item: any) => any;
+  virtualed?: boolean;
+  trHeight?: number;
+  isHover?: boolean;
+}) {
   const tbodyRef = useRef<HTMLDivElement>(null);
   const scrollbarWidth = getElementScrollbarWidth(tbodyRef.current)
 

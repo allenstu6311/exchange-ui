@@ -1,14 +1,25 @@
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
-import { SymbolInfoListTypes, SymbolNameMapType } from "@/types";
+import { ISymbolInfoListTypes } from "@/types";
 import { getDecimalPrecision } from "@/utils/calcaute";
+
+export interface ISymbolNameMapType {
+  base: string;
+  quote: string;
+  lowercaseSymbol: string;
+  uppercaseSymbol: string;
+  /**
+   * BTC/USDT
+   */
+  slashSymbol: string;
+}
 
 export const makePrettySymbol = (base: string, quote: string) => {
   return `${base}/${quote}`;
 };
 
 export const handleSymbolName = (
-  currentSymbol: SymbolInfoListTypes
-): SymbolNameMapType => {
+  currentSymbol: ISymbolInfoListTypes
+): ISymbolNameMapType => {
   const { baseAsset, quoteAsset = "USDT", symbol } = currentSymbol;
   return {
     base: baseAsset,
@@ -20,9 +31,9 @@ export const handleSymbolName = (
 };
 
 export const handleFilters = (
-  symbolInfoList: SymbolInfoListTypes[]
+  symbolInfoList: ISymbolInfoListTypes[]
 ): ISymbolInfoWithPrecision[] => {
-  return symbolInfoList.map((item: SymbolInfoListTypes) => {
+  return symbolInfoList.map((item: ISymbolInfoListTypes) => {
     const { filters } = item;
     let showPrecision = 0;
     let tradePrecision = 0;

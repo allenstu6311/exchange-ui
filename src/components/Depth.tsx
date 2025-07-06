@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import CTable from "./table";
 import { formatNumToFixed } from "@/utils";
-import { DepthTable } from "@/types";
+import { IDepthTable } from "@/hook/Depth/types";
 import { useDispatch, useSelector } from "react-redux";
 import { useDepthData, usePriceDirection } from "@/hook/Depth";
 import { AppDispatch, RootState } from "@/store";
@@ -43,7 +43,7 @@ export default function Depth() {
       format: (val: string) => {
         return val;
       },
-      render: (content: number, item: DepthTable, columnIndex: number) => {
+      render: (content: number, item: IDepthTable, columnIndex: number) => {
         return (
           <>
             {formatNumberAbbr(content, tradePrecision)}
@@ -75,7 +75,7 @@ export default function Depth() {
       format: (val: string) => {
         return val;
       },
-      render: (content: number, item: DepthTable, columnIndex: number) => {
+      render: (content: number, item: IDepthTable, columnIndex: number) => {
         return (
           <>
             {formatNumberAbbr(content, tradePrecision)}

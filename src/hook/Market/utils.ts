@@ -1,10 +1,10 @@
-import { SymbolInfoListTypes, Ticker24hrStat } from "@/types";
+import { ISymbolInfoListTypes, ITicker24hrStatResponse } from "@/types";
 import { ISymbolInfoWithPrecision } from "./types";
 
 export const handleTickerData = (
-  newData: Ticker24hrStat[],
-  oldData: Ticker24hrStat[]
-): Ticker24hrStat[] => {
+  newData: ITicker24hrStatResponse[],
+  oldData: ITicker24hrStatResponse[]
+): ITicker24hrStatResponse[] => {
   return oldData.map((oldItem) => {
     const newItem = newData.find((item) => item.symbol === oldItem.symbol);
 

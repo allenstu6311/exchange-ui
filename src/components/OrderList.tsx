@@ -3,7 +3,7 @@ import {
   cancleOrder,
   getHistoricalTrades,
 } from "@/api/service/exchange/exchange";
-import { ICurrentOrder } from "@/types";
+import { ICurrentOrderResponse } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import CTable from "./table";
 import { useDispatch, useSelector } from "react-redux";
@@ -77,7 +77,7 @@ export default function OrderList() {
     {
       label: "操作",
       key: "operation",
-      render: (content: string, rowData: ICurrentOrder) => {
+      render: (content: string, rowData: ICurrentOrderResponse) => {
         return (
           <Button
             className=""
@@ -181,7 +181,7 @@ export default function OrderList() {
     };
   }, [uppercaseSymbol, dispatch, currTabsIndex]);
 
-  const handleCancelOrder = async (orderInfo: ICurrentOrder) => {
+  const handleCancelOrder = async (orderInfo: ICurrentOrderResponse) => {
     const { symbol, orderId, side } = orderInfo;
     const res = await cancleOrder({
       symbol,
@@ -191,7 +191,7 @@ export default function OrderList() {
 
     if (res.success) {
       const newOrderMap = orderMap.current.filter(
-        (item: ICurrentOrder) => item.orderId !== orderId
+        (item: ICurrentOrderResponse) => item.orderId !== orderId
       );
       dispatch(setCurrentOrder(newOrderMap));
     }

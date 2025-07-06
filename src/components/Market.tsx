@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { Ticker24hrStat } from "@/types";
+import { ITicker24hrStatResponse } from "@/types";
 import { getCurrentSymbolInfo } from "@/hook/Market/utils";
 import { useMemo, useState } from "react";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
@@ -57,7 +57,7 @@ export default function Market() {
   ];
 
   const [searchStr, setsearchStr] = useState("");
-  const visibleMarketData: Ticker24hrStat[] = useMemo(() => {
+  const visibleMarketData: ITicker24hrStatResponse[] = useMemo(() => {
     return searchStr
       ? marketData.filter((item) => item.symbol.includes(searchStr))
       : marketData;

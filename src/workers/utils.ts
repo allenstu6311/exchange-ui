@@ -1,12 +1,12 @@
 import { IBarData, IKlineData, IKlineWsData } from "@/hook/TradeView/types";
-import { Ticker24hrStat, TickerSocketData, WsType } from "@/types";
+import { ITicker24hrStatResponse, IWsTickerSocketData, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
-import { IWsRecentTradesResponse } from "@/webSocket/responseType";
+import { IWsRecentTradesResponse } from "@/types";
 import dayjs from "dayjs";
 import { CandlestickData, UTCTimestamp } from "lightweight-charts";
 
 interface ITickerSocketDataRaw {
-  data: TickerSocketData[];
+  data: IWsTickerSocketData[];
 }
 
 interface IKlineWsDataRaw {
@@ -16,11 +16,11 @@ interface IKlineWsDataRaw {
 export function transformTickerData(
   raw: ITickerSocketDataRaw,
   quote: string = "USDT"
-): Partial<Ticker24hrStat>[] {
+): Partial<ITicker24hrStatResponse>[] {
   if (!raw || !raw.data) return [];
 
   return raw.data
-    .map((item: TickerSocketData) => {
+    .map((item: IWsTickerSocketData) => {
       return {
         symbol: item.s,
         priceChange: item.p,

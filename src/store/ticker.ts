@@ -1,5 +1,11 @@
-import { Ticker24hrDataStatMap, Ticker24hrStat } from "@/types";
+import { ITicker24hrStatResponse } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
+interface Ticker24hrDataStatMap {
+  map: ITicker24hrStatResponse;
+  list: ITicker24hrStatResponse[];
+  cacheMap: ITicker24hrStatResponse;
+}
 
 const ticker24hrDataState: Ticker24hrDataStatMap = {
   map: {
@@ -26,21 +32,21 @@ const ticker24hrDataState: Ticker24hrDataStatMap = {
     count: 0, // 成交筆數
   },
   list: [],
-  cacheMap: {} as Ticker24hrStat
+  cacheMap: {} as ITicker24hrStatResponse
 };
 
 export const ticker24hrData = createSlice({
   name: "ticker24hrData",
   initialState: ticker24hrDataState,
   reducers: {
-    setTicker24hData(state, action: PayloadAction<Ticker24hrStat>) {
+    setTicker24hData(state, action: PayloadAction<ITicker24hrStatResponse>) {
       Object.assign(state.map, action.payload);
     },
-    setTicker24hList(state, action: PayloadAction<Ticker24hrStat[]>) {
+    setTicker24hList(state, action: PayloadAction<ITicker24hrStatResponse[]>) {
       // state.list = action.payload;
       Object.assign(state.list, action.payload);
     },
-    setCacheTicker24hData(state, action: PayloadAction<Ticker24hrStat>) {
+    setCacheTicker24hData(state, action: PayloadAction<ITicker24hrStatResponse>) {
       Object.assign(state.cacheMap, action.payload);
     },
   },

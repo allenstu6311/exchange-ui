@@ -1,4 +1,4 @@
-import { OrderRequest, OrderSide, OrderType } from "@/types";
+import { IOrderRequest, OrderSide, OrderType } from "@/types";
 
 export function createDefaultOrderRequest(params: {
   side: OrderSide;
@@ -6,7 +6,7 @@ export function createDefaultOrderRequest(params: {
   price?: number | string;
   quantity?: number | string;
   type: OrderType;
-}): OrderRequest {
+}): IOrderRequest {
   return {
     symbol: params.symbol,
     side: params.side,

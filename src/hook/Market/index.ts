@@ -1,5 +1,5 @@
 import { getTickerBy24hr } from "@/api/service/exchange/exchange";
-import { Ticker24hrStat } from "@/types";
+import { ITicker24hrStatResponse } from "@/types";
 import worker from "@/workers";
 import { useCallback, useEffect, useState } from "react";
 import { handleTickerData } from "./utils";
@@ -13,7 +13,7 @@ import {
 } from "@/store";
 
 export function useMarketData() {
-  const [marketData, setMarketData] = useState<Ticker24hrStat[]>([]);
+  const [marketData, setMarketData] = useState<ITicker24hrStatResponse[]>([]);
 
   const uppercaseSymbol = useSelector((state: RootState) => {
     return state.symbolNameMap.uppercaseSymbol;
@@ -21,9 +21,9 @@ export function useMarketData() {
   const dispatch = useDispatch<AppDispatch>();
   // 設定當前幣對的即時價格
   const setImmediateSymbolTicker = useCallback(
-    (data: Ticker24hrStat[], init?: boolean) => {
+    (data: ITicker24hrStatResponse[], init?: boolean) => {
       const targetSymbolTicker = data.find(
-        (item: Ticker24hrStat) => item.symbol === uppercaseSymbol
+        (item: ITicker24hrStatResponse) => item.symbol === uppercaseSymbol
       );
 
       if (targetSymbolTicker) {

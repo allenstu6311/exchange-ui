@@ -1,4 +1,4 @@
-import { DepthTable } from "@/types";
+import { IDepthTable } from "./types";
 import { useEffect, useRef, useState } from "react";
 import { getDepthData } from "@/api/service/exchange/exchange";
 import { handleDepthData } from "./utils";
@@ -7,8 +7,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 
 export function useDepthData(deep = 20) {
-  const [askData, setAskData] = useState<DepthTable[]>([]);
-  const [bidsData, setBidsData] = useState<DepthTable[]>([]);
+  const [askData, setAskData] = useState<IDepthTable[]>([]);
+  const [bidsData, setBidsData] = useState<IDepthTable[]>([]);
 
   const { lowercaseSymbol, uppercaseSymbol } = useSelector((state: RootState) => {
     return state.symbolNameMap;

@@ -1,6 +1,6 @@
-import { SymbolInfoListTypes } from "@/types";
+import { ISymbolInfoListTypes } from "@/types";
 
-export interface ISymbolInfoWithPrecision extends SymbolInfoListTypes {
+export interface ISymbolInfoWithPrecision extends ISymbolInfoListTypes {
   showPrecision: number;
   tradePrecision: number;
   tickSize: number;

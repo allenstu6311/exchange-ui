@@ -1,4 +1,4 @@
-import { NumberString, Ticker24hrStat, TickerSocketData } from "@/types";
+import { NumberString, ITicker24hrStatResponse, IWsTickerSocketData } from "@/types";
 import { div } from "./calcaute";
 
 export function formatNumToFixed(
@@ -25,11 +25,11 @@ export function formatNumWithComma(num: number | string, digits = 2): string {
 }
 
 export function transformTickerData(
-  raw: TickerSocketData[],
+  raw: IWsTickerSocketData[],
   quote: string = 'USDT'
-): Partial<Ticker24hrStat>[] {
+): Partial<ITicker24hrStatResponse>[] {
   return raw
-    .map((item: TickerSocketData) => {
+    .map((item: IWsTickerSocketData) => {
       return {
         symbol: item.s,
         priceChange: item.p,

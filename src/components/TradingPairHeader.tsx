@@ -1,4 +1,4 @@
-import { Ticker24hrStat } from "@/types";
+import { ITicker24hrStatResponse } from "@/types";
 import { formatNumWithComma, formatNumToFixed } from "@/utils";
 import { RootState } from "@/store";
 import { useEffect } from "react";
@@ -11,7 +11,7 @@ export default function TradingPairHeader() {
     return state.symbolNameMap.slashSymbol;
   });
 
-  const currentMarketData: Ticker24hrStat = useSelector((state: RootState) => {
+  const currentMarketData: ITicker24hrStatResponse = useSelector((state: RootState) => {
     return state.ticker24hrData.map;
   });
 
