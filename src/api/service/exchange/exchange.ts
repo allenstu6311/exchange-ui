@@ -12,11 +12,11 @@ import {
   IAccountInfo,
   ICancelOrderRequest,
   IHistoryOrderRequest,
+  IRecentTradesResponse
 } from "@/types";
 import { getSafeTimestamp } from "@/api/utils";
 import { successToast } from "@/utils/notify";
 import { IRecentTradesRequest } from "./requestTypes";
-import { IRecentTradesResponse } from "./responseTypes";
 
 let timeOffset = 0;
 

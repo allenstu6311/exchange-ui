@@ -51,10 +51,7 @@ class WebSocketIn {
     config?: IWsConfig;
     param: any;
   }) {
-    this.closeExistingConnection(type);
-
-    
-
+    // this.closeExistingConnection(type);
     this.wsType = type;
     this.wsConfig = config || {};
     const { retry } = this.wsConfig;
@@ -79,16 +76,16 @@ class WebSocketIn {
     return this.isUnhealthy;
   }
 
-  private closeExistingConnection(type: WsType) {
-    const existingConnection = WebSocketIn.socketMap.get(type);
-    if (existingConnection) {
-      console.log(`⚠️ 發現 ${type} 已有連接，立即關閉舊連接`);
-      existingConnection.mannelClose();
-      setTimeout(() => {
-        console.log(`✅ ${type} 舊連接已清理完成`);
-      }, 100);
-    }
-  }
+  // private closeExistingConnection(type: WsType) {
+  //   const existingConnection = WebSocketIn.socketMap.get(type);
+  //   if (existingConnection) {
+  //     console.log(`⚠️ 發現 ${type} 已有連接，立即關閉舊連接`);
+  //     existingConnection.mannelClose();
+  //     setTimeout(() => {
+  //       console.log(`✅ ${type} 舊連接已清理完成`);
+  //     }, 100);
+  //   }
+  // }
 
   reset() {
     const { retry } = this.wsConfig;

@@ -1,6 +1,10 @@
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { JSX } from "@emotion/react/jsx-runtime";
 
+import { IRecentTradesResponse } from "@/api/service/exchange/responseTypes";
+
+export type { IRecentTradesResponse };
+
 export interface Ticker24hrStat {
   symbol: string; // 交易對，例如 "ETHBTC"
   priceChange: string; // 價格變化

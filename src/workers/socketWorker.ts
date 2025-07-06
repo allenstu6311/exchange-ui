@@ -5,8 +5,6 @@ import {
 } from "./utils";
 import { WorkerRequest, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
-import { delay } from "@/utils";
-
 
 const postMessage = ({ type, data, url }: WorkerRequest) => {
   self.postMessage({
@@ -47,7 +45,7 @@ self.onmessage = async (e) => {
     e.data;
   const ws = WebSocketIn.socketMap.get(type);
 
-  // 簡單的檢查機制：如果狀態不對，立即關閉
+  // 如果已經有實體只修改參數
   if (ws) {
     const wsState = ws.getWsState();
     const isUnhealthy = ws.getIsUnhealthy();

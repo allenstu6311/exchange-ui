@@ -1,22 +1,16 @@
 (進行中)
-8.最新成交
-GET /api/v3/trades
-wss://stream.binance.com:9443/ws/tusdusdt@trade
+1.圖表hover資訊補充
+6.優化Kline區域，盡量資料都拆開來
+
 
 (Fetures)
-1.圖表hover資訊補充
+1.導入測試流程
 5.table loading
-6.優化Kline區域，盡量資料都拆開來
 7.模組化table組件(拆分thead, tbody)
 9.ExSlider封裝成Hook
 11.模組化validateQuantityInput validatePriceInput
 12.無限滾動
 13.輪旬完整
 14.URL顯示幣別(存到cookie)
-15.retrty調整(攔截器有重複邏輯)
-
-
-(BUG)
-1.點很快時會產生多個websocket實體
 
 
