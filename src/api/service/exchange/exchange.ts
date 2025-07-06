@@ -1,10 +1,8 @@
 import { proxyHttp, http } from "@/api";
 import { IHistoryOrderData } from "@/hook/OrderList/types";
-import { IKlinesRequest } from "@/hook/TradeView/types";
 import {
   IDepthResponse,
   IExchangeInfoResponse,
-  ISymbolInfoListTypes,
   ITicker24hrStatResponse,
   IOrderRequest,
   ICurrentOrderResponse,
@@ -12,7 +10,8 @@ import {
   IAccountInfoResponse,
   ICancelOrderRequest,
   IHistoryOrderRequest,
-  IRecentTradesResponse
+  IRecentTradesResponse,
+  IKlinesRequest
 } from "@/types";
 import { getSafeTimestamp } from "@/api/utils";
 import { successToast } from "@/utils/notify";

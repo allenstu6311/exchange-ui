@@ -1,7 +1,7 @@
-import { IBarData, IKlineData, IKlineWsData } from "@/hook/TradeView/types";
+import { IBarData, IKlineData } from "@/hook/TradeView/types";
 import { ITicker24hrStatResponse, IWsTickerSocketData, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
-import { IWsRecentTradesResponse } from "@/types";
+import { IWsRecentTradesResponse, IKlineWsData } from "@/types";
 import dayjs from "dayjs";
 import { CandlestickData, UTCTimestamp } from "lightweight-charts";
 

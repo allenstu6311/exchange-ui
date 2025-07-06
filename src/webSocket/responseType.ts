@@ -39,3 +39,30 @@ export interface IWsTickerSocketData {
     w: string;
     x: string;
 }
+
+export interface IKlineWsData {
+    e: "kline"; // 事件類型
+    E: number; // 事件時間（ms）
+    s: string; // 交易對 (symbol)，例如 "BTCUSDT"
+    k: IKlineWsDataContent; // K 線資料本體
+}
+
+export interface IKlineWsDataContent {
+    t: number; // 開盤時間 (ms)
+    T: number; // 收盤時間 (ms)
+    s: string; // 交易對
+    i: string; // K 線間隔，例如 "1d"
+    f: number; // 本K線起始的成交ID
+    L: number; // 本K線結束的成交ID
+    o: string; // 開盤價
+    c: string; // 收盤價
+    h: string; // 最高價
+    l: string; // 最低價
+    v: string; // 成交量（base 資產數量，例如 BTC）
+    n: number; // 成交筆數
+    x: boolean; // 該K線是否已結束（true為結束）
+    q: string; // 成交金額（quote 資產數量，例如 USDT）
+    V: string; // 主動買入的成交量（以 base 計）
+    Q: string; // 主動買入的成交金額（以 quote 計）
+    B: string; // 忽略欄位，保留用
+}

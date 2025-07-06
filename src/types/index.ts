@@ -1,11 +1,9 @@
-import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { 
   IRecentTradesResponse, 
   ITicker24hrStatResponse,
   IDepthResponse,
   ISymbolInfoListTypes,
   IExchangeInfoResponse,
-  IOrderRequest,
   ICurrentOrderResponse,
   IBalance,
   ICommissionRates,
@@ -13,7 +11,8 @@ import {
 } from "@/api/service/exchange/responseTypes";
 import { 
   IWsRecentTradesResponse,
-  IWsTickerSocketData
+  IWsTickerSocketData,
+  IKlineWsData,
 } from "@/webSocket/responseType";
 import { OrderSide } from "@/api/service/exchange/shared/enum";
 import { OrderType } from "@/api/service/exchange/shared/types";
@@ -21,7 +20,9 @@ import { OrderType } from "@/api/service/exchange/shared/types";
 import { 
   ICancelOrderRequest, 
   ICurrentOrderRequest, 
-  IHistoryOrderRequest 
+  IHistoryOrderRequest,
+  IOrderRequest,
+  IKlinesRequest
 } from "@/api/service/exchange/requestTypes";
 
 export type { 
@@ -40,7 +41,9 @@ export type {
   IHistoryOrderRequest,
   IBalance,
   ICommissionRates,
-  IAccountInfoResponse
+  IAccountInfoResponse,
+  IKlinesRequest,
+  IKlineWsData
 };
 
 export {
