@@ -32,6 +32,10 @@ class WebSocketIn {
 
   static socketMap: Map<string, WebSocketIn> = new Map();
 
+  private isUnhealthy: boolean = false;
+
+  private retryCount: number = 0;
+
   constructor({
     url,
     type,
@@ -49,14 +53,30 @@ class WebSocketIn {
   }) {
     this.closeExistingConnection(type);
 
+    
+
     this.wsType = type;
     this.wsConfig = config || {};
+    const { retry } = this.wsConfig;
+    this.retryCount = retry || 0;
+
     this.requestURL = url;
     this.middleware = middleware;
     this.postMessage = postMessage;
     this.wsParam = param;
     WebSocketIn.socketMap.set(this.wsType, this);
     this.setupWebSocket();
+  }
+  getWsState() {
+    return this.ws?.readyState;
+  }
+
+  getPrevParam() {
+    return this.wsParam;
+  }
+
+  public getIsUnhealthy() {
+    return this.isUnhealthy;
   }
 
   private closeExistingConnection(type: WsType) {
@@ -70,12 +90,19 @@ class WebSocketIn {
     }
   }
 
+  reset() {
+    const { retry } = this.wsConfig;
+    this.isUnhealthy = false;
+    this.retryCount = retry || 0;
+  }
+
   setupWebSocket() {
+    if (this.isManualClose) return;
     this.ws = new WebSocket("wss://stream.binance.com:9443/stream");
 
     this.ws.onopen = () => {
       this.lastTime = Date.now();
-      if(!this.heartbeatTimer){
+      if (!this.heartbeatTimer) {
         this.startHeartbeatCheck();
       }
       console.log(`✅ ${this.wsType} 已連線`);
@@ -87,6 +114,7 @@ class WebSocketIn {
       // console.log("onmessage",WebSocketIn.socketMap);
       this.lastTime = Date.now();
       let wsData = JSON.parse(event.data);
+
       if (wsData.result === null && typeof wsData.id === "number") {
         return;
       }
@@ -94,12 +122,14 @@ class WebSocketIn {
       if (this.middleware?.length) {
         wsData = this.middleware.reduce((acc, fn) => fn(acc), wsData);
       }
-    
+
       this.postMessage({
         type: this.wsType,
         data: wsData,
         url: this.requestURL,
       });
+
+      this.reset();
     };
 
     this.ws.onerror = (error) => {
@@ -108,21 +138,10 @@ class WebSocketIn {
     };
 
     this.ws.onclose = () => {
-      if (this.isManualClose) {
-        this.isManualClose = false;
-        return
-      };
+      if (this.isManualClose) return;
       console.log(`🔄 ${this.wsType} 即將重新連線`);
       this.reconnect();
     };
-  }
-
-  getWsState() {
-    return this.ws?.readyState;
-  }
-
-  getPrevParam() {
-    return this.wsParam;
   }
 
   public sendMessage(data: string) {
@@ -130,15 +149,15 @@ class WebSocketIn {
       console.warn(`⚠️ ${this.wsType} 連接未就緒，無法發送消息`);
       return;
     }
-    this.wsParam  = JSON.parse(data).params;
+    this.wsParam = JSON.parse(data).params;
     this.ws?.send(data);
   }
 
   reconnect() {
-    if (this.wsConfig.retry && this.wsConfig.retry > 0) {
-      this.wsConfig.retry -= 1;
+    if (this.retryCount && this.retryCount > 0) {
+      this.retryCount -= 1;
       const delay = 3000;
-      console.log(`🔄 ${this.wsType} 重試中，剩餘次數: ${this.wsConfig.retry}`);
+      console.log(`🔄 ${this.wsType} 重試中，剩餘次數: ${this.retryCount}`);
       setTimeout(() => {
         this.setupWebSocket();
       }, delay);
@@ -150,6 +169,7 @@ class WebSocketIn {
 
   public mannelClose() {
     this.isManualClose = true;
+    WebSocketIn.socketMap.delete(this.wsType);
     this.close();
   }
 
@@ -162,8 +182,8 @@ class WebSocketIn {
 
   }
 
-  private cleanup() {
-    WebSocketIn.socketMap.delete(this.wsType);
+  cleanup() {
+    // WebSocketIn.socketMap.delete(this.wsType);
     clearInterval(this.heartbeatTimer);
     this.heartbeatTimer = null;
   }
@@ -173,15 +193,16 @@ class WebSocketIn {
       const currTime = Date.now();
       if (currTime - this.lastTime > 5000) {
         console.log(`💔 心跳停止 ${this.wsType} 結束連線`);
+        this.isUnhealthy = true;
         this.close();
       }
     }, 30 * 1000);
   }
 
   isConnectionHealthy(): boolean {
-    return this.ws !== null && 
-           this.ws.readyState === WebSocket.OPEN && 
-           !this.isManualClose;
+    return this.ws !== null &&
+      this.ws.readyState === WebSocket.OPEN &&
+      !this.isManualClose;
   }
 }
 

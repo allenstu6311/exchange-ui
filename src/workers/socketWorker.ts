@@ -5,6 +5,7 @@ import {
 } from "./utils";
 import { WorkerRequest, WsType } from "@/types";
 import WebSocketIn from "@/webSocket";
+import { delay } from "@/utils";
 
 
 const postMessage = ({ type, data, url }: WorkerRequest) => {
@@ -45,22 +46,32 @@ self.onmessage = async (e) => {
   const { type, url, param }: { type: WsType; url: string; param: any } =
     e.data;
   const ws = WebSocketIn.socketMap.get(type);
-  
+
   // 簡單的檢查機制：如果狀態不對，立即關閉
   if (ws) {
     const wsState = ws.getWsState();
+    const isUnhealthy = ws.getIsUnhealthy();
     // 檢查連接狀態是否正常
     if (wsState === WebSocket.OPEN) {
       // 連接正常，檢查參數是否需要更新
       const prevParam = ws.getPrevParam();
       const paramChanged = JSON.stringify(prevParam) !== JSON.stringify(param);
-      
+
       if (paramChanged) {
         console.log(`🔄 ${type} 參數變更，更新訂閱`);
         ws.sendMessage(createUnsubscribeMessage(prevParam));
         ws.sendMessage(createSubscribeMessage(param));
       }
-    } 
+    }else if(isUnhealthy){
+      // 不健康的連線(心跳停止等等...)，關閉重啟
+      ws.mannelClose();
+      createNewConnection({
+        type,
+        url,
+        param,
+        postMessage,
+      });
+    }
   } else{
     // 沒有連接，創建新連接
     createNewConnection({
