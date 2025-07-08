@@ -1,4 +1,4 @@
-import { UTCTimestamp } from "lightweight-charts";
+import { OhlcData, Time, UTCTimestamp } from "lightweight-charts";
 
 export type KlineTuple = [
   number, // 0: openTime - 開盤時間（毫秒時間戳）
@@ -32,4 +32,15 @@ export interface IBarData {
   time: UTCTimestamp;
   value: number;
   color: string;
+}
+
+export interface IMaData {
+  ma7: number;
+  ma25: number;
+  ma99: number;
+}
+
+export interface ISetLegendsData {
+  setOhlcData: React.Dispatch<React.SetStateAction<OhlcData<Time>>>;
+  setMaData: React.Dispatch<React.SetStateAction<IMaData>>;
 }

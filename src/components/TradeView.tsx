@@ -1,35 +1,69 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useKlineData, useKlineChart } from "@/hook/TradeView";
-import { IKlineData } from "@/hook/TradeView/types";
-import { OhlcData, UTCTimestamp } from "lightweight-charts";
+import { IKlineData, IMaData, ISetLegendsData } from "@/hook/TradeView/types";
+import { OhlcData, Time, UTCTimestamp } from "lightweight-charts";
 import dayjs from "dayjs";
 import { formatNumToFixed } from "@/utils";
 import { RootState } from "@/store";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
+import { getMaData } from "@/hook/TradeView/utils";
+import { log } from "console";
 
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
-  const [legendsData, setLegendsData] = useState<OhlcData>();
+  const [ohlcData, setOhlcData] = useState<OhlcData>(
+    {
+      open: 0,
+      high: 0,
+      low: 0,
+      close: 0,
+      time: 0 as Time,
+    }
+  );
+  const [maData, setMaData] = useState<IMaData>({
+    ma7: 0,
+    ma25: 0,
+    ma99: 0,
+  });
   const { KlineData, WsKlineData, barData, WsBarData } =
-    useKlineData(setLegendsData);
+    useKlineData(setOhlcData);
 
-  const latestKlineDataRef = useRef<any>(null);
+  const latestKlineDataRef = useRef<OhlcData>({
+    open: 0,
+    high: 0,
+    low: 0,
+    close: 0,
+    time: 0 as Time,
+  });
+
+  const klineDataRef = useRef(KlineData);
 
   const { lineSeries, barSeries } = useKlineChart(
     chartContainerRef?.current,
     setLegendsData,
-    resetLegendsData
+    resetLegendsData,
+    klineDataRef
   );
 
+  function setLegendsData(): ISetLegendsData {
+    return {
+      setOhlcData,
+      setMaData
+    }
+  }
+
   function resetLegendsData() {
-    setLegendsData(latestKlineDataRef.current);
+    setOhlcData(latestKlineDataRef.current);
+    setMaData(getMaData(klineDataRef.current, latestKlineDataRef.current));
   }
 
   useEffect(() => {
     if (KlineData.length) {
       lineSeries?.setData(KlineData);
       latestKlineDataRef.current = KlineData[KlineData.length - 1];
+      klineDataRef.current = KlineData;
+      setMaData(getMaData(klineDataRef.current, latestKlineDataRef.current));
     }
   }, [KlineData, lineSeries]);
 
@@ -42,10 +76,11 @@ export default function TradeView() {
   useEffect(() => {
     if (WsKlineData?.time) {
       lineSeries?.update(WsKlineData);
-      setLegendsData(WsKlineData);
+      setOhlcData(WsKlineData);
+      setMaData(getMaData(klineDataRef.current, WsKlineData));
       latestKlineDataRef.current = WsKlineData;
     }
-  }, [WsKlineData, lineSeries]);
+  }, [WsKlineData, lineSeries, KlineData]);
 
   useEffect(() => {
     if (WsBarData.time) {
@@ -57,13 +92,19 @@ export default function TradeView() {
     <>
       <div className="w-full h-full relative">
         <div className="w-full h-full" ref={chartContainerRef}></div>
-        <Legends data={legendsData} />
+        <Legends ohlcData={ohlcData} maData={maData} />
       </div>
     </>
   );
 }
 
-export function Legends({ data }: { data: OhlcData | undefined }) {
+export function Legends({ 
+  ohlcData,
+  maData
+}: { 
+  ohlcData: OhlcData
+  maData: IMaData
+}) {
   const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
     (state: RootState) => {
       return state.symbolInfoList.currentSymbolInfo;
@@ -71,42 +112,79 @@ export function Legends({ data }: { data: OhlcData | undefined }) {
   );
   const { showPrecision } = currSymbolInfo;
 
-  if (!data) return;
+  if (!ohlcData || !maData) return;
 
-  const LegendsData = [
+  const ohlcList = [
     {
       label: "開盤價",
-      value: data?.open,
+      value: ohlcData?.open,
     },
     {
       label: "最高價",
-      value: data?.high,
+      value: ohlcData?.high,
     },
     {
       label: "最低價",
-      value: data?.low,
+      value: ohlcData?.low,
     },
     {
       label: "收盤價",
-      value: data?.close,
+      value: ohlcData?.close,
     },
   ];
 
+  const isRise = ohlcData?.close > ohlcData?.open;
+
+  const MAList = [
+    {
+      label: "MA(7)",
+      value: maData?.ma7,
+      color: 'text-orange'
+    },
+    {
+      label: "MA(25)",
+      value: maData?.ma25,
+      color: 'text-pink'
+    },
+    {
+      label: "MA(99)",
+      value: maData?.ma99,
+      color: 'text-purple'
+    },
+  ]
+  const commonLegendStyle = "px-5px absolute left-10px z-10 flex gap-10px text-16px font-mono fw-400 hover:border-2px hover:border-grey";
   return (
-    <div className="absolute top-5px left-10px z-10 flex gap-5px text-14px  font-mono">
-      <div className="">
-        <p>{dayjs(new Date()).format("YYYY/MM/DD")}</p>
+    <>
+      {/* 當前行情 */}
+      <div className={`top-5px ${commonLegendStyle}`}>
+        <div className="">
+          <p>{dayjs(new Date()).format("YYYY/MM/DD")}</p>
+        </div>
+        {ohlcList.map((item, index) => {
+          return (
+            <div className="flex ga-3px" key={index}>
+              <p>{item.label}: </p>
+              <p className={`min-w-[80px] ${isRise ? 'text-rise' : 'text-fall'}`}>
+                {formatNumToFixed(item.value, showPrecision)}
+              </p>
+            </div>
+          );
+        })}
       </div>
-      {LegendsData.map((item, index) => {
-        return (
-          <div className="flex ga-3px" key={index}>
-            <p>{item.label}: </p>
-            <p className="text-rise  min-w-[80px]">
-              {formatNumToFixed(item.value, showPrecision)}
-            </p>
-          </div>
-        );
-      })}
-    </div>
+      {/* 移動平均線 MA */}
+      <div className={`top-35px ${commonLegendStyle}`}>
+        {MAList.map((item, index) => {
+          return (
+            <div className="flex ga-3px" key={index}>
+              <p>{item.label}: </p>
+              <p className={`${item.color} min-w-[80px]`}>
+                {formatNumToFixed(item.value, showPrecision)}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </>
+
   );
 }

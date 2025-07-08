@@ -1,4 +1,4 @@
-import { IBarData, IKlineData, KlineTuple } from "./types";
+import { IBarData, IKlineData, IMaData, KlineTuple } from "./types";
 import dayjs from "dayjs";
 import {
   CandlestickSeries,
@@ -7,6 +7,7 @@ import {
   createChart,
   DeepPartial,
   HistogramSeries,
+  OhlcData,
   SeriesPartialOptionsMap,
   UTCTimestamp,
 } from "lightweight-charts";
@@ -93,4 +94,30 @@ export function generateKlineChart(
   // chart.timeScale().fitContent();
 
   return { candlestickSeries, volumeSeries, chart };
+}
+
+export function calculateMA(KlineData: IKlineData[], lineData: OhlcData, period: number): number {
+  const { time } = lineData;
+  const hoveredIndex = KlineData.findIndex(d => d.time === time);
+  // console.log('hoveredIndex',hoveredIndex);
+  const startIndex = hoveredIndex - period + 1;
+  const endIndex = hoveredIndex + 1; // slice 需要+1
+  const range = KlineData.slice(startIndex, endIndex);
+  const sum = range.reduce((acc, curr) => acc + curr.close, 0);
+  const ma = sum / period;
+  return ma;
+}
+
+export function getMaData(KlineData: IKlineData[], lineData: OhlcData): IMaData {
+  const ma7 = calculateMA(KlineData, lineData, 7);
+  const ma25 = calculateMA(KlineData, lineData, 25);
+  const ma99 = calculateMA(KlineData, lineData, 99);
+
+   const { time } = lineData;
+  //  console.log('lineData',lineData,'time',time);
+  return {
+    ma7,
+    ma25,
+    ma99,
+  }
 }

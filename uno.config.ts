@@ -4,8 +4,8 @@ export default defineConfig({
   // ...UnoCSS options
   theme: {
     colors: {
-      rise: "#F6465D",
-      fall: "#2EBD85",
+      rise: "#2EBD85",
+      fall: "#F6465D",
     },
   },
 });

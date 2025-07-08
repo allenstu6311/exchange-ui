@@ -1,17 +1,18 @@
-import { klineTimelyData } from "./../../store/kline";
 import { getKlinesData } from "@/api/service/exchange/exchange";
 import { AppDispatch, RootState, setKlineTimelyData } from "@/store";
-import { IBarData, IKlineData } from "./types";
+import { IBarData, IKlineData, ISetLegendsData } from "./types";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  calculateMA,
   generateKlineChart,
+  getMaData,
   transformBarData,
   transformKlineData,
 } from "./utils";
 import worker from "@/workers";
 import {
-  BarData,
+  HistogramData,
   IChartApi,
   ISeriesApi,
   OhlcData,
@@ -22,7 +23,7 @@ import { ISymbolInfoWithPrecision } from "../Market/types";
 
 export function useKlineData(
   setLegendsData: React.Dispatch<
-    React.SetStateAction<OhlcData<Time> | undefined>
+    React.SetStateAction<OhlcData<Time>>
   >
 ) {
   const [KlineData, setKlineData] = useState<IKlineData[]>([]);
@@ -34,16 +35,12 @@ export function useKlineData(
     color: "",
   });
 
-  const uppercaseSymbol = useSelector((state: RootState) => {
-    return state.symbolNameMap.uppercaseSymbol;
-  });
-
-  const lowercaseSymbol = useSelector((state: RootState) => {
-    return state.symbolNameMap.lowercaseSymbol;
+  const { lowercaseSymbol, uppercaseSymbol } = useSelector((state: RootState) => {
+    return state.symbolNameMap;
   });
 
   const setLegendsDataRef =
-    useRef<React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>>(
+    useRef<React.Dispatch<React.SetStateAction<OhlcData<Time>>>>(
       setLegendsData
     );
 
@@ -98,10 +95,9 @@ export function useKlineData(
 
 export function useKlineChart(
   container: HTMLElement | null,
-  setLegendsData: React.Dispatch<
-    React.SetStateAction<OhlcData<Time> | undefined>
-  >,
-  resetLegendsData: () => void
+  setLegendsData: () => ISetLegendsData,
+  resetLegendsData: () => void,
+  KlineData: any
 ) {
   const chartRef = useRef<IChartApi>(null);
   const [lineSeries, setLineSeries] =
@@ -112,17 +108,14 @@ export function useKlineChart(
     return state.symbolNameMap.uppercaseSymbol;
   });
 
-  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+  const { showPrecision, tickSize }: ISymbolInfoWithPrecision = useSelector(
     (state: RootState) => {
       return state.symbolInfoList.currentSymbolInfo;
     }
   );
-  const { showPrecision, tickSize } = currSymbolInfo;
+
   const resetLegendsDataRef = useRef<() => void>(resetLegendsData);
-  const setLegendsDataRef =
-    useRef<React.Dispatch<React.SetStateAction<OhlcData<Time> | undefined>>>(
-      setLegendsData
-    );
+  const setLegendsDataRef = useRef<() => ISetLegendsData>(setLegendsData);
 
   useEffect(() => {
     if (container) {
@@ -145,8 +138,13 @@ export function useKlineChart(
 
       chart.subscribeCrosshairMove((param) => {
         if (param.time) {
-          const data = param.seriesData.get(candlestickSeries) as OhlcData;
-          setLegendsDataRef.current(data);
+          const { setOhlcData, setMaData } = setLegendsDataRef.current();
+          const lineData = param.seriesData.get(candlestickSeries) as OhlcData;
+          const barData = param.seriesData.get(volumeSeries) as HistogramData;
+          setOhlcData(lineData);
+          setMaData(getMaData(KlineData.current, lineData));
+          // setBarDataRef.current(barData);
+
         } else {
           // 滑鼠離開圖表返回父層重製數據
           resetLegendsDataRef.current();

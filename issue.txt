@@ -1,11 +1,12 @@
 (進行中)
-1.圖表hover資訊補充
-6.優化Kline區域，盡量資料都拆開來
+1.圖表hover資訊補充(數量平均線)
+
 
 
 (Fetures)
 1.導入測試流程
 5.table loading
+6.優化Kline區域，盡量資料都拆開來
 7.模組化table組件(拆分thead, tbody)
 9.ExSlider封裝成Hook
 11.模組化validateQuantityInput validatePriceInput
