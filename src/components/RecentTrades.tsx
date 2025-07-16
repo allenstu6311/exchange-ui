@@ -12,7 +12,6 @@ import worker from "@/workers";
 
 function RecentTrades() {
     const [recentTrades, setRecentTrades] = useState<IRecentTradesResponse[]>([]);
-
     const { lowercaseSymbol, uppercaseSymbol } = useSelector((state: RootState) => {
         return state.symbolNameMap;
     });
@@ -26,7 +25,8 @@ function RecentTrades() {
     const {
         baseAsset,
         quoteAsset,
-        showPrecision
+        showPrecision,
+        tradePrecision
     } = currSymbolInfo;
 
     const columns = [
@@ -34,7 +34,7 @@ function RecentTrades() {
             label: `價格(${quoteAsset})`,
             key: "price",
             render: (content: number, item: IRecentTradesResponse, columnIndex: number) => {
-                return <div className={`${item.isBuyerMaker ? 'text-rise' : 'text-fall'}`}>
+                return <div className={`${item.isBuyerMaker ? 'text-fall' : 'text-rise'}`}>
                     {formatNumToFixed(item.price, showPrecision)}
                 </div>
 
@@ -43,16 +43,17 @@ function RecentTrades() {
         {
             label: `數量(${baseAsset})`,
             key: "qty",
-            render: (content: number, item: IRecentTradesResponse, columnIndex: number) => {
-                return <div className={`${item.isBuyerMaker ? 'text-rise' : 'text-fall'}`}>
-                    {formatNumToFixed(item.qty, showPrecision)}
-                </div>
-            },
+            format: (val: number) => formatNumToFixed(val, tradePrecision),
+            // render: (content: number, item: IRecentTradesResponse, columnIndex: number) => {
+            //     return <div className={`${item.isBuyerMaker ? 'text-rise' : 'text-fall'}`}>
+            //         {formatNumToFixed(item.qty, tradePrecision)}
+            //     </div>
+            // },
         },
         {
             label: '時間',
             key: "time",
-            format: (val: number) => dayjs(val).format('HH:mm:ss'),
+            format: (val: number) => dayjs(Number(val)).format('HH:mm:ss'),
         }
     ];
 
@@ -75,7 +76,6 @@ function RecentTrades() {
         const getRecentTradesIn = async () => {
             const res = await getRecentTrades({ symbol: uppercaseSymbol });
             setRecentTrades(res.data);
-
             worker.postMessage({
                 type: "trades",
                 param: [`${lowercaseSymbol}@trade`],
@@ -85,7 +85,7 @@ function RecentTrades() {
         function handleWsTrades(response: MessageEvent) {
             const { type, data } = response.data;
             if (type === "trades") {
-                setRecentTrades((prev) => [data, ...prev.slice(0, 49)]);
+                setRecentTrades((prev) => [data, ...prev].slice(0, 49));
             }
         }
 
