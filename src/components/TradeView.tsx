@@ -26,6 +26,7 @@ export default function TradeView() {
     ma25: 0,
     ma99: 0,
   });
+
   const { KlineData, WsKlineData, barData, WsBarData } =
     useKlineData(setOhlcData);
 
@@ -83,7 +84,7 @@ export default function TradeView() {
   }, [WsKlineData, lineSeries, KlineData]);
 
   useEffect(() => {
-    if (WsBarData.time) {
+    if (WsBarData?.time) {
       barSeries?.update(WsBarData);
     }
   }, [WsBarData, barSeries]);

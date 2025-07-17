@@ -54,6 +54,7 @@ export function transformVolumFromWs(data: IKlineWsData): IBarData {
   return {
     time: Math.floor(k.t / 1000) as UTCTimestamp,
     value: parseFloat(k.v),
+    quoteVolume: parseFloat(k.q),
     color: parseFloat(k.c) >= parseFloat(k.o) ? "#26a69a" : "#ef5350", // or custom logic
   };
 }

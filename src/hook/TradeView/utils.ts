@@ -40,6 +40,7 @@ export function transformBarData(data: KlineTuple[]): IBarData[] {
       time: Math.floor(item[0] / 1000) as UTCTimestamp, // 轉換成秒為單位、、
       value: parseFloat(item[5]),
       color: parseFloat(item[4]) >= parseFloat(item[1]) ? "#26a69a" : "#ef5350", // or custom logic
+      quoteVolume: parseFloat(item[5]),
     };
   });
 }

@@ -32,6 +32,7 @@ export interface IBarData {
   time: UTCTimestamp;
   value: number;
   color: string;
+  quoteVolume: number;
 }
 
 export interface IMaData {

@@ -29,11 +29,7 @@ export function useKlineData(
   const [KlineData, setKlineData] = useState<IKlineData[]>([]);
   const [WsKlineData, setWsKlineData] = useState<IKlineData | null>();
   const [barData, setBarData] = useState<IBarData[]>([]);
-  const [WsBarData, setWsBarData] = useState<IBarData>({
-    time: 0 as UTCTimestamp,
-    value: 0,
-    color: "",
-  });
+  const [WsBarData, setWsBarData] = useState<IBarData | null>(null)
 
   const { lowercaseSymbol, uppercaseSymbol } = useSelector((state: RootState) => {
     return state.symbolNameMap;
@@ -144,6 +140,7 @@ export function useKlineChart(
           setOhlcData(lineData);
           setMaData(getMaData(KlineData.current, lineData));
           // setBarDataRef.current(barData);
+          // console.log('barData', barData);
 
         } else {
           // 滑鼠離開圖表返回父層重製數據
