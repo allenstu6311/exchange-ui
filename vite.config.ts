@@ -8,10 +8,6 @@ import { getSignature } from "./server/util";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import express from "express";
 
-
-
-
-
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
@@ -27,45 +23,54 @@ export default defineConfig({
       configureServer(server) {
         const app = express();
         server.middlewares.use(app)
-        server.middlewares.use(bodyParser.urlencoded({ extended: true }))
-        server.middlewares.use('/proxy', createProxyMiddleware({
-          target: "https://testnet.binance.vision/api/v3",
-          changeOrigin: true,
-          pathRewrite: { "^/proxy": "" },
-          on: {
-            proxyReq: (proxyReq, req: any, res) => {
-              if (req.method !== 'GET') {
-                const signedQuery = getSignature(req.body);
-                proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
-                proxyReq.setHeader("Content-Type", "application/x-www-form-urlencoded");
-                proxyReq.setHeader("Content-Length", Buffer.byteLength(signedQuery));
-                proxyReq.write(signedQuery);
-                proxyReq.end();
-              }
-            },
-          },
-        }));
+        app.use(bodyParser.urlencoded({ extended: true }))
 
-        app.use("/proxy", async (req, res, next) => {
-          const { query, method, body } = req;
-          if (method === "GET") {
-            req.headers['X-MBX-APIKEY'] = process.env.API_KEY || '';
-            const signedQuery = getSignature(query);
-            req.url = `${req.path}?${signedQuery}`;
-          }
-          next();
-        });
+        app.use(
+          "/proxy",
+          createProxyMiddleware({
+            target: "https://testnet.binance.vision/api/v3",
+            changeOrigin: true,
+            pathRewrite: {
+              "^/proxy": "", // 把 /proxy 移除掉，讓它變成 /myTrades, /account
+            },
+            on: {
+              proxyReq: async (proxyReq, req: any, res, next) => {
+                const { method, body, query } = req;
+                proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
+               
+                if (method !== 'GET') {
+                  const signature = getSignature(body);
+                  proxyReq.setHeader(
+                    "Content-Type",
+                    "application/x-www-form-urlencoded"
+                  );
+                  proxyReq.setHeader("Content-Length", Buffer.byteLength(signature));
+                  proxyReq.write(signature);
+                  proxyReq.end();
+                } else {
+                  const signature = getSignature(query);
+                  
+                  // 修改 URL，添加簽名
+                  const pathWithoutQuery = proxyReq.path.split('?')[0];
+                  proxyReq.path = pathWithoutQuery + '?' + signature;
+                }
+              },
+            },
+          })
+        );
+
+
       }
     }
   ],
-  // server: {
-  //   proxy: {
-  //     "/proxy": {
-  //       // target: "https://testnet.binance.vision/api/v3",
-  //       target: "http://localhost:5173/proxy",
-  //       changeOrigin: true,
-  //       // rewrite: (path) => path.replace(/^\/proxy/, ""),
-  //     },
-  //   },
-  // },
+  server: {
+    proxy: {
+      "/proxy": {
+        // target: "https://testnet.binance.vision/api/v3",
+        target: "http://localhost:3000/proxy",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/proxy/, ""),
+      },
+    },
+  },
 });
