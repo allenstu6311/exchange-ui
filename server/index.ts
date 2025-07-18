@@ -51,10 +51,7 @@ app.use(
         proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
         if (method === "POST" || method === "DELETE") {
           const signature = getSignature(body);
-          /**
-           * 不知為何一定要在前端設置Header才有用
-           * 但是用服務器就有效果
-           */
+
           proxyReq.setHeader(
             "Content-Type",
             "application/x-www-form-urlencoded"
