@@ -26,9 +26,9 @@ const defaultConfig: AxiosRequestConfig = {
 const proxyConfig: AxiosRequestConfig = {
   baseURL: "/proxy",
   timeout: 10000,
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-  },
+  // headers: {
+  //   "Content-Type": "application/x-www-form-urlencoded",
+  // },
 };
 
 type MiddlewareResult<T = any> = T | Promise<T>;

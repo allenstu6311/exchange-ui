@@ -24,8 +24,8 @@ if (!fs.existsSync(distPath)) {
 }
 app.use(express.static(distPath));
 // app.use(express.json());
-// app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(
   "/proxy",
@@ -42,10 +42,6 @@ app.use(
        
         if (method !== 'GET') {
           const signature = getSignature(body);
-          proxyReq.setHeader(
-            "Content-Type",
-            "application/x-www-form-urlencoded"
-          );
           proxyReq.setHeader("Content-Length", Buffer.byteLength(signature));
           proxyReq.write(signature);
           proxyReq.end();

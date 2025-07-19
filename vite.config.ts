@@ -23,7 +23,7 @@ export default defineConfig({
       configureServer(server) {
         const app = express();
         server.middlewares.use(app)
-        app.use(bodyParser.urlencoded({ extended: true }))
+        app.use(bodyParser.json())
 
         app.use(
           "/proxy",
@@ -40,10 +40,6 @@ export default defineConfig({
                
                 if (method !== 'GET') {
                   const signature = getSignature(body);
-                  proxyReq.setHeader(
-                    "Content-Type",
-                    "application/x-www-form-urlencoded"
-                  );
                   proxyReq.setHeader("Content-Length", Buffer.byteLength(signature));
                   proxyReq.write(signature);
                   proxyReq.end();
