@@ -63,14 +63,14 @@ export default defineConfig({
       }
     }
   ],
-  server: {
-    proxy: {
-      "/proxy": {
-        // target: "https://testnet.binance.vision/api/v3",
-        target: "http://localhost:3000/proxy",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/proxy/, ""),
-      },
-    },
-  },
+  // server: {
+  //   proxy: {
+  //     "/proxy": {
+  //       // target: "https://testnet.binance.vision/api/v3",
+  //       target: "http://localhost:3000/proxy",
+  //       changeOrigin: true,
+  //       rewrite: (path) => path.replace(/^\/proxy/, ""),
+  //     },
+  //   },
+  // },
 });

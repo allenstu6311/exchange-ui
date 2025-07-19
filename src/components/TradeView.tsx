@@ -8,7 +8,6 @@ import { RootState } from "@/store";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
 import { getMaData } from "@/hook/TradeView/utils";
-import { log } from "console";
 
 export default function TradeView() {
   const chartContainerRef = useRef<HTMLDivElement>(null); // 這裡取得 DOM
@@ -41,7 +40,7 @@ export default function TradeView() {
   const klineDataRef = useRef(KlineData);
 
   const { lineSeries, barSeries } = useKlineChart(
-    chartContainerRef?.current,
+    chartContainerRef,
     setLegendsData,
     resetLegendsData,
     klineDataRef

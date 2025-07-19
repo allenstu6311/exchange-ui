@@ -1,7 +1,7 @@
 import { getKlinesData } from "@/api/service/exchange/exchange";
 import { AppDispatch, RootState, setKlineTimelyData } from "@/store";
 import { IBarData, IKlineData, ISetLegendsData } from "./types";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   calculateMA,
@@ -90,18 +90,14 @@ export function useKlineData(
 }
 
 export function useKlineChart(
-  container: HTMLElement | null,
+  container: React.RefObject<HTMLDivElement | null>,
   setLegendsData: () => ISetLegendsData,
   resetLegendsData: () => void,
-  KlineData: any
+  KlineData: React.RefObject<IKlineData[]>
 ) {
-  const chartRef = useRef<IChartApi>(null);
-  const [lineSeries, setLineSeries] =
-    useState<ISeriesApi<"Candlestick", Time>>();
-  const [barSeries, setBarSeries] = useState<ISeriesApi<"Histogram", Time>>();
-
-  const uppercaseSymbol = useSelector((state: RootState) => {
-    return state.symbolNameMap.uppercaseSymbol;
+  // Redux
+  const { uppercaseSymbol } = useSelector((state: RootState) => {
+    return state.symbolNameMap;
   });
 
   const { showPrecision, tickSize }: ISymbolInfoWithPrecision = useSelector(
@@ -110,28 +106,45 @@ export function useKlineChart(
     }
   );
 
+  // 圖表
+  const chartRef = useRef<IChartApi>(null);
+  const [lineSeries, setLineSeries] =
+    useState<ISeriesApi<"Candlestick", Time>>();
+  const [barSeries, setBarSeries] = useState<ISeriesApi<"Histogram", Time>>();
+
+  // 價格格式
+  const priceFormat = useMemo(() => {
+    return {
+      precision: showPrecision,
+      minMove: tickSize,
+    };
+  }, [showPrecision, tickSize]);
+
+  // 重製數據
   const resetLegendsDataRef = useRef<() => void>(resetLegendsData);
+  // 設定數據
   const setLegendsDataRef = useRef<() => ISetLegendsData>(setLegendsData);
 
   useEffect(() => {
-    if (container) {
-      container.innerHTML = "";
+    if (container.current) {
+      container.current.innerHTML = "";
       if (chartRef.current) {
         chartRef.current.remove();
       }
-
+      const { precision, minMove } = priceFormat;
       const { candlestickSeries, chart, volumeSeries } = generateKlineChart(
-        container,
+        container.current,
         {
           priceFormat: {
-            precision: showPrecision,
-            minMove: tickSize,
+            precision,
+            minMove,
           },
         }
       );
       setLineSeries(candlestickSeries);
       setBarSeries(volumeSeries);
 
+      // 滑鼠移動時，更新數據
       chart.subscribeCrosshairMove((param) => {
         if (param.time) {
           const { setOhlcData, setMaData } = setLegendsDataRef.current();
@@ -149,7 +162,7 @@ export function useKlineChart(
       });
       chartRef.current = chart;
     }
-  }, [uppercaseSymbol, container]);
+  }, [uppercaseSymbol, KlineData, container, priceFormat]);
 
   return { lineSeries, barSeries };
 }
