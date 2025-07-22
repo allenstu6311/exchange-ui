@@ -1,5 +1,7 @@
-import { add, div, formatNumToFixed, mul } from "@/utils";
+import { formatNumToFixed } from "@/utils";
 import {
+  FormControl,
+  FormErrorMessage,
   Input,
   InputGroup,
   InputRightElement,
@@ -9,34 +11,18 @@ import {
   SliderThumb,
   SliderTrack,
 } from "@chakra-ui/react";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
 import {
   ExFormEnum,
-  IExForm,
   IFormRef,
-  IExFormValidate,
-  InputKey,
-  IPrecisionMap,
-  IQuanityValidate,
 } from "./types";
-import {
-  getErrorMsg,
-  validateForm,
-  validatePriceInput,
-  validateQuantityInput,
-} from "./validate";
 import { ISymbolInfoWithPrecision } from "@/hook/Market/types";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import {
-  getCurrentPrice,
-  handleAmountInput,
-  handlePriceInput,
-  handleQuantityInput,
-  handleSilderInput,
-} from "./utils";
-import { validatePrecision } from "@/utils/general";
 import { OrderSide } from "@/types";
+import useExFormValue from "./hook/useExFormValue";
+import useExFormCalculation from "./hook/useExFormCalculation";
+import useExFormValidate from "./hook/useExFormValidate";
 
 const ExForm = forwardRef(function ExForm(
   {
@@ -52,70 +38,48 @@ const ExForm = forwardRef(function ExForm(
   },
   ref: React.Ref<IFormRef>
 ) {
-  const [amount, setAmount] = useState<string>("");
-  const [isDragging, setIsDragging] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0);
-  const [formData, setFormData] = useState<IExForm>({
-    price: "",
-    quantity: "",
-  });
 
-  const [validationMap, setValidationMap] = useState<IExFormValidate>({
-    ...validateForm,
-  });
-
-  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+  const { showPrecision }: ISymbolInfoWithPrecision = useSelector(
     (state: RootState) => {
       return state.symbolInfoList.currentSymbolInfo;
     }
   );
 
-  const symbolMap = useSelector((state: RootState) => {
+  const { lastPrice = "0" } = useSelector((state: RootState) => {
+    return state.ticker24hrData.cacheMap;
+});
+
+  const { minNotional }: ISymbolInfoWithPrecision = useSelector(
+    (state: RootState) => {
+      return state.symbolInfoList.currentSymbolInfo;
+    }
+  );
+
+  const { base, quote } = useSelector((state: RootState) => {
     return state.symbolNameMap;
   });
 
-  const cacheTickerData = useSelector((state: RootState) => {
-    return state.ticker24hrData.cacheMap;
-  });
-  const { lastPrice = "0" } = cacheTickerData;
 
-  const { base, quote } = symbolMap;
-  const { showPrecision, tradePrecision, quoteAssetPrecision, minNotional } =
-    currSymbolInfo;
+  const { updateField, formData, resetField } = useExFormValue();
+
+  const { calculateEffect } = useExFormCalculation({
+    formData,
+    isMarket,
+    updateField,
+    assets,
+  });
+
+  const { validationMap, validateInput, getErrorMsg, validateAll } = useExFormValidate(formData, maxVolume);
   const { price: priceValidate, quantity: quantityValidate } = validationMap;
+
 
   // ✅ 暴露方法給父元件使用
   useImperativeHandle(ref, () => ({
     reset() {
-      setAmount("");
-      setSliderValue(0);
-      setFormData((prev) => ({
-        ...prev,
-        // price: "",
-        quantity: "",
-      }));
-      setValidationMap({
-        ...validateForm,
-      });
+      resetField();
     },
     validate() {
-      const pricePass = validatePriceInput({
-        formData,
-        precision: showPrecision,
-        setValidationMap,
-      });
-      const quantityPass = validateQuantityInput({
-        formData,
-        maxVolume,
-        minNotional,
-        setValidationMap,
-      });
-      const validateResult = pricePass && quantityPass;
-      setValidationMap((prev) => ({
-        ...prev,
-        invalid: !validateResult,
-      }));
-      return validateResult;
+      return validateAll();
     },
     getFormData() {
       return {
@@ -124,156 +88,76 @@ const ExForm = forwardRef(function ExForm(
     },
   }));
 
+  // 初始化價錢
   useEffect(() => {
-    if (assets && !isDragging) {
-      const percent = div(amount || 0, assets, { precision: 3 });
-      setSliderValue(Number(mul(percent, 100, { precision: 2 })));
-    }
-  }, [amount]);
+    const initPrice = isMarket ? "" : formatNumToFixed(lastPrice, showPrecision);
+    updateField(ExFormEnum.PRICE, initPrice);
+  }, [lastPrice, isMarket, showPrecision, updateField])
 
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      price: isMarket ? "" : formatNumToFixed(lastPrice, showPrecision),
-    }));
-  }, [lastPrice, isMarket, showPrecision]);
+  const handleFormChange = (key: ExFormEnum, value: string) => {
+    // 更新formData
+    updateField(key, value);
 
-  const handleFormChange = (key: InputKey, value: string) => {
-    setIsDragging(false);
-    const nextFormData: IExForm = { ...formData, [key]: value };
-    const currPrice = getCurrentPrice(nextFormData, lastPrice, isMarket);
-    const precisionMap: IPrecisionMap = {
-      showPrecision,
-      tradePrecision,
-      quoteAssetPrecision,
-    };
+    // 副作用計算
+    calculateEffect(key, value);
 
-    switch (key) {
-      case ExFormEnum.PRICE:
-        if (!validatePrecision(showPrecision, value)) return;
-        handlePriceInput({
-          currPrice,
-          value,
-          amount,
-          formData: nextFormData,
-          precisionMap,
-          setAmount,
-        });
-
-        validatePriceInput({
-          formData: nextFormData,
-          precision: showPrecision,
-          setValidationMap,
-        });
-        break;
-      case ExFormEnum.QUANITY:
-        if (!validatePrecision(tradePrecision, value)) return;
-        handleQuantityInput({
-          currPrice,
-          value,
-          formData: nextFormData,
-          precisionMap,
-          setAmount,
-        });
-        validateQuantityInput({
-          formData: nextFormData,
-          maxVolume,
-          minNotional,
-          setValidationMap,
-        });
-        break;
-      case ExFormEnum.AMOUNT:
-        if (!validatePrecision(quoteAssetPrecision, value)) return;
-        handleAmountInput({
-          currPrice,
-          value,
-          formData: nextFormData,
-          precisionMap,
-          setAmount,
-        });
-        break;
-
-      case ExFormEnum.SLIDER:
-        if (assets) {
-          setIsDragging(true);
-          handleSilderInput({
-            currPrice,
-            value,
-            assets,
-            formData: nextFormData,
-            precisionMap,
-            setAmount,
-          });
-        }
-        break;
-      default:
-        break;
-    }
-    setFormData(nextFormData);
-  };
+    // 驗證
+    validateInput(key, value);
+  }
 
   return (
     <div className="w-full">
       <form action="" className="flex flex-col gap-8px">
-        <InputGroup>
-          <Input
-            isInvalid={priceValidate.invalid}
-            errorBorderColor="red.500"
-            type="number"
-            placeholder="價格"
-            value={formData.price}
-            onChange={(e) => handleFormChange(ExFormEnum.PRICE, e.target.value)}
-            disabled={isMarket}
-          />
-          <InputRightElement width="4.5rem">
-            <p>{quote}</p>
-          </InputRightElement>
-        </InputGroup>
-        <div className="text-red text-14px">
-          {getErrorMsg(ExFormEnum.PRICE, priceValidate)}
-        </div>
-        <InputGroup>
-          <Input
-            isInvalid={quantityValidate.invalid}
-            errorBorderColor="red.500"
-            type="number"
-            placeholder="數量"
-            value={formData.quantity}
-            onChange={(e) => {
-              const rawValue = e.target.value;
-              const sanitized =
-                rawValue === ""
-                  ? ""
-                  : /^0\d+$/.test(rawValue)
-                  ? rawValue.replace(/^0+/, "")
-                  : rawValue;
-              handleFormChange(ExFormEnum.QUANITY, sanitized);
-            }}
-          />
-          <InputRightElement width="4.5rem">
-            <p>{base}</p>
-          </InputRightElement>
-        </InputGroup>
-        <div className="text-red text-14px">
-          {getErrorMsg(ExFormEnum.QUANITY, quantityValidate, {
+      {/* 價錢 */}
+        <FormControl isInvalid={priceValidate.invalid}>
+          <InputGroup>
+            <Input
+              isInvalid={priceValidate.invalid}
+              errorBorderColor="red.500"
+              type="number"
+              placeholder="價格"
+              value={formData.price}
+              onChange={(e) => handleFormChange(ExFormEnum.PRICE, e.target.value)}
+              disabled={isMarket}
+            />
+            <InputRightElement width="4.5rem">
+              <p>{quote}</p>
+            </InputRightElement>
+          </InputGroup>
+          <FormErrorMessage>{getErrorMsg(ExFormEnum.PRICE, priceValidate)}</FormErrorMessage>
+        </FormControl>
+        {/* 數量 */}
+        <FormControl isInvalid={quantityValidate.invalid}>
+          <InputGroup>
+            <Input
+              isInvalid={quantityValidate.invalid}
+              errorBorderColor="red.500"
+              type="number"
+              placeholder="數量"
+              value={formData.quantity}
+              onChange={(e) => handleFormChange(ExFormEnum.QUANITY, e.target.value)}
+            />
+            <InputRightElement width="4.5rem">
+              <p>{base}</p>
+            </InputRightElement>
+          </InputGroup>
+          <FormErrorMessage>{getErrorMsg(ExFormEnum.QUANITY, quantityValidate, {
             maxVolume,
             minNotional,
             quote,
             side,
             assets,
           })}
-        </div>
-
-        <InputGroup className="px-8px">
+          </FormErrorMessage>
+        </FormControl>
+        {/* 滑桿 */}
+        <FormControl className="px-8px">
           <Slider
             aria-label="slider-ex-1"
             defaultValue={0}
             max={100}
-            value={sliderValue}
-            onChange={(val) => {
-              setSliderValue(val);
-              handleFormChange(ExFormEnum.SLIDER, val.toString());
-            }}
+            value={formData.slider}
+            onChange={(val) => handleFormChange(ExFormEnum.SLIDER, val.toString())}
             focusThumbOnChange={false}
           >
             <SliderTrack>
@@ -281,31 +165,33 @@ const ExForm = forwardRef(function ExForm(
             </SliderTrack>
             <SliderThumb className="peer" />
             <SliderMark
-              value={sliderValue}
+              value={formData.slider}
               textAlign="center"
               bg="blue.500"
               color="white"
+              mt='-10'
+              ml='-5'
               w="12"
               className="hidden peer-hover:block peer-active:block!"
             >
-              {sliderValue}%
+              {formData.slider}%
             </SliderMark>
           </Slider>
-        </InputGroup>
-
-        <InputGroup>
-          <Input
-            type="number"
-            placeholder="成交額"
-            value={amount}
-            onChange={(e) => {
-              handleFormChange(ExFormEnum.AMOUNT, e.target.value);
-            }}
-          />
-          <InputRightElement width="4.5rem">
-            <p>{quote}</p>
-          </InputRightElement>
-        </InputGroup>
+        </FormControl>
+        {/* 成交額 */}
+        <FormControl>
+          <InputGroup>
+            <Input
+              type="number"
+              placeholder="成交額"
+              value={formData.amount}
+              onChange={(e) => handleFormChange(ExFormEnum.AMOUNT, e.target.value)}
+            />
+            <InputRightElement width="4.5rem">
+              <p>{quote}</p>
+            </InputRightElement>
+          </InputGroup>
+        </FormControl>
       </form>
     </div>
   );

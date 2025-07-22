@@ -25,13 +25,11 @@ export default function TradeForm() {
     return state.symbolNameMap;
   });
 
-  const currSymbolInfo: ISymbolInfoWithPrecision = useSelector(
+  const { showPrecision }: ISymbolInfoWithPrecision = useSelector(
     (state: RootState) => {
       return state.symbolInfoList.currentSymbolInfo;
     }
   );
-  const { showPrecision } = currSymbolInfo;
-
   const [tradeType, setTradeType] = useState<OrderType>("LIMIT");
   const isLimit = tradeType === "LIMIT";
   const isMarket = tradeType === "MARKET";
@@ -65,16 +63,19 @@ export default function TradeForm() {
 
   const tradeBtnClick = async (side: OrderSide) => {
     const currFormRef = side === OrderSide.BUY ? buyFormRef : sellFormRef;
-    const order = currFormRef.current?.getFormData();
+    const { price, quantity } = currFormRef.current?.getFormData() ?? {};
+
 
     const requestData = createDefaultOrderRequest({
-      ...order,
+      price,
+      quantity,
       side,
       symbol: uppercaseSymbol,
       type: tradeType,
     });
 
     const validateResult = currFormRef.current?.validate();
+  
     if (!validateResult) return;
     if (isMarket) {
       delete requestData.timeInForce;
@@ -150,6 +151,7 @@ export default function TradeForm() {
         {/* 買入 */}
         <div className="w-full">
           <ExForm
+            key={`${tradeType}-${base}`}
             ref={buyFormRef}
             isMarket={isMarket}
             assets={quoteFree}
@@ -186,6 +188,7 @@ export default function TradeForm() {
         {/* 賣出 */}
         <div className="w-full">
           <ExForm
+            key={`${tradeType}-${base}`}
             ref={sellFormRef}
             isMarket={isMarket}
             assets={maxSellAmount}

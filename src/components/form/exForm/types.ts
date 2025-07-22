@@ -1,14 +1,13 @@
-export type InputKey = "amount" | "quantity" | "price" | "slider";
-
 export interface IExForm {
   price: string;
   quantity: string;
+  amount: string;
+  slider: number;
 }
 
 export interface IPriceValidate {
   invalid: boolean;
   empty: boolean;
-  precision: boolean;
 }
 
 export interface IQuanityValidate {
@@ -45,4 +44,4 @@ export enum ExFormEnum {
   SLIDER = "slider",
 }
 
-export type ValidateExFormItem = IPriceValidate | IQuanityValidate
+export type UpdateFieldType = (key: ExFormEnum, value: string) => void;

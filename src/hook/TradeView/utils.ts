@@ -17,21 +17,12 @@ export function transformKlineData(data: KlineTuple[]): IKlineData[] {
     const d = dayjs(item[0]); // item[0] 是 timestamp (ms)
     return {
       time: Math.floor(item[0] / 1000) as UTCTimestamp, // 轉換成秒為單位、、
-      // time: {
-      //     year: d.year(),
-      //     month: d.month() + 1, // ✅ 注意：dayjs 的 month 從 0 開始
-      //     day: d.date(),
-      // },
       open: parseFloat(item[1]),
       high: parseFloat(item[2]),
       low: parseFloat(item[3]),
       close: parseFloat(item[4]),
     };
   });
-  // .filter(({ high, low }) => {
-  //   const minReasonable = 0.8 * 100000;
-  //   return high < maxReasonable && low > minReasonable;
-  // });
 }
 
 export function transformBarData(data: KlineTuple[]): IBarData[] {
