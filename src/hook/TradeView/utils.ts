@@ -1,12 +1,17 @@
 import { IBarData, IKlineData, IMaData, KlineTuple } from "./types";
 import dayjs from "dayjs";
 import {
+  AreaSeriesPartialOptions,
+  BarSeriesPartialOptions,
   CandlestickSeries,
+  CandlestickSeriesPartialOptions,
   ChartOptions,
   ColorType,
   createChart,
   DeepPartial,
   HistogramSeries,
+  HistogramSeriesPartialOptions,
+  LineSeriesPartialOptions,
   OhlcData,
   SeriesPartialOptionsMap,
   UTCTimestamp,
@@ -36,12 +41,13 @@ export function transformBarData(data: KlineTuple[]): IBarData[] {
   });
 }
 
-export function generateKlineChart(
+export function generateChart(
   container: HTMLElement,
-  candlestickOptions?: SeriesPartialOptionsMap["Candlestick"]
+  customOptions?: DeepPartial<ChartOptions>
 ) {
-  const chartOptions: DeepPartial<ChartOptions> = {
-    autoSize: true, //可添加ResizeObserver
+  // 預設選項
+  const defaultOptions: DeepPartial<ChartOptions> = {
+    autoSize: true,
     layout: {
       background: {
         type: ColorType.Solid,
@@ -49,49 +55,27 @@ export function generateKlineChart(
       },
     },
     crosshair: {
-      mode: 0, // 十字準線模式對焦滑鼠
+      mode: 0,
     },
     rightPriceScale: {
       scaleMargins: {
-        top: 0.3, // leave some space for the legend
+        top: 0.3,
         bottom: 0.25,
       },
       borderVisible: false,
     },
   };
-  const chart = createChart(container, chartOptions);
 
-  const candlestickSeries = chart.addSeries(CandlestickSeries, {
-    upColor: "#26a69a",
-    downColor: "#ef5350",
-    borderVisible: false,
-    wickUpColor: "#26a69a",
-    wickDownColor: "#ef5350",
-    ...candlestickOptions,
-  });
-
-  const volumeSeries = chart.addSeries(HistogramSeries, {
-    priceFormat: {
-      type: "volume",
-    },
-    priceScaleId: "", // set as an overlay by setting a blank priceScaleId
-  });
-
-  volumeSeries.priceScale().applyOptions({
-    scaleMargins: {
-      top: 0.9, // highest point of the series will be 70% away from the top
-      bottom: 0,
-    },
-  });
-  // chart.timeScale().fitContent();
-
-  return { candlestickSeries, volumeSeries, chart };
+  const mergedOptions = {
+    ...defaultOptions,
+    ...customOptions,
+  };
+  return createChart(container, mergedOptions);
 }
 
 export function calculateMA(KlineData: IKlineData[], lineData: OhlcData, period: number): number {
   const { time } = lineData;
   const hoveredIndex = KlineData.findIndex(d => d.time === time);
-  // console.log('hoveredIndex',hoveredIndex);
   const startIndex = hoveredIndex - period + 1;
   const endIndex = hoveredIndex + 1; // slice 需要+1
   const range = KlineData.slice(startIndex, endIndex);
@@ -105,7 +89,7 @@ export function getMaData(KlineData: IKlineData[], lineData: OhlcData): IMaData 
   const ma25 = calculateMA(KlineData, lineData, 25);
   const ma99 = calculateMA(KlineData, lineData, 99);
 
-   const { time } = lineData;
+  const { time } = lineData;
   //  console.log('lineData',lineData,'time',time);
   return {
     ma7,

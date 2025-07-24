@@ -1,5 +1,5 @@
 (進行中)
-8.generateKlineChart優化成單純回傳圖表
+4.導入測試流程
 
 
 (Fetures)
@@ -10,7 +10,7 @@
 5.table loading
 6.優化Kline區域，盡量資料都拆開來
 7.模組化table組件(拆分thead, tbody)
-
+8.Home.tsx動態高度
 9.ExSlider封裝成Hook
 10.製作useForm
 12.無限滾動

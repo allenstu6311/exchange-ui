@@ -5,14 +5,16 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   calculateMA,
-  generateKlineChart,
+  generateChart,
   getMaData,
   transformBarData,
   transformKlineData,
 } from "./utils";
 import worker from "@/workers";
 import {
+  CandlestickSeries,
   HistogramData,
+  HistogramSeries,
   IChartApi,
   ISeriesApi,
   OhlcData,
@@ -132,23 +134,50 @@ export function useKlineChart(
         chartRef.current.remove();
       }
       const { precision, minMove } = priceFormat;
-      const { candlestickSeries, chart, volumeSeries } = generateKlineChart(
-        container.current,
-        {
-          priceFormat: {
-            precision,
-            minMove,
-          },
+      const chart = generateChart(container.current);
+
+      // 行情蠟燭圖
+      const tickerSeries = chart.addSeries(CandlestickSeries, {
+        upColor: "#26a69a",
+        downColor: "#ef5350",
+        borderVisible: false,
+        wickUpColor: "#26a69a",
+        wickDownColor: "#ef5350",
+        priceFormat: {
+          precision,
+          minMove,
+        },
+        priceScaleId: "right"
+      });
+     
+      // 成交柱狀圖
+      const volumeSeries = chart.addSeries(HistogramSeries, {
+        priceFormat: {
+          type: "volume",
+          precision,
+          minMove,
+        },
+        /**
+         * 不要跟行情共用價格軸
+         */
+        priceScaleId: "volume",
+      });
+
+      volumeSeries.priceScale().applyOptions({
+        scaleMargins: {
+          top: 0.9, // highest point of the series will be 70% away from the top
+          bottom: 0,
         }
-      );
-      setLineSeries(candlestickSeries);
+      });
+
+      setLineSeries(tickerSeries);
       setBarSeries(volumeSeries);
 
       // 滑鼠移動時，更新數據
       chart.subscribeCrosshairMove((param) => {
         if (param.time) {
           const { setOhlcData, setMaData } = setLegendsDataRef.current();
-          const lineData = param.seriesData.get(candlestickSeries) as OhlcData;
+          const lineData = param.seriesData.get(tickerSeries) as OhlcData;
           const barData = param.seriesData.get(volumeSeries) as HistogramData;
           setOhlcData(lineData);
           setMaData(getMaData(KlineData.current, lineData));
@@ -160,6 +189,7 @@ export function useKlineChart(
           resetLegendsDataRef.current();
         }
       });
+      // 更新圖表
       chartRef.current = chart;
     }
   }, [uppercaseSymbol, KlineData, container, priceFormat]);

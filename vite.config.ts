@@ -4,7 +4,7 @@ import UnoCSS from "unocss/vite";
 import path from "path";
 import "dotenv/config";
 import bodyParser from "body-parser";
-import { getSignature } from "./server/util";
+import { binanceProxyHandler, getSignature } from "./server/util";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import express from "express";
 
@@ -33,29 +33,11 @@ export default defineConfig({
             pathRewrite: {
               "^/proxy": "", // 把 /proxy 移除掉，讓它變成 /myTrades, /account
             },
-            on: {
-              proxyReq: async (proxyReq, req: any, res, next) => {
-                const { method, body, query } = req;
-                proxyReq.setHeader("X-MBX-APIKEY", process.env.API_KEY || "");
-               
-                if (method !== 'GET') {
-                  const signature = getSignature(body);
-                  proxyReq.setHeader("Content-Length", Buffer.byteLength(signature));
-                  proxyReq.write(signature);
-                  proxyReq.end();
-                } else {
-                  const signature = getSignature(query);
-                  
-                  // 修改 URL，添加簽名
-                  const pathWithoutQuery = proxyReq.path.split('?')[0];
-                  proxyReq.path = pathWithoutQuery + '?' + signature;
-                }
-              },
-            },
+            on:{
+              proxyReq: binanceProxyHandler
+            }
           })
         );
-
-
       }
     }
   ],
