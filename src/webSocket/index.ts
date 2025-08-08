@@ -22,8 +22,6 @@ class WebSocketIn {
 
   private isManualClose: boolean = false;
 
-  private requestURL: string;
-
   private middleware?: WsMiddleware[];
 
   private postMessage: (param: WorkerRequest) => void;
@@ -36,15 +34,14 @@ class WebSocketIn {
 
   private retryCount: number = 0;
 
+
   constructor({
-    url,
     type,
     postMessage,
     middleware,
     config,
     param,
   }: {
-    url: string;
     type: WsType;
     postMessage: (param: WorkerRequest) => void;
     middleware?: WsMiddleware[];
@@ -56,8 +53,6 @@ class WebSocketIn {
     this.wsConfig = config || {};
     const { retry } = this.wsConfig;
     this.retryCount = retry || 0;
-
-    this.requestURL = url;
     this.middleware = middleware;
     this.postMessage = postMessage;
     this.wsParam = param;
@@ -74,6 +69,10 @@ class WebSocketIn {
 
   public getIsUnhealthy() {
     return this.isUnhealthy;
+  }
+
+  public sendNewParam(param: any) {
+    this.wsParam = param;
   }
 
   // private closeExistingConnection(type: WsType) {
@@ -93,7 +92,7 @@ class WebSocketIn {
     this.retryCount = retry || 0;
   }
 
-  setupWebSocket() {
+  setupWebSocket() {    
     if (this.isManualClose) return;
     this.ws = new WebSocket("wss://stream.binance.com:9443/stream");
 
@@ -108,7 +107,6 @@ class WebSocketIn {
     };
 
     this.ws.onmessage = (event) => {
-      // console.log("onmessage",WebSocketIn.socketMap);
       this.lastTime = Date.now();
       let wsData = JSON.parse(event.data);
 
@@ -123,7 +121,6 @@ class WebSocketIn {
       this.postMessage({
         type: this.wsType,
         data: wsData,
-        url: this.requestURL,
       });
 
       this.reset();
@@ -188,7 +185,7 @@ class WebSocketIn {
   startHeartbeatCheck() {
     this.heartbeatTimer = setInterval(() => {
       const currTime = Date.now();
-      if (currTime - this.lastTime > 5000) {
+      if (currTime - this.lastTime > 30 * 1000) {
         console.log(`💔 心跳停止 ${this.wsType} 結束連線`);
         this.isUnhealthy = true;
         this.close();
